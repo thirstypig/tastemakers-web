@@ -25,7 +25,16 @@ tastemakers-web/
 ├── src/
 │   ├── app/                   Next.js App Router pages
 │   │   ├── layout.tsx         Root layout
-│   │   └── page.tsx           Home page
+│   │   ├── page.tsx           Home (card grid linking all pages)
+│   │   ├── tech/page.tsx      Under the Hood — architecture, stack, schema
+│   │   ├── roadmap/page.tsx   Roadmap — health score, 50 findings, plan
+│   │   ├── changelog/page.tsx Changelog — 9 releases, 99 changes
+│   │   ├── status/page.tsx    System Status — live health checks
+│   │   ├── analytics/page.tsx Analytics — velocity, metrics, questions
+│   │   └── admin/
+│   │       ├── layout.tsx     Admin sidebar layout
+│   │       ├── page.tsx       Admin dashboard
+│   │       └── login/page.tsx Admin login form
 │   ├── components/            Shared React components
 │   ├── hooks/                 Custom React hooks
 │   ├── lib/
@@ -110,3 +119,23 @@ tastemakers-web/
 - Path alias: `@/*` maps to `./src/*`
 - Match iOS/Android feature behavior — refer to `tastemakers-ios/` for expected UX
 - Never store secrets in client-side code — use environment variables with `NEXT_PUBLIC_` prefix only for public values
+
+## Dashboard Pages — Keep Updated (CRITICAL)
+After ANY development work, update the relevant dashboard pages before finishing:
+
+| Page | File | What to update |
+|------|------|----------------|
+| `/tech` | `src/app/tech/page.tsx` | BUILD_JOURNAL, STATS, TECH_STACK, FEATURE_MODULES, LESSONS, AI_WORKFLOW |
+| `/roadmap` | `src/app/roadmap/page.tsx` | P1/P2/P3_FINDINGS (status, fixedDate), PRODUCT_ROADMAP (status), HEALTH_CATEGORIES scores, SESSION_VELOCITY, NEXT_SESSION, RISK_REGISTER |
+| `/changelog` | `src/app/changelog/page.tsx` | Add new RELEASES entry (version, date, session, title, 3 highlights, changes with type badges) |
+| `/analytics` | `src/app/analytics/page.tsx` | VELOCITY_DATA (new session), PRODUCT_METRICS status |
+| `/status` | `src/app/status/page.tsx` | SYSTEM_INFO if infra changes |
+| `/admin` | `src/app/admin/layout.tsx` | NAV_ITEMS if new pages added |
+
+All data is TypeScript arrays/objects at the top of each file — no hardcoded JSX. Update the data, the UI renders automatically.
+
+### When a finding is fixed:
+1. In `/roadmap`: Change finding `status: "open"` → `"completed"`, add `fixedDate: "YYYY-MM-DD"`
+2. In `/roadmap`: Update HEALTH_CATEGORIES scores, OVERALL_SCORE
+3. In `/roadmap`: Update PRODUCT_ROADMAP item status → `"done"`
+4. In `/changelog`: Add the fix to the current release's changes array
