@@ -1,5 +1,11 @@
 # Tastemakers Web — Claude Code Context
 
+## Current status
+
+<!-- now-tldr -->
+Next.js 15 + TypeScript frontend for Tastemakers — currently hosts five live dashboard pages (`/tech`, `/roadmap`, `/changelog`, `/status`, `/analytics`) tracking project health, velocity, and known issues. Targeted for Vercel deployment as both the marketing site (`www.tastemakersapp.com`) and the web app (`app.tastemakersapp.com`), consuming the Laravel API hosted on Railway. Awaiting backend migration before going live.
+<!-- /now-tldr -->
+
 ## Project Overview
 Web frontend for the Tastemakers restaurant discovery platform. Built with Next.js 15 and TypeScript. This is a new project being built to bring the Tastemakers experience to the browser.
 
@@ -49,9 +55,15 @@ tastemakers-web/
 └── CLAUDE.md                  This file
 ```
 
+## Deployment
+- **Platform:** Vercel (preset: Next.js, auto-detected from `next.config.ts`)
+- **Prod domains (planned):** `www.tastemakersapp.com` (marketing + blog), `app.tastemakersapp.com` (web app)
+- **Required env var:** `NEXT_PUBLIC_API_URL=https://api.tastemakersapp.com/api` (points to Railway-hosted Laravel backend)
+- **Known issue:** `src/app/tech/page.tsx:367` — Mermaid CDN import fails TypeScript check. Needs a `declare module` type declaration.
+
 ## API Integration
 - **Dev:** Requests to `/api/*` are proxied to `http://localhost:4050/api/*` via `next.config.ts` rewrites
-- **Prod:** Set `NEXT_PUBLIC_API_URL` to production API URL
+- **Prod:** Set `NEXT_PUBLIC_API_URL` to `https://api.tastemakersapp.com/api` (Railway-hosted Laravel backend)
 - **Auth:** Bearer token stored in localStorage (upgrade to httpOnly cookies later)
 - **Client:** `src/lib/api.ts` provides `apiFetch<T>()` helper with auto-auth headers
 
