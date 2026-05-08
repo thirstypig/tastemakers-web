@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — currently hosts five live dashboard pages (`/tech`, `/roadmap`, `/changelog`, `/status`, `/analytics`) tracking project health, velocity, and known issues. Targeted for Vercel deployment as both the marketing site (`www.tastemakersapp.com`) and the web app (`app.tastemakersapp.com`), consuming the Laravel API hosted on Railway. Awaiting backend migration before going live.
+Next.js 15 + TypeScript frontend for Tastemakers — currently hosts five live dashboard pages (`/tech`, `/roadmap`, `/changelog`, `/status`, `/analytics`) tracking project health, velocity, and known issues. Targeted for Railway deployment as both the marketing site (`www.tastemakersapp.com`) and the web app (`app.tastemakersapp.com`), consuming the Laravel API also hosted on Railway. Awaiting backend migration before going live.
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -56,10 +56,11 @@ tastemakers-web/
 ```
 
 ## Deployment
-- **Platform:** Vercel (preset: Next.js, auto-detected from `next.config.ts`)
+- **Platform:** Railway (Node.js, using default Next.js build output)
 - **Prod domains (planned):** `www.tastemakersapp.com` (marketing + blog), `app.tastemakersapp.com` (web app)
 - **Required env var:** `NEXT_PUBLIC_API_URL=https://api.tastemakersapp.com/api` (points to Railway-hosted Laravel backend)
-- **Known issue:** `src/app/tech/page.tsx:367` — Mermaid CDN import fails TypeScript check. Needs a `declare module` type declaration.
+- **Railway project:** Use same project as backend (shared infrastructure), separate services for backend (Laravel) and frontend (Next.js)
+- **Note:** Build script (`npm run build`) generates `.next/` directory. Railway will serve static files + run server functions via Node.js.
 
 ## API Integration
 - **Dev:** Requests to `/api/*` are proxied to `http://localhost:4050/api/*` via `next.config.ts` rewrites
