@@ -21,71 +21,76 @@ const NAV_LINKS: { href: string; label: string; description: string }[] = [
 
 export default function Home() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: t.bg,
-        color: t.text,
-        fontFamily: t.font,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 32,
-      }}
-    >
-      <h1
-        style={{
-          fontSize: 32,
-          fontWeight: 700,
-          letterSpacing: -1,
-          margin: "0 0 8px",
-        }}
-      >
-        Tastemakers
-      </h1>
-      <p style={{ color: t.muted, fontSize: 15, margin: "0 0 40px" }}>
-        Discover restaurants through trusted tastemakers.
-      </p>
-
+    <>
+      <style>{`
+        a.nav-link {
+          border-color: ${t.border};
+        }
+        a.nav-link:hover {
+          border-color: ${t.accent};
+        }
+      `}</style>
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-          gap: 16,
-          width: "100%",
-          maxWidth: 900,
+          minHeight: "100vh",
+          background: t.bg,
+          color: t.text,
+          fontFamily: t.font,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 32,
         }}
       >
-        {NAV_LINKS.map((link) => (
-          <a
-            key={link.href}
-            href={link.href}
-            style={{
-              display: "block",
-              padding: "20px 24px",
-              background: t.surface,
-              borderRadius: 8,
-              border: `1px solid ${t.border}`,
-              textDecoration: "none",
-              transition: "border-color 0.15s",
-            }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = t.accent;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.borderColor = t.border;
-            }}
-          >
-            <div style={{ fontWeight: 700, fontSize: 15, color: t.accent, marginBottom: 6 }}>
-              {link.label} &rarr;
-            </div>
-            <div style={{ fontSize: 13, color: t.muted, lineHeight: 1.5 }}>
-              {link.description}
-            </div>
-          </a>
-        ))}
+        <h1
+          style={{
+            fontSize: 32,
+            fontWeight: 700,
+            letterSpacing: -1,
+            margin: "0 0 8px",
+          }}
+        >
+          Tastemakers
+        </h1>
+        <p style={{ color: t.muted, fontSize: 15, margin: "0 0 40px" }}>
+          Discover restaurants through trusted tastemakers.
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+            gap: 16,
+            width: "100%",
+            maxWidth: 900,
+          }}
+        >
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.href}
+              href={link.href}
+              className="nav-link"
+              style={{
+                display: "block",
+                padding: "20px 24px",
+                background: t.surface,
+                borderRadius: 8,
+                border: `1px solid ${t.border}`,
+                textDecoration: "none",
+                transition: "border-color 0.15s",
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 15, color: t.accent, marginBottom: 6 }}>
+                {link.label} &rarr;
+              </div>
+              <div style={{ fontSize: 13, color: t.muted, lineHeight: 1.5 }}>
+                {link.description}
+              </div>
+            </a>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

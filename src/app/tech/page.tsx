@@ -364,7 +364,7 @@ function MermaidDiagram({
       try {
         const mermaid = await import(
           /* webpackIgnore: true */
-          "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
+          "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs" as any
         );
         if (cancelled) return;
 
