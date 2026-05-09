@@ -1,3 +1,5 @@
+import { runCheck, shortBody, type Check, type CheckResult } from "@/lib/api-probe";
+
 const API = "https://api.tastemakersapp.com";
 
 const t = {
@@ -15,59 +17,6 @@ const t = {
   mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
 };
 
-type Check = {
-  name: string;
-  description: string;
-  method: string;
-  url: string;
-  expectStatus: number;
-  note?: string;
-  init?: RequestInit;
-};
-
-type CheckResult = Check & {
-  status: number | null;
-  ok: boolean;
-  ms: number;
-  body: unknown;
-  error?: string;
-};
-
-async function runCheck(check: Check): Promise<CheckResult> {
-  const start = Date.now();
-  try {
-    const res = await fetch(check.url, {
-      method: check.method,
-      cache: "no-store",
-      signal: AbortSignal.timeout(8000),
-      ...check.init,
-    });
-    const ms = Date.now() - start;
-    let body: unknown = null;
-    try {
-      const text = await res.text();
-      body = text ? JSON.parse(text) : null;
-    } catch {
-      body = null;
-    }
-    return {
-      ...check,
-      status: res.status,
-      ok: res.status === check.expectStatus,
-      ms,
-      body,
-    };
-  } catch (e) {
-    return {
-      ...check,
-      status: null,
-      ok: false,
-      ms: Date.now() - start,
-      body: null,
-      error: e instanceof Error ? e.message : String(e),
-    };
-  }
-}
 
 const CHECKS: Check[] = [
   {
@@ -124,12 +73,6 @@ function badgeBorder(ok: boolean) {
   return ok ? `${t.green}50` : `${t.red}50`;
 }
 
-function shortBody(body: unknown): string {
-  if (body === null || body === undefined) return "—";
-  const s = JSON.stringify(body, null, 2);
-  if (s.length <= 300) return s;
-  return s.slice(0, 300) + "\n…";
-}
 
 export default async function ApiTestPage() {
   const results = await Promise.all(CHECKS.map(runCheck));

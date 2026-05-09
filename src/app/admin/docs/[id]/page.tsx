@@ -1,7 +1,6 @@
-import fs from "fs";
-import path from "path";
 import { marked } from "marked";
 import { notFound } from "next/navigation";
+import { fetchMarkdown, type DocSource } from "@/lib/docs";
 
 const t = {
   bg: "#0f0f23",
@@ -16,10 +15,6 @@ const t = {
   font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
   mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
 };
-
-type DocSource =
-  | { type: "local"; file: string }
-  | { type: "github"; repo: string; branch: string; file: string };
 
 type DocMeta = {
   id: string;
@@ -74,25 +69,6 @@ const DOCS: DocMeta[] = [
     source: { type: "local", file: "src/content/docs/cross-todos.md" },
   },
 ];
-
-async function fetchMarkdown(source: DocSource, id: string): Promise<string | null> {
-  if (source.type === "local") {
-    try {
-      return fs.readFileSync(path.join(process.cwd(), source.file), "utf-8");
-    } catch {
-      return null;
-    }
-  }
-
-  const url = `https://raw.githubusercontent.com/${source.repo}/${source.branch}/${source.file}`;
-  try {
-    const res = await fetch(url, { next: { revalidate: 300 } }); // cache 5 min
-    if (!res.ok) return null;
-    return res.text();
-  } catch {
-    return null;
-  }
-}
 
 // Override renderer for dark theme styling
 const renderer = new marked.Renderer();
@@ -151,7 +127,7 @@ export default async function DocPage({
   const doc = DOCS.find((d) => d.id === id);
   if (!doc) notFound();
 
-  const markdown = await fetchMarkdown(doc.source, id);
+  const markdown = await fetchMarkdown(doc.source);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", fontFamily: t.font }}>
