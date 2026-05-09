@@ -29,6 +29,11 @@ type DocMeta = {
 
 const DOCS: DocMeta[] = [
   {
+    id: "blockers",
+    title: "Blockers & Next Steps",
+    source: { type: "local", file: "src/content/docs/blockers.md" },
+  },
+  {
     id: "going-live",
     title: "Going Live Roadmap",
     source: { type: "local", file: "src/content/docs/going-live.md" },
@@ -55,7 +60,7 @@ const DOCS: DocMeta[] = [
   },
   {
     id: "backend-todos",
-    title: "Backend Todos",
+    title: "Backend Todos — 31 items",
     source: {
       type: "github",
       repo: "thirstypig/tastemakers-backend",
@@ -65,13 +70,8 @@ const DOCS: DocMeta[] = [
   },
   {
     id: "cross-todos",
-    title: "Cross-Project Todos",
-    source: {
-      type: "github",
-      repo: "thirstypig/tastemakers-web",
-      branch: "main",
-      file: "CLAUDE.md",
-    },
+    title: "Cross-Project Todos — 49 items",
+    source: { type: "local", file: "src/content/docs/cross-todos.md" },
   },
 ];
 
@@ -254,6 +254,6 @@ export default async function DocPage({
   );
 }
 
-export async function generateStaticParams() {
+export function generateStaticParams() {
   return DOCS.map((d) => ({ id: d.id }));
 }

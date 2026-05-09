@@ -24,9 +24,17 @@ type DocEntry = {
 
 const DOCS: DocEntry[] = [
   {
+    id: "blockers",
+    title: "Blockers & Next Steps",
+    description: "Passport install, missing env secrets, iOS checklist, Android build fix, data migration decision",
+    category: "Roadmap",
+    badge: "Action needed",
+    badgeColor: "#f87171",
+  },
+  {
     id: "going-live",
     title: "Going Live Roadmap",
-    description: "Migration status, iOS/Android/web plans, infrastructure summary, what's left to do",
+    description: "Migration status for all 5 services, infrastructure summary, what's done vs pending",
     category: "Roadmap",
     badge: "Active",
     badgeColor: t.green,
@@ -34,7 +42,7 @@ const DOCS: DocEntry[] = [
   {
     id: "backend-claude",
     title: "Backend — CLAUDE.md",
-    description: "Laravel API tech stack, port assignments, API routes, known issues, implementation plan",
+    description: "Laravel API tech stack, port assignments, all API routes, known issues, implementation plan",
     category: "Codebase",
     badge: "Laravel",
     badgeColor: t.accent,
@@ -42,25 +50,25 @@ const DOCS: DocEntry[] = [
   {
     id: "web-claude",
     title: "Web App — CLAUDE.md",
-    description: "Next.js architecture, dev setup, API integration, implementation phases",
+    description: "Next.js architecture, dev setup, API integration, implementation phases 1–7",
     category: "Codebase",
     badge: "Next.js",
     badgeColor: t.accent,
   },
   {
     id: "backend-todos",
-    title: "Backend Todos (31 items)",
-    description: "P1 critical security issues, P2 architecture improvements, P3 nice-to-haves",
+    title: "Backend Todos — 31 items",
+    description: "10 P1 critical (FCM key, IDOR, N+1, broken Apple Sign-In), 10 P2, 11 P3",
     category: "Tasks",
-    badge: "P1 open",
+    badge: "10× P1",
     badgeColor: "#f87171",
   },
   {
     id: "cross-todos",
-    title: "Cross-Project Todos (19 items)",
-    description: "API field mismatches, Android build blockers, web token security, WordPress credentials",
+    title: "Cross-Project Todos — 49 items",
+    description: "API field mismatches, Android build blockers, web XSS risk, iOS hardcoded URL, WordPress credentials",
     category: "Tasks",
-    badge: "P1 open",
+    badge: "12× P1",
     badgeColor: "#f87171",
   },
 ];
