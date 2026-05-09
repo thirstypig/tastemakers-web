@@ -10,6 +10,8 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
+    "@types/marked": "^5.0.2",
+    "marked": "^18.0.3",
     "next": "^15.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
