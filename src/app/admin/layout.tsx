@@ -24,6 +24,7 @@ const t = {
    ───────────────────────────────────────────── */
 const NAV_ITEMS: { label: string; href: string; icon: string }[] = [
   { label: "Dashboard", href: "/admin", icon: "⌂" },
+  { label: "API Test", href: "/admin/api", icon: "◈" },
   { label: "Login", href: "/admin/login", icon: "→" },
   { label: "Under the Hood", href: "/tech", icon: "⚙" },
   { label: "Roadmap", href: "/roadmap", icon: "◎" },
