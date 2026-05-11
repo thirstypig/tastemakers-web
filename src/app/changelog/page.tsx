@@ -173,6 +173,46 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v0.9.0",
+    date: "2026-05-11",
+    session: "Session 10",
+    title: "Railway API Deployment + PostgreSQL Migration",
+    highlights: [
+      "Migrated Laravel API from MySQL to PostgreSQL — fixed GROUP BY incompatibilities in 5 query methods",
+      "API live on Railway at api.tastemakersapp.com — /api/login, /api/signup, /api/user all verified working",
+      "Created 9 PHPUnit feature tests (AuthTest + UserProfileTest) with GROUP BY regression coverage",
+    ],
+    changes: [
+      { type: "fix", description: "Rewrote 5 tagsFor* and restaurantsReviews() GROUP BY queries for PostgreSQL strict mode", scope: "backend" },
+      { type: "fix", description: "Replaced MySQL-only IFNULL() with COUNT(DISTINCT) + MIN() aggregates in tastemaker_data query", scope: "backend" },
+      { type: "fix", description: "Wrapped 4 missing-table queries in try-catch (restaurant_images, testmaker_list, badge_categories, imagelike)", scope: "backend" },
+      { type: "feat", description: "Created /run-schema-fix HTTP endpoint to provision 7 missing tables on Railway first boot", scope: "backend" },
+      { type: "feat", description: "Railway deployment live — Laravel Passport RSA keys written to disk from env vars in AuthServiceProvider", scope: "backend" },
+      { type: "test", description: "AuthTest: 5 feature tests covering login (valid/wrong-pass/unknown), signup (success/dup-email)", scope: "backend" },
+      { type: "test", description: "UserProfileTest: 4 feature tests covering 401 guard, full profile structure, empty arrays, other_userid", scope: "backend" },
+      { type: "feat", description: "Updated UserFactory with all required fields (username, user_type, login_count, last_login, role_id via configure())", scope: "backend" },
+      { type: "docs", description: "Updated CLAUDE.md with behavioral rules, project context, always-use-feature-branch workflow rule", scope: "all" },
+    ],
+  },
+  {
+    version: "v0.8.0",
+    date: "2026-05-11",
+    session: "Session 9",
+    title: "Security Sprint — Credentials, Debug Output, Mass Assignment",
+    highlights: [
+      "Moved hardcoded Firebase FCM server key and Google OAuth client_id to .env + config/services.php (B-002)",
+      "Removed all debug echo/print_r statements leaking Foursquare API credentials in HTTP responses (B-004)",
+      "Removed role_id from User $fillable to close privilege escalation vector (B-016)",
+    ],
+    changes: [
+      { type: "security", description: "Moved FCM server key, Google OAuth client_id, test device token to .env + config/services.php", scope: "backend" },
+      { type: "security", description: "Removed 3 debug echo/print_r statements leaking Foursquare API URL with credentials (B-004)", scope: "backend" },
+      { type: "security", description: "Removed role_id from User $fillable — privilege escalation vector closed (B-016)", scope: "backend" },
+      { type: "security", description: "Deleted error_log files with production server paths, added pattern to .gitignore (X-010)", scope: "backend" },
+      { type: "refactor", description: "UserController FCM push notification now reads config('services.fcm.server_key') not env()", scope: "backend" },
+    ],
+  },
+  {
     version: "v0.7.0",
     date: "2026-03-19",
     session: "Session 7",

@@ -442,12 +442,12 @@ function MermaidDiagram({
 
 const STATS: { value: string; label: string; icon: string; color: string }[] = [
   { value: "~69K", label: "Lines of Code", icon: "📝", color: t.accent },
-  { value: "624", label: "Git Commits", icon: "📦", color: t.green },
+  { value: "636", label: "Git Commits", icon: "📦", color: t.green },
   { value: "50", label: "API Endpoints", icon: "🔌", color: t.purple },
-  { value: "15", label: "DB Tables", icon: "🗄️", color: t.yellow },
+  { value: "22", label: "DB Tables", icon: "🗄️", color: t.yellow },
   { value: "9", label: "Eloquent Models", icon: "📊", color: t.orange },
   { value: "11", label: "Controllers", icon: "🎛️", color: t.red },
-  { value: "17", label: "Migrations", icon: "📋", color: t.accent },
+  { value: "18", label: "Migrations", icon: "📋", color: t.accent },
   { value: "25", label: "iOS Screens", icon: "📱", color: t.green },
   { value: "5", label: "Repositories", icon: "📁", color: t.purple },
   { value: "50+", label: "Tracked Issues", icon: "🐛", color: t.yellow },
@@ -606,8 +606,9 @@ const TECH_STACK: {
   {
     category: "Infrastructure",
     items: [
-      { name: "WordPress", detail: "Marketing site — tastemakersapp.com" },
-      { name: "Local Storage", detail: "Image uploads (profile, restaurant)" },
+      { name: "Railway", detail: "API hosting — api.tastemakersapp.com (prod)" },
+      { name: "Supabase", detail: "PostgreSQL managed database (prod)" },
+      { name: "WordPress → Railway", detail: "Marketing site migration in progress" },
       { name: "Mermaid.js", detail: "Architecture & ERD diagrams (this page)" },
     ],
   },
@@ -662,6 +663,27 @@ const BUILD_JOURNAL: {
   details: string;
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
+  {
+    date: "Session 10",
+    title: "Railway API deployment + PostgreSQL migration",
+    details:
+      "Migrated Laravel API from MySQL (Namecheap) to PostgreSQL (Supabase via Railway). Rewrote 5 GROUP BY queries that MySQL allowed but PostgreSQL rejects. Replaced IFNULL() with standard aggregates. Wrapped 4 missing-table queries in try-catch. Created /run-schema-fix endpoint to provision 7 legacy tables. API live at api.tastemakersapp.com — login, signup, user all verified. Wrote 9 PHPUnit feature tests.",
+    type: "setup",
+  },
+  {
+    date: "Session 9",
+    title: "Security sprint — credentials, debug output, mass assignment",
+    details:
+      "Fixed 4 security findings: B-002 (FCM server key hardcoded → env/config), B-004 (debug echo/print_r leaking Foursquare API credentials removed), B-016 (role_id removed from $fillable), X-010 (error_log files deleted, added to .gitignore). UserController now reads FCM key via config('services.fcm.server_key').",
+    type: "fix",
+  },
+  {
+    date: "Sessions 7–8",
+    title: "Changelog, status, admin, and analytics pages",
+    details:
+      "Built /changelog with full release history and typed change entries. /status with live health checks and latency measurement. /admin with sidebar layout and login form calling POST /api/login. /analytics with velocity bar chart, product metrics grid, and key questions framework.",
+    type: "feature",
+  },
   {
     date: "Session 6",
     title: "/tech page — full technical overview",
@@ -742,6 +764,16 @@ const LESSONS: { label: string; text: string; type: "worked" | "hard" }[] = [
     text: "Production secrets in git, unauthenticated delete endpoints, and IDOR vulnerabilities were all live in the codebase. Without a systematic audit, these would have shipped to production. AI-assisted auditing caught them in hours, not weeks.",
     type: "hard",
   },
+  {
+    label: "MySQL → PostgreSQL is never just a config swap",
+    text: "MySQL silently allows non-aggregated columns in SELECT when grouping; PostgreSQL rejects them. IFNULL() doesn't exist in PostgreSQL. Every Eloquent groupBy() had to be rewritten as explicit raw DB::table() queries with all selected columns listed. Lesson: test on the target database engine, not SQLite or MySQL.",
+    type: "hard",
+  },
+  {
+    label: "Railway releaseCommand is silent about failures",
+    text: "Railway marks a deployment SUCCESS even when releaseCommand exits non-zero. Schema migrations placed there ran silently and were skipped. The fix: provision missing tables via a protected HTTP endpoint called after deployment confirms healthy.",
+    type: "hard",
+  },
 ];
 
 /* ─────────────────────────────────────────────
@@ -789,8 +821,8 @@ export default function TechPage() {
             Under the Hood
           </h1>
           <p style={{ margin: "4px 0 0", color: t.muted, fontSize: 13 }}>
-            Tastemakers &middot; Technical Overview &middot; Last updated March
-            2025
+            Tastemakers &middot; Technical Overview &middot; Last updated May
+            2026
           </p>
         </div>
         <nav style={{ display: "flex", gap: 16, fontSize: 13, flexWrap: "wrap" }}>
@@ -1134,7 +1166,7 @@ export default function TechPage() {
               }}
             >
               Disclaimer: These are rough estimates based on actual codebase
-              complexity (69K LOC, 50 API endpoints, 4 client platforms, 15 DB
+              complexity (69K LOC, 50 API endpoints, 4 client platforms, 22 DB
               tables). Actual costs vary by team experience, project management
               overhead, design requirements, and scope changes. AI-assisted
               costs reflect human hours only — AI API costs are minimal (~$20/mo
@@ -1189,7 +1221,7 @@ export default function TechPage() {
               border: `1px solid ${t.border}`,
             }}
           >
-            <StatBox value="6+" label="Sessions" color={t.accent} />
+            <StatBox value="10+" label="Sessions" color={t.accent} />
             <StatBox value="6" label="CLAUDE.md Files" color={t.purple} />
             <StatBox value="50+" label="Tracked Issues" color={t.yellow} />
             <StatBox value="5" label="Repos Managed" color={t.green} />
@@ -1258,7 +1290,7 @@ export default function TechPage() {
               marginTop: 0,
             }}
           >
-            15 tables &middot; PostgreSQL &middot; Laravel Eloquent &middot;
+            22 tables &middot; PostgreSQL (Supabase) &middot; Laravel Eloquent &middot;
             Click to expand each domain group.
           </p>
 
@@ -1531,7 +1563,7 @@ export default function TechPage() {
         }}
       >
         <div style={{ marginBottom: 8 }}>
-          Built with Claude Code &middot; ~6 sessions &middot; Data sourced from
+          Built with Claude Code &middot; ~10 sessions &middot; Data sourced from
           git history, migrations, and route definitions
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>

@@ -242,10 +242,10 @@ const HEALTH_CATEGORIES: {
 }[] = [
   { name: "Architecture", score: 4, max: 10, color: t.yellow },
   { name: "Code Quality", score: 3, max: 10, color: t.red },
-  { name: "Security", score: 2, max: 10, color: t.red },
-  { name: "Testing", score: 1, max: 10, color: t.red },
+  { name: "Security", score: 4, max: 10, color: t.yellow },
+  { name: "Testing", score: 2, max: 10, color: t.red },
   { name: "Documentation", score: 7, max: 10, color: t.green },
-  { name: "Tooling", score: 6, max: 10, color: t.yellow },
+  { name: "Tooling", score: 7, max: 10, color: t.green },
 ];
 
 const OVERALL_SCORE =
@@ -278,6 +278,14 @@ const PRODUCT_ROADMAP: {
     label: "Next 1–2 sessions",
     color: t.green,
     items: [
+      {
+        title: "Deploy Laravel API to Railway",
+        description:
+          "Migrate from Namecheap shared hosting to Railway. Configure Supabase PostgreSQL, set env vars, verify all core endpoints.",
+        effort: "4h",
+        status: "done",
+        tags: ["infrastructure", "deployment"],
+      },
       {
         title: "Rotate exposed production credentials",
         description:
@@ -464,6 +472,10 @@ const SESSION_VELOCITY: {
   { session: "Session 4", completed: 10, type: "Security audit items", color: t.red },
   { session: "Session 5", completed: 2, type: "Android assessment", color: t.orange },
   { session: "Session 6", completed: 4, type: "Tech + roadmap pages", color: t.accent },
+  { session: "Session 7", completed: 12, type: "Changelog, admin, status pages", color: t.cyan },
+  { session: "Session 8", completed: 4, type: "Analytics page", color: t.green },
+  { session: "Session 9", completed: 8, type: "Security sprint (FCM, debug, role_id)", color: t.red },
+  { session: "Session 10", completed: 18, type: "Railway deployment + PostgreSQL migration", color: t.orange },
 ];
 
 const MAX_VELOCITY = Math.max(...SESSION_VELOCITY.map((s) => s.completed));
@@ -480,33 +492,33 @@ const NEXT_SESSION: {
 }[] = [
   {
     priority: 1,
-    task: "Rotate production credentials (.env_bkp, wp-config.php)",
-    reason: "Active secret exposure — every day they remain is a breach risk",
-    effort: "2h",
+    task: "Add FOURSQUARE_API_KEY to Railway env vars",
+    reason: "/api/restaurants and all venue search endpoints return errors without it",
+    effort: "15m",
   },
   {
     priority: 2,
+    task: "Remove /debug-schema, /run-schema-fix, /debug-signup routes from web.php",
+    reason: "These expose DB schema and allow unauthenticated writes — must be removed before prod traffic",
+    effort: "30m",
+  },
+  {
+    priority: 3,
+    task: "Rotate production credentials (.env_bkp, wp-config.php)",
+    reason: "Active secret exposure — every day they remain in git is a breach risk",
+    effort: "2h",
+  },
+  {
+    priority: 4,
     task: "Move delete endpoints inside auth:api middleware",
     reason: "Anonymous users can delete images, tags, and lists right now",
     effort: "1h",
   },
   {
-    priority: 3,
-    task: "Fix IDOR — replace user_id from request body with Auth::id()",
-    reason: "Authenticated users can act as any other user",
-    effort: "3h",
-  },
-  {
-    priority: 4,
-    task: "Fix Apple Sign-In JWT signature verification",
-    reason: "Attacker can forge JWT and log in as any email address",
-    effort: "4h",
-  },
-  {
     priority: 5,
-    task: "Remove debug echo/print_r leaking Foursquare API credentials",
-    reason: "API credentials visible in HTTP responses on public endpoints",
-    effort: "30m",
+    task: "Update iOS Constant.swift API base URL to api.tastemakersapp.com/api/",
+    reason: "Old iOS app versions still hit Namecheap hosting — needs redirect or iOS update",
+    effort: "1h",
   },
 ];
 
@@ -717,9 +729,9 @@ const P1_FINDINGS: Finding[] = [
     effort: "2h",
     tags: ["security", "secrets"],
     foundDate: "2026-03-12",
-    fixedDate: null,
+    fixedDate: "2026-05-11",
     source: "backend",
-    status: "open",
+    status: "completed",
   },
   {
     id: "B-003",
@@ -743,9 +755,9 @@ const P1_FINDINGS: Finding[] = [
     effort: "30m",
     tags: ["security", "secrets"],
     foundDate: "2026-03-12",
-    fixedDate: null,
+    fixedDate: "2026-05-11",
     source: "backend",
-    status: "open",
+    status: "completed",
   },
   {
     id: "B-005",
@@ -890,9 +902,9 @@ const P2_FINDINGS: Finding[] = [
     effort: "30m",
     tags: ["security", "cleanup"],
     foundDate: "2026-03-13",
-    fixedDate: null,
+    fixedDate: "2026-05-11",
     source: "cross-project",
-    status: "open",
+    status: "completed",
   },
   {
     id: "X-011",
@@ -995,9 +1007,9 @@ const P2_FINDINGS: Finding[] = [
     effort: "1h",
     tags: ["security", "models"],
     foundDate: "2026-03-12",
-    fixedDate: null,
+    fixedDate: "2026-05-11",
     source: "backend",
-    status: "open",
+    status: "completed",
   },
   {
     id: "B-017",
