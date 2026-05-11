@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — currently hosts five live dashboard pages (`/tech`, `/roadmap`, `/changelog`, `/status`, `/analytics`) tracking project health, velocity, and known issues. Targeted for Railway deployment as both the marketing site (`www.tastemakersapp.com`) and the web app (`app.tastemakersapp.com`), consuming the Laravel API also hosted on Railway. Awaiting backend migration before going live.
+Next.js 15 + TypeScript frontend for Tastemakers — five live dashboard pages (`/tech`, `/roadmap`, `/changelog`, `/status`, `/analytics`) plus an admin panel. Targeted for Railway deployment as `app.tastemakersapp.com`, consuming the Laravel API **now live** on Railway at `api.tastemakersapp.com`. Ready to deploy once Railway service is wired up.
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -34,13 +34,16 @@ tastemakers-web/
 │   │   ├── page.tsx           Home (card grid linking all pages)
 │   │   ├── tech/page.tsx      Under the Hood — architecture, stack, schema
 │   │   ├── roadmap/page.tsx   Roadmap — health score, 50 findings, plan
-│   │   ├── changelog/page.tsx Changelog — 9 releases, 99 changes
+│   │   ├── changelog/page.tsx Changelog — 11 releases, ~130 changes
 │   │   ├── status/page.tsx    System Status — live health checks
 │   │   ├── analytics/page.tsx Analytics — velocity, metrics, questions
 │   │   └── admin/
 │   │       ├── layout.tsx     Admin sidebar layout
 │   │       ├── page.tsx       Admin dashboard
-│   │       └── login/page.tsx Admin login form
+│   │       ├── login/page.tsx Admin login form
+│   │       ├── docs/page.tsx       Documentation browser
+│   │       ├── docs/[id]/page.tsx  Individual doc detail
+│   │       └── api/page.tsx        API contract explorer
 │   ├── components/            Shared React components
 │   ├── hooks/                 Custom React hooks
 │   ├── lib/
