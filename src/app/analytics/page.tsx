@@ -233,6 +233,28 @@ const VELOCITY_DATA: VelocityEntry[] = [
       { type: "docs", count: 1 },
     ],
   },
+  {
+    session: "Session 9",
+    label: "Security sprint",
+    items: 8,
+    color: t.red,
+    breakdown: [
+      { type: "security", count: 6 },
+      { type: "refactor", count: 2 },
+    ],
+  },
+  {
+    session: "Session 10",
+    label: "Railway deployment + PostgreSQL",
+    items: 18,
+    color: t.orange,
+    breakdown: [
+      { type: "fixes", count: 8 },
+      { type: "features", count: 5 },
+      { type: "tests", count: 3 },
+      { type: "docs", count: 2 },
+    ],
+  },
 ];
 
 const VELOCITY_MAX = Math.max(...VELOCITY_DATA.map((v) => v.items));
