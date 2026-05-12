@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { parseAllowedEmails, isEmailAllowed } from "@/lib/auth";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -41,16 +42,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const allowedEmails = (process.env.ADMIN_EMAILS ?? "")
-    .split(",")
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean);
+  const allowedEmails = parseAllowedEmails(process.env.ADMIN_EMAILS ?? "");
 
-  const isAllowed =
-    allowedEmails.length === 0 ||
-    (!!user?.email && allowedEmails.includes(user.email.toLowerCase()));
-
-  if (!user || !isAllowed) {
+  if (!user || !isEmailAllowed(user.email, allowedEmails)) {
     const url = request.nextUrl.clone();
     url.pathname = "/admin/login";
     return NextResponse.redirect(url);
