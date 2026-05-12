@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — five live dashboard pages (`/tech`, `/roadmap`, `/changelog`, `/status`, `/analytics`) plus an admin panel. Targeted for Railway deployment as `app.tastemakersapp.com`, consuming the Laravel API **now live** on Railway at `api.tastemakersapp.com`. Ready to deploy once Railway service is wired up.
+Next.js 15 + TypeScript frontend for Tastemakers — five public dashboard pages + a full admin panel with Supabase Google OAuth auth. 66 unit tests green. Consuming the Laravel API **live** on Railway at `api.tastemakersapp.com`. Targeted for Railway deployment as `app.tastemakersapp.com` (Phase 1 foundation next).
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -12,7 +12,7 @@ Web frontend for the Tastemakers restaurant discovery platform. Built with Next.
 ## Tech Stack
 - **Framework:** Next.js 15 (App Router)
 - **Language:** TypeScript (strict mode)
-- **Styling:** TBD (Tailwind CSS recommended)
+- **Styling:** Tailwind CSS v3 (installed, `tailwind.config.ts`)
 - **State:** React Server Components + client hooks
 - **API:** Proxied to Laravel backend at `localhost:4050`
 - **Dev Server Port:** 3050
@@ -23,15 +23,18 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
+npx vitest run     # run 66 unit tests (6 test files)
 ```
 
 ## Project Structure
 ```
 tastemakers-web/
 ├── src/
+│   ├── middleware.ts          Auth gate for /admin/* (CRITICAL: must be in src/, not root)
 │   ├── app/                   Next.js App Router pages
 │   │   ├── layout.tsx         Root layout
 │   │   ├── page.tsx           Home (card grid linking all pages)
+│   │   ├── auth/callback/     PKCE OAuth code exchange route (Supabase Google OAuth)
 │   │   ├── tech/page.tsx      Under the Hood — architecture, stack, schema
 │   │   ├── roadmap/page.tsx   Roadmap — health score, 50 findings, plan
 │   │   ├── changelog/page.tsx Changelog — 11 releases, ~130 changes
@@ -51,14 +54,20 @@ tastemakers-web/
 │   │       ├── docs/page.tsx       Documentation file index
 │   │       └── docs/[id]/page.tsx  Individual doc detail
 │   ├── components/            Shared React components
-│   ├── hooks/                 Custom React hooks
+│   ├── hooks/
+│   │   └── useAuth.ts         Supabase session hook (user, loading, signOut)
 │   ├── lib/
-│   │   └── api.ts             API client (fetch wrapper with auth)
+│   │   ├── api.ts             API client (apiFetch<T>() with auto-auth headers)
+│   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed (used by middleware)
+│   │   ├── supabase.ts        Supabase client factory (SSR-safe)
+│   │   └── validation.ts      Form validation helpers (email, password, required)
 │   └── types/
 │       └── index.ts           TypeScript interfaces matching API models
 ├── public/                    Static assets
-├── next.config.ts             API proxy rewrites to localhost:4050
+├── next.config.ts             API proxy rewrites + devIndicators: false
+├── vitest.config.ts           Vitest config — @/ alias, jsdom env for hook tests
 ├── tsconfig.json              TypeScript config (strict, path aliases)
+├── tailwind.config.ts         Tailwind CSS config
 ├── package.json               Dependencies and scripts
 ├── .env.local.example         Environment variable template
 └── CLAUDE.md                  This file
@@ -68,7 +77,12 @@ tastemakers-web/
 - **Platform:** Railway (Node.js, using default Next.js build output)
 - **Prod domains (planned):** `www.tastemakersapp.com` (marketing + blog), `app.tastemakersapp.com` (web app)
 - **Required env var:** `NEXT_PUBLIC_API_URL=https://api.tastemakersapp.com/api` (points to Railway-hosted Laravel backend)
-- **Admin auth env vars:** `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` — if unset, /admin/* is accessible without auth (dev mode). Enable Google OAuth in Supabase → Auth → Providers before setting these.
+- **Admin auth env vars (server-only, no NEXT_PUBLIC_ prefix):**
+  - `SUPABASE_URL` — Supabase project URL (used in Edge middleware)
+  - `SUPABASE_ANON_KEY` — Supabase anon key (used in Edge middleware)
+  - `ADMIN_EMAILS` — comma-separated allowlist (e.g. `user@example.com,other@example.com`). If empty/unset, all authenticated Supabase users can access admin.
+  - Client-side components also need `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the login page OAuth flow.
+  - Supabase redirect URLs must include `http://localhost:3050/auth/callback` (dev) and `https://app.tastemakersapp.com/auth/callback` (prod) — set in Supabase Dashboard → Auth → URL Configuration.
 - **Railway project:** Use same project as backend (shared infrastructure), separate services for backend (Laravel) and frontend (Next.js)
 - **Note:** Build script (`npm run build`) generates `.next/` directory. Railway will serve static files + run server functions via Node.js.
 
@@ -77,6 +91,23 @@ tastemakers-web/
 - **Prod:** Set `NEXT_PUBLIC_API_URL` to `https://api.tastemakersapp.com/api` (Railway-hosted Laravel backend)
 - **Auth:** Bearer token stored in localStorage (upgrade to httpOnly cookies later)
 - **Client:** `src/lib/api.ts` provides `apiFetch<T>()` helper with auto-auth headers
+
+## Testing
+- **Runner:** Vitest (`npx vitest run`)
+- **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
+- **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
+- **Current suite:** 66 tests across 6 files — all green
+
+| File | Tests | What it covers |
+|------|-------|----------------|
+| `src/lib/auth.test.ts` | 12 | `parseAllowedEmails`, `isEmailAllowed` edge cases |
+| `src/lib/validation.test.ts` | 17 | `validateEmail`, `validatePassword`, `validateRequired` |
+| `src/lib/api.test.ts` | 12 | `apiFetch` — response handling, headers, auth token |
+| `src/lib/api-probe.test.ts` | 7 | `runCheck` — live health probe utility |
+| `src/lib/docs.test.ts` | 10 | Docs library utilities |
+| `src/hooks/useAuth.test.ts` | 8 | `useAuth` — session resolution, auth events, cleanup |
+
+**Mock pattern for `useAuth.test.ts`:** `vi.mock("@/lib/supabase", ...)` + `vi.clearAllMocks()` in `beforeEach`. Use `mockFetch.mock.lastCall!` not `calls[0]` to avoid stale-call bugs across tests.
 
 ## API Endpoints (same as iOS/Android)
 - **Auth:** `POST /api/login`, `/api/signup`, `/api/google-login`
@@ -88,7 +119,7 @@ tastemakers-web/
 ## Implementation Plan
 
 ### Phase 1: Foundation
-1. Install and configure Tailwind CSS v4
+1. ~~Install and configure Tailwind CSS~~ ✅ Done (v3)
 2. Set up global layout with responsive navigation (mobile-first)
 3. Create shared UI components (Button, Card, Input, Modal, LoadingSpinner)
 4. Set up error boundary and 404/500 pages
