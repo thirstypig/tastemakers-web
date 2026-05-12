@@ -255,6 +255,17 @@ const VELOCITY_DATA: VelocityEntry[] = [
       { type: "docs", count: 2 },
     ],
   },
+  {
+    session: "Session 11",
+    label: "Admin dashboard + Supabase auth",
+    items: 22,
+    color: t.accent,
+    breakdown: [
+      { type: "features", count: 17 },
+      { type: "security", count: 3 },
+      { type: "docs", count: 2 },
+    ],
+  },
 ];
 
 const VELOCITY_MAX = Math.max(...VELOCITY_DATA.map((v) => v.items));

@@ -441,8 +441,8 @@ function MermaidDiagram({
    ───────────────────────────────────────────── */
 
 const STATS: { value: string; label: string; icon: string; color: string }[] = [
-  { value: "~69K", label: "Lines of Code", icon: "📝", color: t.accent },
-  { value: "636", label: "Git Commits", icon: "📦", color: t.green },
+  { value: "~73K", label: "Lines of Code", icon: "📝", color: t.accent },
+  { value: "642", label: "Git Commits", icon: "📦", color: t.green },
   { value: "50", label: "API Endpoints", icon: "🔌", color: t.purple },
   { value: "22", label: "DB Tables", icon: "🗄️", color: t.yellow },
   { value: "9", label: "Eloquent Models", icon: "📊", color: t.orange },
@@ -459,7 +459,7 @@ const LOC_BY_PROJECT: { name: string; loc: number; color: string }[] = [
   { name: "WordPress (PHP)", loc: 32893, color: t.muted },
   { name: "iOS (Swift)", loc: 17795, color: t.green },
   { name: "Backend (PHP)", loc: 17592, color: t.purple },
-  { name: "Web (TS/TSX)", loc: 1100, color: t.accent },
+  { name: "Web (TS/TSX)", loc: 4600, color: t.accent },
   { name: "Android (Kotlin)", loc: 135, color: t.orange },
 ];
 

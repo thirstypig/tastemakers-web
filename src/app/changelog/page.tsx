@@ -173,6 +173,36 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v0.10.0",
+    date: "2026-05-11",
+    session: "Session 11",
+    title: "Admin Dashboard + Supabase Google OAuth",
+    highlights: [
+      "Built 10 admin screens in Terminal/DevTool aesthetic — Paper (light) + Gruvbox (dark) themes with JetBrains Mono and full ⌘K palette",
+      "Wired Supabase Google OAuth end-to-end: browser client, /auth/callback PKCE code-exchange route, server-side middleware guard",
+      "Email allowlist via ADMIN_EMAILS env var — only listed emails clear the middleware after OAuth",
+    ],
+    changes: [
+      { type: "feat", description: "Admin layout: traffic light chrome, collapsible sidebar, command bar, theme toggle, ⌘K palette, mobile drawer", scope: "web" },
+      { type: "feat", description: "Admin overview page: KPIs, platforms table, errors/roadmap grid, blinking cursor", scope: "web" },
+      { type: "feat", description: "Admin users page: user table with filter chips", scope: "web" },
+      { type: "feat", description: "Admin errors page: error log with severity filter chips", scope: "web" },
+      { type: "feat", description: "Admin roadmap page: P1/P2/P3 accordion with clickable status cycle (○→◐→●)", scope: "web" },
+      { type: "feat", description: "Admin changelog page: versioned + / ~ / - diff style with sticky TOC", scope: "web" },
+      { type: "feat", description: "Admin routes page: API route table with method/auth filter chips", scope: "web" },
+      { type: "feat", description: "Admin analytics page: PostHog/GA/Search Console stubs with connect buttons", scope: "web" },
+      { type: "feat", description: "Admin platforms/[id] page: per-platform stats, todos, commits, versions for ios/android/web/api", scope: "web" },
+      { type: "feat", description: "Admin docs page: file index table linking all CLAUDE.md/README files", scope: "web" },
+      { type: "security", description: "Supabase Google OAuth gate on /admin/* — createServerClient middleware with PKCE flow", scope: "web" },
+      { type: "security", description: "ADMIN_EMAILS env var allowlist — only whitelisted emails pass after OAuth", scope: "web" },
+      { type: "feat", description: "/auth/callback route exchanges Supabase PKCE code for session cookies then redirects to /admin", scope: "web" },
+      { type: "feat", description: "Paper/Gruvbox theme system: CSS custom properties on :root / [data-theme=dark], persisted to localStorage", scope: "web" },
+      { type: "feat", description: "Tailwind v3 config with CSS var token colors (tm-bg, tm-ink, tm-accent, etc.) and JetBrains Mono", scope: "web" },
+      { type: "fix", description: "Moved middleware to src/middleware.ts — Next.js 15 requires src/ placement when src/ directory is used", scope: "web" },
+      { type: "refactor", description: "Disabled Next.js dev indicator (devIndicators: false in next.config.ts)", scope: "web" },
+    ],
+  },
+  {
     version: "v0.9.0",
     date: "2026-05-11",
     session: "Session 10",

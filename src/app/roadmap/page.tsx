@@ -441,7 +441,7 @@ const PRODUCT_ROADMAP: {
         description:
           "Replace Blade admin panel with React admin in tastemakers-web. RBAC, user/restaurant/tag management, analytics dashboard.",
         effort: "30h",
-        status: "planned",
+        status: "done",
         tags: ["web", "admin", "feature"],
       },
       {
@@ -476,6 +476,7 @@ const SESSION_VELOCITY: {
   { session: "Session 8", completed: 4, type: "Analytics page", color: t.green },
   { session: "Session 9", completed: 8, type: "Security sprint (FCM, debug, role_id)", color: t.red },
   { session: "Session 10", completed: 18, type: "Railway deployment + PostgreSQL migration", color: t.orange },
+  { session: "Session 11", completed: 22, type: "Admin dashboard + Supabase Google OAuth", color: t.accent },
 ];
 
 const MAX_VELOCITY = Math.max(...SESSION_VELOCITY.map((s) => s.completed));
@@ -492,32 +493,32 @@ const NEXT_SESSION: {
 }[] = [
   {
     priority: 1,
-    task: "Add FOURSQUARE_API_KEY to Railway env vars",
-    reason: "/api/restaurants and all venue search endpoints return errors without it",
-    effort: "15m",
+    task: "Build web app Phase 1 — Tailwind layout, shared components, 404/500 pages",
+    reason: "Admin is done — next is the actual user-facing Tastemakers web experience",
+    effort: "3h",
   },
   {
     priority: 2,
+    task: "Build web app Phase 2 — Login, Register, Google OAuth for end users",
+    reason: "Auth for the public app mirrors the admin Supabase work but uses Laravel Bearer tokens",
+    effort: "4h",
+  },
+  {
+    priority: 3,
     task: "Remove /debug-schema, /run-schema-fix, /debug-signup routes from web.php",
     reason: "These expose DB schema and allow unauthenticated writes — must be removed before prod traffic",
     effort: "30m",
   },
   {
-    priority: 3,
+    priority: 4,
     task: "Rotate production credentials (.env_bkp, wp-config.php)",
     reason: "Active secret exposure — every day they remain in git is a breach risk",
     effort: "2h",
   },
   {
-    priority: 4,
+    priority: 5,
     task: "Move delete endpoints inside auth:api middleware",
     reason: "Anonymous users can delete images, tags, and lists right now",
-    effort: "1h",
-  },
-  {
-    priority: 5,
-    task: "Update iOS Constant.swift API base URL to api.tastemakersapp.com/api/",
-    reason: "Old iOS app versions still hit Namecheap hosting — needs redirect or iOS update",
     effort: "1h",
   },
 ];
