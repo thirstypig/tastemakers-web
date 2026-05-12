@@ -1,200 +1,114 @@
-const t = {
-  bg: "#0f0f23",
-  surface: "#16162a",
-  border: "#2a2a4a",
-  text: "#e2e8f0",
-  muted: "#94a3b8",
-  dim: "#64748b",
-  accent: "#60a5fa",
-  green: "#34d399",
-  yellow: "#fbbf24",
-  purple: "#a78bfa",
-  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
-};
+import Link from "next/link";
 
-type DocEntry = {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  badge?: string;
-  badgeColor?: string;
-};
-
-const DOCS: DocEntry[] = [
-  {
-    id: "blockers",
-    title: "Blockers & Next Steps",
-    description: "Passport install, missing env secrets, iOS checklist, Android build fix, data migration decision",
-    category: "Roadmap",
-    badge: "Action needed",
-    badgeColor: "#f87171",
-  },
-  {
-    id: "going-live",
-    title: "Going Live Roadmap",
-    description: "Migration status for all 5 services, infrastructure summary, what's done vs pending",
-    category: "Roadmap",
-    badge: "Active",
-    badgeColor: t.green,
-  },
-  {
-    id: "backend-claude",
-    title: "Backend — CLAUDE.md",
-    description: "Laravel API tech stack, port assignments, all API routes, known issues, implementation plan",
-    category: "Codebase",
-    badge: "Laravel",
-    badgeColor: t.accent,
-  },
-  {
-    id: "web-claude",
-    title: "Web App — CLAUDE.md",
-    description: "Next.js architecture, dev setup, API integration, implementation phases 1–7",
-    category: "Codebase",
-    badge: "Next.js",
-    badgeColor: t.accent,
-  },
-  {
-    id: "backend-todos",
-    title: "Backend Todos — 31 items",
-    description: "10 P1 critical (FCM key, IDOR, N+1, broken Apple Sign-In), 10 P2, 11 P3",
-    category: "Tasks",
-    badge: "10× P1",
-    badgeColor: "#f87171",
-  },
-  {
-    id: "cross-todos",
-    title: "Cross-Project Todos — 49 items",
-    description: "API field mismatches, Android build blockers, web XSS risk, iOS hardcoded URL, WordPress credentials",
-    category: "Tasks",
-    badge: "12× P1",
-    badgeColor: "#f87171",
-  },
+const DOCS = [
+  { id: "backend-claude", name: "CLAUDE.md", repo: "tastemakers-backend", size: "11.0 KB", updated: "2d" },
+  { id: "web-claude", name: "CLAUDE.md", repo: "tastemakers-web", size: "8.2 KB", updated: "4d" },
+  { id: "ios-claude", name: "CLAUDE.md", repo: "tastemakers-ios", size: "5.1 KB", updated: "1w" },
+  { id: "android-claude", name: "CLAUDE.md", repo: "tastemakers-android", size: "5.6 KB", updated: "1w" },
+  { id: "root-claude", name: "CLAUDE.md", repo: "tastemakers (root)", size: "9.4 KB", updated: "2d" },
+  { id: "backend-readme", name: "README.md", repo: "tastemakers-backend", size: "3.8 KB", updated: "2w" },
+  { id: "master-ports", name: "MASTER-PORTS.md", repo: "all", size: "7.7 KB", updated: "2d" },
+  { id: "cross-todos", name: "todos/README.md", repo: "tastemakers (root)", size: "12.1 KB", updated: "today" },
+  { id: "backend-todos", name: "todos/README.md", repo: "tastemakers-backend", size: "8.4 KB", updated: "2w" },
 ];
 
-const CATEGORIES = Array.from(new Set(DOCS.map((d) => d.category)));
-
-export default function DocsIndexPage() {
+function TRow({ children, last }: { children: React.ReactNode; last?: boolean }) {
   return (
-    <div style={{ padding: 40, fontFamily: t.font, maxWidth: 800 }}>
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }}>
-          Documentation
-        </h1>
-        <p style={{ color: t.muted, fontSize: 13, margin: "6px 0 0" }}>
-          CLAUDE.md files, todos, and project roadmaps — rendered from source
-        </p>
-      </div>
+    <div
+      style={{
+        padding: "7px 14px",
+        borderBottom: last ? "none" : "1px solid var(--tm-line)",
+        fontSize: 11.5,
+        color: "var(--tm-ink)",
+        fontFamily: "var(--font-jetbrains-mono), monospace",
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
-      {CATEGORIES.map((category) => (
-        <div key={category} style={{ marginBottom: 32 }}>
-          <h2
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: t.dim,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              margin: "0 0 12px",
-            }}
-          >
-            {category}
-          </h2>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {DOCS.filter((d) => d.category === category).map((doc) => (
-              <a
-                key={doc.id}
-                href={`/admin/docs/${doc.id}`}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  justifyContent: "space-between",
-                  gap: 16,
-                  padding: "16px 20px",
-                  background: t.surface,
-                  border: `1px solid ${t.border}`,
-                  borderRadius: 8,
-                  textDecoration: "none",
-                  transition: "border-color 0.15s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = `${t.accent}60`;
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = t.border;
-                }}
-              >
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: t.text }}>
-                    {doc.title}
-                  </p>
-                  <p style={{ margin: "4px 0 0", fontSize: 12, color: t.muted, lineHeight: 1.5 }}>
-                    {doc.description}
-                  </p>
-                </div>
-                {doc.badge && (
-                  <span
-                    style={{
-                      flexShrink: 0,
-                      fontSize: 10,
-                      fontWeight: 700,
-                      padding: "3px 8px",
-                      borderRadius: 4,
-                      background: `${doc.badgeColor}20`,
-                      color: doc.badgeColor,
-                      border: `1px solid ${doc.badgeColor}40`,
-                      letterSpacing: "0.05em",
-                      marginTop: 1,
-                    }}
-                  >
-                    {doc.badge}
-                  </span>
-                )}
-              </a>
-            ))}
-          </div>
-        </div>
-      ))}
-
-      {/* Quick links */}
+export default function DocsPage() {
+  return (
+    <div>
+      {/* Tab strip */}
       <div
         style={{
-          marginTop: 8,
-          padding: "16px 20px",
-          background: `${t.purple}10`,
-          border: `1px solid ${t.purple}30`,
-          borderRadius: 8,
+          display: "flex",
+          borderBottom: "1px solid var(--tm-line)",
+          background: "var(--tm-panel)",
+          fontSize: 11,
+          fontFamily: "var(--font-jetbrains-mono), monospace",
         }}
       >
-        <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: t.purple, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-          Live Dashboards
-        </p>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          {[
-            { label: "API Test", href: "/admin/api" },
-            { label: "System Status", href: "/status" },
-            { label: "Roadmap", href: "/roadmap" },
-            { label: "Changelog", href: "/changelog" },
-            { label: "Analytics", href: "/analytics" },
-            { label: "Under the Hood", href: "/tech" },
-          ].map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              style={{
-                fontSize: 12,
-                color: t.muted,
-                textDecoration: "none",
-                padding: "4px 10px",
-                borderRadius: 4,
-                background: `${t.border}80`,
-                border: `1px solid ${t.border}`,
-              }}
+        {[
+          { label: "docs/", active: true, href: "/admin/docs" },
+          { label: "overview.tsx", active: false, href: "/admin" },
+        ].map((tab) => (
+          <Link
+            key={tab.label}
+            href={tab.href}
+            style={{
+              padding: "7px 14px",
+              borderRight: "1px solid var(--tm-line)",
+              color: tab.active ? "var(--tm-ink)" : "var(--tm-muted)",
+              background: tab.active ? "var(--tm-bg)" : "transparent",
+              fontWeight: tab.active ? 600 : 400,
+              textDecoration: "none",
+              display: "block",
+            }}
+          >
+            {tab.label}
+          </Link>
+        ))}
+      </div>
+
+      <div style={{ padding: "14px 18px", fontFamily: "var(--font-jetbrains-mono), monospace" }}>
+        <div style={{ color: "var(--tm-muted)", marginBottom: 14, fontSize: 11.5 }}>
+          <span style={{ color: "var(--tm-accent)" }}>$</span> ls docs/ --all
+        </div>
+
+        <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
+          # docs · {DOCS.length} files
+        </div>
+
+        <div
+          style={{
+            background: "var(--tm-panel)",
+            border: "1px solid var(--tm-line)",
+            borderRadius: 6,
+          }}
+        >
+          {/* Header */}
+          <TRow>
+            <span style={{ flex: 1, color: "var(--tm-muted)" }}>FILE</span>
+            <span style={{ width: 200, color: "var(--tm-muted)" }}>REPO</span>
+            <span style={{ width: 72, color: "var(--tm-muted)" }}>SIZE</span>
+            <span style={{ width: 72, color: "var(--tm-muted)" }}>UPDATED</span>
+          </TRow>
+          {DOCS.map((doc, i) => (
+            <Link
+              key={doc.id}
+              href={`/admin/docs/${doc.id}`}
+              style={{ textDecoration: "none", display: "block" }}
             >
-              {link.label} →
-            </a>
+              <TRow last={i === DOCS.length - 1}>
+                <span style={{ flex: 1, color: "var(--tm-accent)" }}>
+                  → {doc.name}
+                </span>
+                <span style={{ width: 200, color: "var(--tm-muted)" }}>
+                  {doc.repo}
+                </span>
+                <span style={{ width: 72, color: "var(--tm-muted)" }}>
+                  {doc.size}
+                </span>
+                <span style={{ width: 72, color: "var(--tm-muted)" }}>
+                  {doc.updated}
+                </span>
+              </TRow>
+            </Link>
           ))}
         </div>
       </div>

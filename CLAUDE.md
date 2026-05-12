@@ -37,13 +37,19 @@ tastemakers-web/
 │   │   ├── changelog/page.tsx Changelog — 11 releases, ~130 changes
 │   │   ├── status/page.tsx    System Status — live health checks
 │   │   ├── analytics/page.tsx Analytics — velocity, metrics, questions
-│   │   └── admin/
-│   │       ├── layout.tsx     Admin sidebar layout
-│   │       ├── page.tsx       Admin dashboard
-│   │       ├── login/page.tsx Admin login form
-│   │       ├── docs/page.tsx       Documentation browser
-│   │       ├── docs/[id]/page.tsx  Individual doc detail
-│   │       └── api/page.tsx        API contract explorer
+│   │   └── admin/             Terminal/DevTool admin (Paper + Gruvbox themes)
+│   │       ├── layout.tsx          Chrome: command bar, sidebar, status footer, ⌘K palette
+│   │       ├── page.tsx            Overview — KPIs, platforms, errors, roadmap
+│   │       ├── login/page.tsx      Supabase OAuth (Google) login
+│   │       ├── users/page.tsx      User table with filter chips
+│   │       ├── platforms/[id]/     Per-platform: stats, todos, commits, routes
+│   │       ├── roadmap/page.tsx    Accordion P1/P2/P3 with clickable status toggle
+│   │       ├── changelog/page.tsx  Versioned changelog with + / ~ / - diff style
+│   │       ├── routes/page.tsx     API route table with method/auth filters
+│   │       ├── errors/page.tsx     Error log with severity filters
+│   │       ├── analytics/page.tsx  PostHog / GA / Search Console stubs
+│   │       ├── docs/page.tsx       Documentation file index
+│   │       └── docs/[id]/page.tsx  Individual doc detail
 │   ├── components/            Shared React components
 │   ├── hooks/                 Custom React hooks
 │   ├── lib/
@@ -62,6 +68,7 @@ tastemakers-web/
 - **Platform:** Railway (Node.js, using default Next.js build output)
 - **Prod domains (planned):** `www.tastemakersapp.com` (marketing + blog), `app.tastemakersapp.com` (web app)
 - **Required env var:** `NEXT_PUBLIC_API_URL=https://api.tastemakersapp.com/api` (points to Railway-hosted Laravel backend)
+- **Admin auth env vars:** `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` — if unset, /admin/* is accessible without auth (dev mode). Enable Google OAuth in Supabase → Auth → Providers before setting these.
 - **Railway project:** Use same project as backend (shared infrastructure), separate services for backend (Laravel) and frontend (Next.js)
 - **Note:** Build script (`npm run build`) generates `.next/` directory. Railway will serve static files + run server functions via Node.js.
 
@@ -147,6 +154,9 @@ After ANY development work, update the relevant dashboard pages before finishing
 | `/analytics` | `src/app/analytics/page.tsx` | VELOCITY_DATA (new session), PRODUCT_METRICS status |
 | `/status` | `src/app/status/page.tsx` | SYSTEM_INFO if infra changes |
 | `/admin` | `src/app/admin/layout.tsx` | NAV_ITEMS if new pages added |
+| `/admin/roadmap` | `src/app/admin/roadmap/page.tsx` | ROADMAP_ITEMS array — add new todos, update statuses |
+| `/admin/changelog` | `src/app/admin/changelog/page.tsx` | RELEASES array — add new version entries |
+| `/admin/platforms/[id]` | `src/app/admin/platforms/[id]/page.tsx` | PLATFORM_DATA — todos, commits, versions per platform |
 
 All data is TypeScript arrays/objects at the top of each file — no hardcoded JSX. Update the data, the UI renders automatically.
 

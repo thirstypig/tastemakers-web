@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   // API requests proxy to Laravel backend
   async rewrites() {
     return [

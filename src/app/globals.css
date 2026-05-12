@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Paper (light — default) ─────────────────── */
+:root {
+  --tm-bg: #f5f1e8;
+  --tm-panel: #fbf7ee;
+  --tm-ink: #3d2f1f;
+  --tm-muted: #8a7a64;
+  --tm-line: #e3dccb;
+  --tm-accent: #7a8c2f;
+  --tm-accent-bg: #ecf0d8;
+  --tm-err: #a8341c;
+  --tm-warn: #a86b00;
+}
+
+/* ── Gruvbox (dark) ──────────────────────────── */
+[data-theme="dark"] {
+  --tm-bg: #282624;
+  --tm-panel: #32302d;
+  --tm-ink: #ebdbb2;
+  --tm-muted: #928374;
+  --tm-line: #3c3836;
+  --tm-accent: #b8bb26;
+  --tm-accent-bg: rgba(184, 187, 38, 0.14);
+  --tm-err: #fb4934;
+  --tm-warn: #fabd2f;
+}
+
+/* ── Blinking cursor ─────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+.tm-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+/* ── Pulse dot ───────────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.tm-pulse {
+  animation: pulse-dot 2s ease-in-out infinite;
+}

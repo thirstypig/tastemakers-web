@@ -1,219 +1,154 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 
-const t = {
-  bg: "#0f0f23",
-  surface: "#16162a",
-  border: "#2a2a4a",
-  text: "#e2e8f0",
-  muted: "#94a3b8",
-  dim: "#64748b",
-  accent: "#60a5fa",
-  red: "#f87171",
-  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
-};
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const SUPABASE_ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const configured = !!(SUPABASE_URL && SUPABASE_ANON);
 
 export default function AdminLogin() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    setError(null);
+  async function handleGoogleSignIn() {
+    if (!configured) return;
     setLoading(true);
-
+    setError(null);
     try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const { createClient } = await import("@/lib/supabase");
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: `${window.location.origin}/auth/callback` },
       });
-
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.message || `Login failed (${res.status})`);
-      }
-
-      const data = await res.json();
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        window.location.href = "/admin";
-      } else {
-        throw new Error("No token received");
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      if (error) setError(error.message);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Sign in failed");
     } finally {
       setLoading(false);
     }
   }
 
-  const inputStyle: React.CSSProperties = {
-    width: "100%",
-    padding: "10px 14px",
-    borderRadius: 6,
-    border: `1px solid ${t.border}`,
-    background: t.bg,
-    color: t.text,
-    fontSize: 14,
-    fontFamily: t.font,
-    outline: "none",
-    boxSizing: "border-box",
-  };
-
   return (
     <div
+      className="flex items-center justify-center min-h-screen"
       style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "100vh",
-        padding: 20,
-        fontFamily: t.font,
+        background: "var(--tm-bg)",
+        fontFamily: "var(--font-jetbrains-mono), monospace",
       }}
     >
       <div
+        className="w-full max-w-[360px] mx-4 rounded-md overflow-hidden"
         style={{
-          width: "100%",
-          maxWidth: 400,
-          background: t.surface,
-          borderRadius: 12,
-          border: `1px solid ${t.border}`,
-          padding: "40px 32px",
+          background: "var(--tm-panel)",
+          border: "1px solid var(--tm-line)",
         }}
       >
-        <h1
-          style={{
-            margin: "0 0 4px",
-            fontSize: 22,
-            fontWeight: 700,
-            color: t.text,
-            textAlign: "center",
-          }}
-        >
-          Admin Login
-        </h1>
-        <p
-          style={{
-            margin: "0 0 28px",
-            fontSize: 13,
-            color: t.dim,
-            textAlign: "center",
-          }}
-        >
-          Tastemakers Admin Panel
-        </p>
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: 16 }}>
-            <label
-              htmlFor="email"
-              style={{
-                display: "block",
-                fontSize: 12,
-                color: t.muted,
-                marginBottom: 6,
-                fontWeight: 600,
-              }}
-            >
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@tastemakersapp.com"
-              required
-              style={inputStyle}
-            />
-          </div>
-
-          <div style={{ marginBottom: 24 }}>
-            <label
-              htmlFor="password"
-              style={{
-                display: "block",
-                fontSize: 12,
-                color: t.muted,
-                marginBottom: 6,
-                fontWeight: 600,
-              }}
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={inputStyle}
-            />
-          </div>
-
-          {error && (
-            <div
-              style={{
-                padding: "10px 14px",
-                borderRadius: 6,
-                background: `${t.red}15`,
-                border: `1px solid ${t.red}40`,
-                color: t.red,
-                fontSize: 13,
-                marginBottom: 16,
-              }}
-            >
-              {error}
-            </div>
-          )}
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px 20px",
-              borderRadius: 6,
-              border: "none",
-              background: t.accent,
-              color: "#fff",
-              fontSize: 14,
-              fontWeight: 600,
-              cursor: loading ? "not-allowed" : "pointer",
-              opacity: loading ? 0.6 : 1,
-              fontFamily: t.font,
-            }}
-          >
-            {loading ? "Signing in..." : "Sign In"}
-          </button>
-        </form>
-
+        {/* Faux traffic lights */}
         <div
-          style={{
-            marginTop: 24,
-            paddingTop: 16,
-            borderTop: `1px solid ${t.border}`,
-            textAlign: "center",
-            fontSize: 12,
-            color: t.dim,
-          }}
+          className="flex gap-[5px] px-3 py-2"
+          style={{ borderBottom: "1px solid var(--tm-line)" }}
         >
-          <a
-            href="/tech"
-            style={{ color: t.accent, textDecoration: "none" }}
+          {["#ff5f56", "#ffbd2e", "#27c93f"].map((c) => (
+            <span
+              key={c}
+              className="rounded-full"
+              style={{ width: 11, height: 11, background: c, display: "block" }}
+            />
+          ))}
+        </div>
+
+        {/* Card body */}
+        <div className="px-8 py-8">
+          <p
+            className="text-[11px] mb-3"
+            style={{ color: "var(--tm-muted)" }}
           >
-            Under the Hood
-          </a>
-          <span style={{ margin: "0 8px" }}>&middot;</span>
-          <a href="/" style={{ color: t.accent, textDecoration: "none" }}>
-            Home
-          </a>
+            # tastemakers / admin
+          </p>
+          <h1
+            className="text-[16px] font-semibold mb-6"
+            style={{ color: "var(--tm-ink)" }}
+          >
+            sign in
+          </h1>
+
+          {!configured ? (
+            <div
+              className="text-[11px] rounded px-3 py-3"
+              style={{
+                background: "var(--tm-accent-bg)",
+                border: "1px solid var(--tm-line)",
+                color: "var(--tm-ink)",
+              }}
+            >
+              <p className="font-semibold mb-2" style={{ color: "var(--tm-accent)" }}>
+                Supabase not configured
+              </p>
+              <p style={{ color: "var(--tm-muted)" }}>
+                Set these env vars in <code>.env.local</code>:
+              </p>
+              <pre
+                className="mt-2 text-[10px]"
+                style={{ color: "var(--tm-ink)" }}
+              >
+                {`NEXT_PUBLIC_SUPABASE_URL=\nhttps://zdeyrwzztsyezfxxtdcs.supabase.co\n\nNEXT_PUBLIC_SUPABASE_ANON_KEY=\n<anon key from Supabase dashboard>`}
+              </pre>
+              <p className="mt-3" style={{ color: "var(--tm-muted)" }}>
+                Also enable Google OAuth in Supabase → Auth → Providers.
+              </p>
+              {/* Dev bypass: allow direct access if no auth configured */}
+              <a
+                href="/admin"
+                className="mt-3 block text-center"
+                style={{ color: "var(--tm-accent)" }}
+              >
+                → continue without auth (dev)
+              </a>
+            </div>
+          ) : (
+            <>
+              {error && (
+                <div
+                  className="mb-4 text-[11px] rounded px-3 py-2"
+                  style={{
+                    background: "var(--tm-err)18",
+                    border: "1px solid var(--tm-err)40",
+                    color: "var(--tm-err)",
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full h-9 rounded text-[11px] cursor-pointer flex items-center justify-center gap-2"
+                style={{
+                  background: "transparent",
+                  border: "1px solid var(--tm-line)",
+                  color: "var(--tm-ink)",
+                  opacity: loading ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "var(--tm-accent-bg)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "transparent";
+                }}
+              >
+                {loading ? "signing in..." : "Continue with Google"}
+              </button>
+
+              <p
+                className="mt-4 text-center text-[10.5px]"
+                style={{ color: "var(--tm-muted)" }}
+              >
+                → owner accounts only
+              </p>
+            </>
+          )}
         </div>
       </div>
     </div>
