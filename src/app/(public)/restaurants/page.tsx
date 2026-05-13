@@ -73,7 +73,7 @@ function RestaurantCard({ restaurant: r }: { restaurant: Restaurant }) {
         }}
       >
         <div style={{ position: "relative", height: 180 }}>
-          <Image src={r.imageUrl} alt={r.name} fill sizes="(max-width: 1100px) 33vw, 350px" style={{ objectFit: "cover" }} />
+          <Image src={r.imageUrl} alt={r.name} fill priority sizes="(max-width: 1100px) 33vw, 350px" style={{ objectFit: "cover" }} />
         </div>
         <div style={{ padding: "16px 20px 20px" }}>
           <h2 style={{ fontSize: 17, fontWeight: 700, color: "#fff", margin: "0 0 4px" }}>

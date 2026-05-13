@@ -48,7 +48,7 @@ export default async function ListsPage() {
           }}
         >
           {lists.map((list, i) => (
-            <ListCard key={list.id} list={list} priority={i < 2} />
+            <ListCard key={list.id} list={list} />
           ))}
         </div>
       </section>
@@ -56,13 +56,7 @@ export default async function ListsPage() {
   );
 }
 
-function ListCard({
-  list,
-  priority = false,
-}: {
-  list: CuratedList;
-  priority?: boolean;
-}) {
+function ListCard({ list }: { list: CuratedList }) {
   return (
     <Link href={`/lists/${list.slug}`} style={{ textDecoration: "none", display: "block" }}>
       <article
@@ -80,7 +74,7 @@ function ListCard({
             src={list.coverImageUrl}
             alt={list.title}
             fill
-            priority={priority}
+            priority
             sizes="(max-width: 1100px) 50vw, 370px"
             style={{ objectFit: "cover" }}
           />
