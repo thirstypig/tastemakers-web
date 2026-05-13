@@ -194,7 +194,7 @@ export default async function RestaurantPage({
               >
                 Known for
               </p>
-              <TagCloud tags={restaurant.tags} showCount />
+              <TagCloud tags={restaurant.tags} />
             </div>
           )}
 

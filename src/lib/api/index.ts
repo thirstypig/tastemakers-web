@@ -280,6 +280,7 @@ export async function getRestaurant(id: string): Promise<Restaurant | null> {
   const tagsByRestaurant = buildTagsByRestaurant(
     (tagRows ?? []).map((t) => ({ restaurant_id: numId, tag_id: t.tag_id })),
     tagMap,
+    Infinity, // show every tag ever applied on the detail page
   );
   const tags = tagsByRestaurant.get(numId) ?? [];
 
