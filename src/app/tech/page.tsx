@@ -664,6 +664,13 @@ const BUILD_JOURNAL: {
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
   {
+    date: "Session 13",
+    title: "Production image loading investigation + priority fix",
+    details:
+      "Investigated blank cover images on app.tastemakersapp.com/lists. DOM confirmed all 6 images complete (naturalWidth: 369, complete: true). Network confirmed /_next/image works for all sizes — w=384, w=640, w=750 all return HTTP 200. ERR_ABORTED for w=384 is the browser aborting the srcset request after finding a preloaded w=750 in cache — not a server error. Root cause: non-priority images used loading=lazy, which relies on IntersectionObserver — doesn't trigger on Railway cold start first-load or in Playwright fullPage screenshots. Fixed by marking all 6 list and 8 restaurant cover images as priority. Playwright fullPage screenshots can't composite position:absolute fill images outside initial viewport — always verify with viewport-only screenshots and DOM naturalWidth checks.",
+    type: "fix",
+  },
+  {
     date: "Session 12",
     title: "Public SEO pages — tastemakers, lists, restaurants",
     details:

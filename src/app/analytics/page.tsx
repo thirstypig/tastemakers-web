@@ -277,6 +277,16 @@ const VELOCITY_DATA: VelocityEntry[] = [
       { type: "performance", count: 1 },
     ],
   },
+  {
+    session: "Session 13",
+    label: "Production image debug + deploy fix",
+    items: 4,
+    color: t.yellow,
+    breakdown: [
+      { type: "fixes", count: 3 },
+      { type: "performance", count: 1 },
+    ],
+  },
 ];
 
 const VELOCITY_MAX = Math.max(...VELOCITY_DATA.map((v) => v.items));

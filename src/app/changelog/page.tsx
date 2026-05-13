@@ -173,6 +173,23 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v0.12.0",
+    date: "2026-05-13",
+    session: "Session 13",
+    title: "Production Image Fix — All Cover Images Eager-Loaded",
+    highlights: [
+      "Diagnosed production blank-image issue: /_next/image serves all sizes correctly (w=384, w=640, w=750 all 200), but Playwright fullPage screenshots can't composite position:absolute fill images outside the initial viewport",
+      "Fixed by marking all 6 list cover images and 8 restaurant images as priority — disables lazy loading on small-count pages where eager load is strictly better UX",
+      "Simplified ListCard component: removed conditional priority prop, always eager-loads since page only has 6 cards",
+    ],
+    changes: [
+      { type: "fix", description: "lists/page.tsx: all 6 ListCard cover images now use priority (was priority={i < 2})", scope: "web" },
+      { type: "fix", description: "restaurants/page.tsx: all RestaurantCard cover images now use priority", scope: "web" },
+      { type: "refactor", description: "Simplified ListCard — removed priority prop from component interface, image always eager-loads", scope: "web" },
+      { type: "perf", description: "Deployed priority fix to Railway; confirmed all 6 images render in viewport on app.tastemakersapp.com/lists", scope: "web" },
+    ],
+  },
+  {
     version: "v0.11.0",
     date: "2026-05-13",
     session: "Session 12",

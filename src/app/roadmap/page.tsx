@@ -478,6 +478,7 @@ const SESSION_VELOCITY: {
   { session: "Session 10", completed: 18, type: "Railway deployment + PostgreSQL migration", color: t.orange },
   { session: "Session 11", completed: 22, type: "Admin dashboard + Supabase Google OAuth", color: t.accent },
   { session: "Session 12", completed: 15, type: "Public SEO pages (tastemakers, lists, restaurants)", color: t.purple },
+  { session: "Session 13", completed: 4, type: "Production image debug + priority fix + redeploy", color: t.yellow },
 ];
 
 const MAX_VELOCITY = Math.max(...SESSION_VELOCITY.map((s) => s.completed));
@@ -494,15 +495,15 @@ const NEXT_SESSION: {
 }[] = [
   {
     priority: 1,
-    task: "Wire real Laravel endpoints in src/lib/api/index.ts (tastemakers, lists, restaurants)",
-    reason: "Public pages are live with stubs — swapping to real data is a single-file change per function",
-    effort: "2h",
+    task: "Build Laravel endpoints for public lists + restaurants (no auth, no geo filter) and wire src/lib/api/index.ts",
+    reason: "Public pages are live with stubs — real data requires new read-only endpoints since existing API is geo-gated for mobile",
+    effort: "3h",
   },
   {
     priority: 2,
-    task: "Deploy web app to Railway — set NEXT_PUBLIC_API_URL + custom domain app.tastemakersapp.com",
-    reason: "Public SEO pages are production-ready — Railway deployment unblocks real traffic and Google indexing",
-    effort: "2h",
+    task: "Connect GitHub repo to Railway for auto-deploy on push",
+    reason: "Currently deploying via railway up file upload — GitHub integration enables automatic deploys on merge",
+    effort: "30m",
   },
   {
     priority: 3,
