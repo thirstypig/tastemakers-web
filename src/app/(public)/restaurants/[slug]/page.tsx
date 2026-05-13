@@ -143,13 +143,6 @@ export default async function RestaurantPage({
         <div style={{ paddingTop: 8 }}>
           <div style={{ marginBottom: 16 }}>
             <Link
-              href="/tastemakers"
-              style={{ color: "#8b81a3", fontSize: 13, textDecoration: "none" }}
-            >
-              Tastemakers
-            </Link>
-            <span style={{ color: "#3D2E6E", margin: "0 6px" }}>›</span>
-            <Link
               href="/restaurants"
               style={{ color: "#8b81a3", fontSize: 13, textDecoration: "none" }}
             >

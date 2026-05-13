@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
-import { getList, listLists, listTastemakers } from "@/lib/api/index";
-import type { CuratedList, Restaurant, Tag, Tastemaker } from "@/lib/api/types";
+import { getList, listLists } from "@/lib/api/index";
+import type { CuratedList, Restaurant, Tag } from "@/lib/api/types";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -50,7 +50,7 @@ export async function generateMetadata({
 
 // ── JSON-LD ────────────────────────────────────────────────────────────────────
 
-function buildItemListSchema(list: CuratedList, curator: Tastemaker | null): string {
+function buildItemListSchema(list: CuratedList): string {
   const schema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
@@ -58,13 +58,7 @@ function buildItemListSchema(list: CuratedList, curator: Tastemaker | null): str
     description: list.description,
     url: `${SITE_URL}/lists/${list.slug}`,
     numberOfItems: list.restaurantCount,
-    author: curator
-      ? {
-          "@type": "Person",
-          name: curator.name,
-          url: `${SITE_URL}/tastemakers/${curator.slug}`,
-        }
-      : undefined,
+    ...(list.curatorName ? { author: { "@type": "Person", name: list.curatorName } } : {}),
     itemListElement: list.restaurants.map((r, i) => ({
       "@type": "ListItem",
       position: i + 1,
@@ -102,14 +96,10 @@ export default async function ListPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [list, tastemakers] = await Promise.all([getList(slug), listTastemakers()]);
+  const list = await getList(slug);
   if (!list) notFound();
 
-  const curator = tastemakers.find((t) =>
-    t.lists.some((l) => l.slug === list.slug)
-  ) ?? null;
-
-  const schema = buildItemListSchema(list, curator);
+  const schema = buildItemListSchema(list);
 
   return (
     <>
@@ -150,23 +140,9 @@ export default async function ListPage({
         >
           {/* Breadcrumb */}
           <div style={{ marginBottom: 20 }}>
-            <Link
-              href="/tastemakers"
-              style={{ color: "#8b81a3", fontSize: 13, textDecoration: "none" }}
-            >
-              Tastemakers
+            <Link href="/lists" style={{ color: "#8b81a3", fontSize: 13, textDecoration: "none" }}>
+              Lists
             </Link>
-            {curator && (
-              <>
-                <span style={{ color: "#3D2E6E", margin: "0 6px" }}>›</span>
-                <Link
-                  href={`/tastemakers/${curator.slug}`}
-                  style={{ color: "#8b81a3", fontSize: 13, textDecoration: "none" }}
-                >
-                  {curator.name}
-                </Link>
-              </>
-            )}
           </div>
 
           <h1
@@ -209,22 +185,10 @@ export default async function ListPage({
               {list.restaurantCount} spots
             </span>
 
-            {curator && (
-              <Link
-                href={`/tastemakers/${curator.slug}`}
-                style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none" }}
-              >
-                <Image
-                  src={curator.avatarUrl}
-                  alt={curator.name}
-                  width={28}
-                  height={28}
-                  style={{ borderRadius: "50%", border: "1.5px solid #DB1657", objectFit: "cover" }}
-                />
-                <span style={{ color: "#B7ADCF", fontSize: 14 }}>
-                  by <strong style={{ color: "#fff" }}>{curator.name}</strong>
-                </span>
-              </Link>
+            {list.curatorName && (
+              <span style={{ color: "#B7ADCF", fontSize: 14 }}>
+                curated by <strong style={{ color: "#fff" }}>{list.curatorName}</strong>
+              </span>
             )}
           </div>
         </div>

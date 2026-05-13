@@ -1,26 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { listLists, listTastemakers } from "@/lib/api/index";
-import type { CuratedList, Tastemaker } from "@/lib/api/types";
+import { listLists } from "@/lib/api/index";
+import type { CuratedList } from "@/lib/api/types";
 
 export const metadata: Metadata = {
   title: "Curated Lists — Tastemakers",
   description:
-    "Browse restaurant lists curated by NYC's most trusted food tastemakers. Every spot is personal and intentional.",
+    "Browse curated restaurant lists from NYC's most intentional food lovers. Every spot is personal.",
   alternates: { canonical: "https://app.tastemakersapp.com/lists" },
 };
 
 export default async function ListsPage() {
-  const [lists, tastemakers] = await Promise.all([listLists(), listTastemakers()]);
-
-  // Build a slug → tastemaker map
-  const listCurator = new Map<string, Tastemaker>();
-  for (const t of tastemakers) {
-    for (const l of t.lists) {
-      listCurator.set(l.slug, t);
-    }
-  }
+  const lists = await listLists();
 
   return (
     <>
@@ -56,7 +48,7 @@ export default async function ListsPage() {
           }}
         >
           {lists.map((list, i) => (
-            <ListCard key={list.id} list={list} curator={listCurator.get(list.slug) ?? null} priority={i < 2} />
+            <ListCard key={list.id} list={list} priority={i < 2} />
           ))}
         </div>
       </section>
@@ -66,11 +58,9 @@ export default async function ListsPage() {
 
 function ListCard({
   list,
-  curator,
   priority = false,
 }: {
   list: CuratedList;
-  curator: Tastemaker | null;
   priority?: boolean;
 }) {
   return (
@@ -128,17 +118,10 @@ function ListCard({
           >
             {list.description}
           </p>
-          {curator && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <Image
-                src={curator.avatarUrl}
-                alt={curator.name}
-                width={22}
-                height={22}
-                style={{ borderRadius: "50%", objectFit: "cover" }}
-              />
-              <span style={{ fontSize: 12, color: "#8b81a3" }}>{curator.name}</span>
-            </div>
+          {list.curatorName && (
+            <span style={{ fontSize: 12, color: "#8b81a3" }}>
+              curated by {list.curatorName}
+            </span>
           )}
         </div>
       </article>

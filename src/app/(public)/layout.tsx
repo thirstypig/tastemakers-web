@@ -41,7 +41,7 @@ function Header() {
         }}
       >
         <Link
-          href="/tastemakers"
+          href="/lists"
           style={{
             display: "flex",
             alignItems: "center",
@@ -63,7 +63,6 @@ function Header() {
         </Link>
 
         <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
-          <NavLink href="/tastemakers">Tastemakers</NavLink>
           <NavLink href="/lists">Lists</NavLink>
           <NavLink href="/restaurants">Restaurants</NavLink>
         </div>
@@ -160,7 +159,6 @@ function Footer() {
           <FooterCol
             title="Discover"
             links={[
-              { label: "Tastemakers", href: "/tastemakers" },
               { label: "Lists", href: "/lists" },
               { label: "Restaurants", href: "/restaurants" },
             ]}

@@ -1,27 +1,16 @@
 import type { MetadataRoute } from "next";
-import { listTastemakers, listLists, listRestaurants } from "@/lib/api/index";
+import { listLists, listRestaurants } from "@/lib/api/index";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [tastemakers, lists, restaurants] = await Promise.all([
-    listTastemakers(),
-    listLists(),
-    listRestaurants(),
-  ]);
-
-  const tastemakerUrls = tastemakers.map((t) => ({
-    url: `${SITE_URL}/tastemakers/${t.slug}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-  }));
+  const [lists, restaurants] = await Promise.all([listLists(), listRestaurants()]);
 
   const listUrls = lists.map((l) => ({
     url: `${SITE_URL}/lists/${l.slug}`,
     lastModified: new Date(l.createdAt),
     changeFrequency: "weekly" as const,
-    priority: 0.7,
+    priority: 0.8,
   }));
 
   const restaurantUrls = restaurants.map((r) => ({
@@ -39,12 +28,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1,
     },
     {
-      url: `${SITE_URL}/tastemakers`,
+      url: `${SITE_URL}/lists`,
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 0.9,
     },
-    ...tastemakerUrls,
+    {
+      url: `${SITE_URL}/restaurants`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
     ...listUrls,
     ...restaurantUrls,
   ];

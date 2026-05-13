@@ -28,6 +28,7 @@ export interface CuratedList {
   restaurantCount: number;
   restaurants: Restaurant[];
   createdAt: string;
+  curatorName?: string;
 }
 
 export interface Tastemaker {

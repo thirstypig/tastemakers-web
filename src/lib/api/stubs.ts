@@ -149,6 +149,7 @@ const LISTS: Record<string, CuratedList> = {
     restaurantCount: 4,
     restaurants: [RESTAURANTS[0], RESTAURANTS[2], RESTAURANTS[5], RESTAURANTS[6]],
     createdAt: "2024-09-15",
+    curatorName: "Maya Chen",
   },
   naturalWine: {
     id: "l2",
@@ -160,6 +161,7 @@ const LISTS: Record<string, CuratedList> = {
     restaurantCount: 3,
     restaurants: [RESTAURANTS[0], RESTAURANTS[1], RESTAURANTS[4]],
     createdAt: "2024-11-02",
+    curatorName: "Maya Chen",
   },
   brooklynBest: {
     id: "l3",
@@ -171,6 +173,7 @@ const LISTS: Record<string, CuratedList> = {
     restaurantCount: 3,
     restaurants: [RESTAURANTS[1], RESTAURANTS[3], RESTAURANTS[7]],
     createdAt: "2024-12-01",
+    curatorName: "Marcus Williams",
   },
   spotsWorthWait: {
     id: "l4",
@@ -182,6 +185,7 @@ const LISTS: Record<string, CuratedList> = {
     restaurantCount: 2,
     restaurants: [RESTAURANTS[3], RESTAURANTS[2]],
     createdAt: "2025-01-18",
+    curatorName: "Marcus Williams",
   },
   plantBased: {
     id: "l5",
@@ -193,6 +197,7 @@ const LISTS: Record<string, CuratedList> = {
     restaurantCount: 2,
     restaurants: [RESTAURANTS[4], RESTAURANTS[5]],
     createdAt: "2025-02-05",
+    curatorName: "Priya Patel",
   },
   tastingMenus: {
     id: "l6",
@@ -204,6 +209,7 @@ const LISTS: Record<string, CuratedList> = {
     restaurantCount: 2,
     restaurants: [RESTAURANTS[7], RESTAURANTS[3]],
     createdAt: "2025-03-14",
+    curatorName: "Priya Patel",
   },
 };
 
