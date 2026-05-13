@@ -173,6 +173,24 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v0.13.0",
+    date: "2026-05-13",
+    session: "Session 14",
+    title: "Security Hardening + GitHub Auto-Deploy",
+    highlights: [
+      "Removed four unauthenticated diagnostic routes from production API: /debug-schema (exposed DB columns), /debug-signup (created real users + issued Passport tokens), /run-schema-fix (ran raw ALTER TABLE), /clear-cache (ran artisan commands)",
+      "Connected both GitHub repos (tastemakers-web, tastemakers-backend) to Railway — push to main now triggers automatic builds, eliminating manual railway up deploys",
+      "Audited production Supabase DB: confirmed it is empty (0 restaurants, 0 lists) — all existing data still on legacy Namecheap MySQL host pending migration",
+    ],
+    changes: [
+      { type: "security", description: "Removed /debug-schema — exposed users table columns and migration history to unauthenticated requests", scope: "api" },
+      { type: "security", description: "Removed /debug-signup — created production users and issued Passport tokens via unauthenticated GET", scope: "api" },
+      { type: "security", description: "Removed /run-schema-fix — ran raw ALTER TABLE and CREATE TABLE statements unauthenticated", scope: "api" },
+      { type: "security", description: "Removed /clear-cache — ran artisan cache:clear, config:cache, route:clear unauthenticated", scope: "api" },
+      { type: "feat", description: "GitHub auto-deploy: tastemakers-web and tastemakers-backend both connected to Railway — push to main auto-deploys", scope: "infra" },
+    ],
+  },
+  {
     version: "v0.12.0",
     date: "2026-05-13",
     session: "Session 13",

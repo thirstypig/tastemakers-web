@@ -287,6 +287,16 @@ const VELOCITY_DATA: VelocityEntry[] = [
       { type: "performance", count: 1 },
     ],
   },
+  {
+    session: "Session 14",
+    label: "Security hardening + GitHub auto-deploy",
+    items: 5,
+    color: t.red,
+    breakdown: [
+      { type: "security", count: 3 },
+      { type: "devops", count: 2 },
+    ],
+  },
 ];
 
 const VELOCITY_MAX = Math.max(...VELOCITY_DATA.map((v) => v.items));

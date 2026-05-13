@@ -664,6 +664,13 @@ const BUILD_JOURNAL: {
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
   {
+    date: "Session 14",
+    title: "Security hardening + GitHub auto-deploy",
+    details:
+      "Removed four unauthenticated diagnostic routes from the production Laravel API: /debug-schema (exposed DB column list + migration history), /debug-signup (created real production users and issued Passport access tokens via GET), /run-schema-fix (ran raw ALTER TABLE and CREATE TABLE without auth), /clear-cache (ran artisan commands). All were scaffolding from the Railway migration — schema is stable, routes are now dead ends. Connected both repos (tastemakers-web and tastemakers-backend) to Railway via GitHub integration — pushes to main now auto-deploy without running railway up locally. Audited production Supabase DB: 0 restaurants, 0 lists — all real data still on legacy Namecheap MySQL host.",
+    type: "fix",
+  },
+  {
     date: "Session 13",
     title: "Production image loading investigation + priority fix",
     details:
