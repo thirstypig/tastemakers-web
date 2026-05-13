@@ -297,6 +297,17 @@ const VELOCITY_DATA: VelocityEntry[] = [
       { type: "devops", count: 2 },
     ],
   },
+  {
+    session: "Session 15",
+    label: "MySQL→Postgres migration + real data + Tastemakers page",
+    items: 7,
+    color: t.green,
+    breakdown: [
+      { type: "data", count: 3 },
+      { type: "features", count: 3 },
+      { type: "performance", count: 1 },
+    ],
+  },
 ];
 
 const VELOCITY_MAX = Math.max(...VELOCITY_DATA.map((v) => v.items));

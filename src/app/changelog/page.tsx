@@ -173,6 +173,26 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v0.14.0",
+    date: "2026-05-13",
+    session: "Session 15",
+    title: "Live Data — MySQL→PostgreSQL Migration + Tastemakers Page",
+    highlights: [
+      "Found tastofgc_tastemakersapp.sql (29K line phpMyAdmin dump) in the repo — migrated 1,388 restaurants, 902 tags, 4,806 restaurant-tag links, 35 curated lists, 232 users into Railway PostgreSQL",
+      "Replaced entire stub API layer with live Supabase queries — /lists, /restaurants, /lists/[slug], /restaurants/[slug] all serve real production data at build time",
+      "Added /tastemakers page modeled on iOS TasteMakersViewController: avatar, level badge (Explorer→Legend), mini list previews, tag count stats",
+    ],
+    changes: [
+      { type: "feat", description: "MySQL dump converted and loaded into Supabase: 1,388 restaurants, 902 tags, 35 lists, 232 users", scope: "data" },
+      { type: "feat", description: "Created /tastemakers page with iOS-matched card layout — avatar, level badge, list previews", scope: "web" },
+      { type: "feat", description: "src/lib/api/index.ts: replaced stub layer with live Supabase queries (listLists, getList, listRestaurants, getRestaurant, listTastemakers)", scope: "web" },
+      { type: "feat", description: "Added Tastemakers to nav and footer — now 3 sections matching iOS tabs", scope: "web" },
+      { type: "feat", description: "Added src/lib/supabase-server.ts: server-side Supabase client for Next.js Server Components", scope: "web" },
+      { type: "fix", description: "Zero-datetime (0000-00-00 00:00:00) rows from MySQL dump converted to NULL for PostgreSQL compatibility", scope: "data" },
+      { type: "perf", description: "listRestaurants() returns top 60 most-tagged restaurants — ordered by tag count for quality curation", scope: "web" },
+    ],
+  },
+  {
     version: "v0.13.0",
     date: "2026-05-13",
     session: "Session 14",

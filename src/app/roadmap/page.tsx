@@ -480,6 +480,7 @@ const SESSION_VELOCITY: {
   { session: "Session 12", completed: 15, type: "Public SEO pages (tastemakers, lists, restaurants)", color: t.purple },
   { session: "Session 13", completed: 4, type: "Production image debug + priority fix + redeploy", color: t.yellow },
   { session: "Session 14", completed: 5, type: "Security hardening (debug routes) + GitHub auto-deploy", color: t.red },
+  { session: "Session 15", completed: 7, type: "MySQL→Postgres data migration + real data layer + Tastemakers page", color: t.green },
 ];
 
 const MAX_VELOCITY = Math.max(...SESSION_VELOCITY.map((s) => s.completed));
@@ -496,33 +497,33 @@ const NEXT_SESSION: {
 }[] = [
   {
     priority: 1,
-    task: "Migrate legacy Namecheap MySQL data to Railway PostgreSQL (restaurants, lists, tags)",
-    reason: "Production DB is empty — all real user-generated data (restaurants, tags, lists) is still on old Namecheap MySQL host",
-    effort: "4h",
-  },
-  {
-    priority: 2,
-    task: "Build public read-only Laravel endpoints (GET /api/public/lists, /api/public/restaurants) and wire web stub layer",
-    reason: "Web pages currently run on stub data — swapping requires new endpoints since existing API is geo-gated for mobile only",
+    task: "Use iOS app as design reference to build Cuisine browse page (/cuisine) and individual Tastemaker profile pages",
+    reason: "iOS has 4 tabs: Restaurants, Cuisine, Lists, Profile — web now has 3. Cuisine and profile are the remaining gaps.",
     effort: "3h",
   },
   {
+    priority: 2,
+    task: "Add cover images to lists in the DB (or pull from Foursquare Photos API with FOURSQUARE_API_KEY)",
+    reason: "Current images are deterministic Unsplash placeholders — real list covers from Foursquare would match the iOS app experience",
+    effort: "2h",
+  },
+  {
     priority: 3,
-    task: "Remove /debug-schema, /run-schema-fix, /debug-signup routes from web.php",
-    reason: "These expose DB schema and allow unauthenticated writes — must be removed before prod traffic",
-    effort: "30m",
+    task: "Move delete endpoints inside auth:api middleware",
+    reason: "Anonymous users can delete images, tags, and lists right now — P1 security finding still open",
+    effort: "1h",
   },
   {
     priority: 4,
-    task: "Rotate production credentials (.env_bkp, wp-config.php)",
-    reason: "Active secret exposure — every day they remain in git is a breach risk",
+    task: "Add search to /restaurants and /lists pages (client-side filter or Laravel API)",
+    reason: "iOS has search + history in UserDefaults — web discovery is browse-only right now",
     effort: "2h",
   },
   {
     priority: 5,
-    task: "Move delete endpoints inside auth:api middleware",
-    reason: "Anonymous users can delete images, tags, and lists right now",
-    effort: "1h",
+    task: "Rotate production credentials (.env_bkp, wp-config.php)",
+    reason: "Active secret exposure — every day they remain in git is a breach risk",
+    effort: "2h",
   },
 ];
 
