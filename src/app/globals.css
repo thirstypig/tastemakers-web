@@ -45,3 +45,23 @@
 .tm-pulse {
   animation: pulse-dot 2s ease-in-out infinite;
 }
+
+/* ── Public app interactive elements ─────────── */
+.pub-card {
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+.pub-card:hover {
+  border-color: #DB1657;
+  transform: translateY(-2px);
+}
+.pub-nav-link {
+  color: #B7ADCF;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.15s ease;
+}
+.pub-nav-link:hover {
+  color: #fff;
+}

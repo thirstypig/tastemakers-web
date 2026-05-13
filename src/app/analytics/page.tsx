@@ -266,6 +266,17 @@ const VELOCITY_DATA: VelocityEntry[] = [
       { type: "docs", count: 2 },
     ],
   },
+  {
+    session: "Session 12",
+    label: "Public SEO pages",
+    items: 15,
+    color: t.purple,
+    breakdown: [
+      { type: "features", count: 10 },
+      { type: "fixes", count: 4 },
+      { type: "performance", count: 1 },
+    ],
+  },
 ];
 
 const VELOCITY_MAX = Math.max(...VELOCITY_DATA.map((v) => v.items));

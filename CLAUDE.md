@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — five public dashboard pages + a full admin panel with Supabase Google OAuth auth. 66 unit tests green. Consuming the Laravel API **live** on Railway at `api.tastemakersapp.com`. Targeted for Railway deployment as `app.tastemakersapp.com` (Phase 1 foundation next).
+Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 66 unit tests green. Deployed to `app.tastemakersapp.com` on Railway (pending).
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -32,14 +32,23 @@ tastemakers-web/
 ├── src/
 │   ├── middleware.ts          Auth gate for /admin/* (CRITICAL: must be in src/, not root)
 │   ├── app/                   Next.js App Router pages
-│   │   ├── layout.tsx         Root layout
-│   │   ├── page.tsx           Home (card grid linking all pages)
+│   │   ├── layout.tsx         Root layout (JetBrains Mono + Roboto fonts)
+│   │   ├── globals.css        Global CSS — admin themes + public .pub-card/.pub-nav-link
+│   │   ├── robots.ts          → /robots.txt (disallow /admin, /api)
+│   │   ├── sitemap.ts         → /sitemap.xml (dynamic from lib/api)
+│   │   ├── page.tsx           Dev dashboard home (links to tech/roadmap/etc)
 │   │   ├── auth/callback/     PKCE OAuth code exchange route (Supabase Google OAuth)
 │   │   ├── tech/page.tsx      Under the Hood — architecture, stack, schema
 │   │   ├── roadmap/page.tsx   Roadmap — health score, 50 findings, plan
 │   │   ├── changelog/page.tsx Changelog — 11 releases, ~130 changes
 │   │   ├── status/page.tsx    System Status — live health checks
 │   │   ├── analytics/page.tsx Analytics — velocity, metrics, questions
+│   │   ├── (public)/          PUBLIC route group (SEO pages — no auth required)
+│   │   │   ├── layout.tsx          Public layout: sticky header + footer (purple/pink brand)
+│   │   │   ├── tastemakers/page.tsx         → /tastemakers  (grid of tastemakers)
+│   │   │   ├── tastemakers/[slug]/page.tsx  → /tastemakers/:slug (profile + JSON-LD)
+│   │   │   ├── lists/[slug]/page.tsx        → /lists/:slug  (coming next)
+│   │   │   └── restaurants/[id]/page.tsx    → /restaurants/:id (coming next)
 │   │   └── admin/             Terminal/DevTool admin (Paper + Gruvbox themes)
 │   │       ├── layout.tsx          Chrome: command bar, sidebar, status footer, ⌘K palette
 │   │       ├── page.tsx            Overview — KPIs, platforms, errors, roadmap
@@ -53,11 +62,17 @@ tastemakers-web/
 │   │       ├── analytics/page.tsx  PostHog / GA / Search Console stubs
 │   │       ├── docs/page.tsx       Documentation file index
 │   │       └── docs/[id]/page.tsx  Individual doc detail
-│   ├── components/            Shared React components
+│   ├── components/            Shared React components (JsonLd.tsx)
 │   ├── hooks/
 │   │   └── useAuth.ts         Supabase session hook (user, loading, signOut)
 │   ├── lib/
-│   │   ├── api.ts             API client (apiFetch<T>() with auto-auth headers)
+│   │   ├── api/               PUBLIC DATA LAYER — stub → real swap point
+│   │   │   ├── types.ts           Tastemaker, CuratedList, Restaurant, Tag
+│   │   │   ├── stubs.ts           Hardcoded mock data (3 tastemakers, 8 restaurants, 6 lists)
+│   │   │   ├── client.ts          apiFetch() wrapper for api.tastemakersapp.com
+│   │   │   └── index.ts           Exported fns: getTastemaker, getList, getRestaurant, etc.
+│   │   │                          ↑ Swap stub→real here when Laravel endpoints come online
+│   │   ├── api.ts             Admin API client (apiFetch<T>() with auth headers) — NOT the same as lib/api/
 │   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed (used by middleware)
 │   │   ├── supabase.ts        Supabase client factory (SSR-safe)
 │   │   └── validation.ts      Form validation helpers (email, password, required)
@@ -72,6 +87,49 @@ tastemakers-web/
 ├── .env.local.example         Environment variable template
 └── CLAUDE.md                  This file
 ```
+
+## Public Design System (iOS-matched)
+
+The `(public)` route group uses a brand palette ported from the iOS app:
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `pub-bg` | `#1A1038` | Page background |
+| `pub-surface` | `#2A1A60` | Cards, header, footer |
+| `pub-surface2` | `#3D296E` | Section backgrounds, tag level-1 |
+| `pub-purple` | `#594094` | Tag level-2 |
+| `pub-purple-md` | `#876DC4` | Tag level-3/4, muted elements |
+| `pub-purple-lt` | `#B7ADCF` | Secondary text, nav links |
+| `pub-muted` | `#8b81a3` | Tertiary text |
+| `pub-pink` | `#DB1657` | Primary CTA, borders, badges |
+
+- **Font:** Roboto (loaded via `next/font/google`, CSS var `--font-roboto`)
+- **Hover effects:** CSS-only via `.pub-card` and `.pub-nav-link` in `globals.css` — no JS event handlers (required for Server Components)
+- **Image domains:** `images.unsplash.com` (stubs), `*.foursquare.com`, `fastly.4sqi.net` (production)
+- **Import note:** `src/lib/api.ts` (admin) and `src/lib/api/index.ts` (public) both exist. Use `@/lib/api/index` explicitly to import public data functions — `@/lib/api` resolves to the admin client file.
+
+## Auth Architecture
+
+- **Public pages** (`(public)/`): No auth. Server components fetch data directly.
+- **Admin pages** (`/admin/*`): Gated by Supabase session via `src/middleware.ts`. Redirect to `/admin/login` if unauthenticated.
+- **Public users**: Do not exist yet — read-only discovery only in this phase.
+- **Supabase env vars:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (client + server), `SUPABASE_SERVICE_ROLE_KEY` (server-only).
+
+## Stub → Real Data Layer Swap
+
+When a Laravel endpoint comes online, open `src/lib/api/index.ts` and replace the stub call:
+```ts
+// Before (stub):
+export async function getTastemaker(slug: string) {
+  return STUB_TASTEMAKERS.find((t) => t.slug === slug) ?? null;
+}
+
+// After (real):
+export async function getTastemaker(slug: string) {
+  return apiFetch<Tastemaker>(`/api/tastemakers/${slug}`);
+}
+```
+The rest of the app (`(public)` pages) doesn't change — they call `getTastemaker()` and don't know if it's stub or real.
 
 ## Deployment
 - **Platform:** Railway (Node.js, using default Next.js build output)

@@ -413,12 +413,12 @@ const PRODUCT_ROADMAP: {
         tags: ["web", "feature"],
       },
       {
-        title: "Web app Phase 3 — Core pages",
+        title: "Web app Phase 3 — Public SEO pages",
         description:
-          "Home/discover, restaurant detail, search, cuisine browse, tastemaker profile pages with server-side rendering for SEO.",
+          "Tastemakers, lists, restaurants public-facing pages with SSR, generateMetadata, JSON-LD structured data, canonical URLs, and iOS-matched brand palette.",
         effort: "24h",
-        status: "planned",
-        tags: ["web", "feature"],
+        status: "done",
+        tags: ["web", "feature", "seo"],
       },
       {
         title: "Migrate lat/lng to DECIMAL + spatial indexing",
@@ -477,6 +477,7 @@ const SESSION_VELOCITY: {
   { session: "Session 9", completed: 8, type: "Security sprint (FCM, debug, role_id)", color: t.red },
   { session: "Session 10", completed: 18, type: "Railway deployment + PostgreSQL migration", color: t.orange },
   { session: "Session 11", completed: 22, type: "Admin dashboard + Supabase Google OAuth", color: t.accent },
+  { session: "Session 12", completed: 15, type: "Public SEO pages (tastemakers, lists, restaurants)", color: t.purple },
 ];
 
 const MAX_VELOCITY = Math.max(...SESSION_VELOCITY.map((s) => s.completed));
@@ -493,15 +494,15 @@ const NEXT_SESSION: {
 }[] = [
   {
     priority: 1,
-    task: "Build web app Phase 1 — Tailwind layout, shared components, 404/500 pages",
-    reason: "Admin is done — next is the actual user-facing Tastemakers web experience",
-    effort: "3h",
+    task: "Wire real Laravel endpoints in src/lib/api/index.ts (tastemakers, lists, restaurants)",
+    reason: "Public pages are live with stubs — swapping to real data is a single-file change per function",
+    effort: "2h",
   },
   {
     priority: 2,
-    task: "Build web app Phase 2 — Login, Register, Google OAuth for end users",
-    reason: "Auth for the public app mirrors the admin Supabase work but uses Laravel Bearer tokens",
-    effort: "4h",
+    task: "Deploy web app to Railway — set NEXT_PUBLIC_API_URL + custom domain app.tastemakersapp.com",
+    reason: "Public SEO pages are production-ready — Railway deployment unblocks real traffic and Google indexing",
+    effort: "2h",
   },
   {
     priority: 3,

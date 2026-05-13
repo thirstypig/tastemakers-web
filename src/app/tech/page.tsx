@@ -664,6 +664,20 @@ const BUILD_JOURNAL: {
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
   {
+    date: "Session 12",
+    title: "Public SEO pages — tastemakers, lists, restaurants",
+    details:
+      "Built 6 public-facing SSR pages in a (public)/ route group with its own layout. Each page has generateMetadata (OG/Twitter/canonical), JSON-LD structured data via next/script, and generateStaticParams for build-time pre-rendering. Data served from a typed stub layer (src/lib/api/) that swaps to real Laravel endpoints in one file. Fixed several Next.js Image pitfalls: fill images need a parent with explicit height (not just fill in a CSS Grid 1fr cell), and explicit width/height props shouldn't be overridden via CSS or Next.js warns. Used CSS-only hover effects (.pub-card, .pub-nav-link) since event handlers aren't allowed in Server Components.",
+    type: "feature",
+  },
+  {
+    date: "Session 11",
+    title: "Admin dashboard + Supabase Google OAuth",
+    details:
+      "Built 10 admin screens in Terminal/DevTool aesthetic with Paper (light) + Gruvbox (dark) themes. Wired Supabase Google OAuth end-to-end with PKCE code-exchange route and email allowlist middleware. Discovered Next.js 15 requires middleware in src/ when using src/ directory structure.",
+    type: "feature",
+  },
+  {
     date: "Session 10",
     title: "Railway API deployment + PostgreSQL migration",
     details:

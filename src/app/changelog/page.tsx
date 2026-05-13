@@ -173,6 +173,34 @@ interface Release {
 
 const RELEASES: Release[] = [
   {
+    version: "v0.11.0",
+    date: "2026-05-13",
+    session: "Session 12",
+    title: "Public SEO Pages — Tastemakers, Lists, Restaurants",
+    highlights: [
+      "Built 6 public-facing SSR pages with generateMetadata, JSON-LD schema.org structured data, and canonical URLs — tastemakers, lists, restaurants, and their detail pages",
+      "iOS-matched purple/pink brand palette (Roboto font, #2A1A60 surface, #DB1657 accent) with CSS-only hover effects for Server Component compatibility",
+      "Typed stub data layer in src/lib/api/ — single swap point in index.ts when Laravel endpoints come online",
+    ],
+    changes: [
+      { type: "feat", description: "Public route group (public)/ with isolated layout — sticky header, nav (Tastemakers/Lists/Restaurants), footer", scope: "web" },
+      { type: "feat", description: "/tastemakers page — grid of tastemaker cards with avatar, bio, level badge, list/follower counts", scope: "web" },
+      { type: "feat", description: "/tastemakers/[slug] page — full profile with JSON-LD Person schema, tag chips, curated lists grid", scope: "web" },
+      { type: "feat", description: "/lists page — curated list grid with cover images, spot count badge, curator attribution", scope: "web" },
+      { type: "feat", description: "/lists/[slug] page — list detail with JSON-LD ItemList schema, hero cover image, numbered restaurant rows with photos", scope: "web" },
+      { type: "feat", description: "/restaurants page — restaurant card grid with images, neighborhood, cuisine, tag chips", scope: "web" },
+      { type: "feat", description: "/restaurants/[slug] page — split-layout hero (image + info), JSON-LD Restaurant+GeoCoordinates schema, Featured-in lists", scope: "web" },
+      { type: "feat", description: "src/lib/api/ data layer — types.ts (Tag/Restaurant/CuratedList/Tastemaker), stubs.ts (3 tastemakers, 8 restaurants, 6 lists), index.ts swap point", scope: "web" },
+      { type: "feat", description: "robots.ts and sitemap.ts as Next.js metadata route handlers — dynamic from all stub data", scope: "web" },
+      { type: "feat", description: "5-level tag color system ported from iOS palette, Roboto font via next/font/google", scope: "web" },
+      { type: "fix", description: "Replaced all fill images without defined-height containers — eliminates blank images in CSS Grid 1fr columns", scope: "web" },
+      { type: "fix", description: "Used next/script strategy=beforeInteractive for JSON-LD to safely inject structured data without raw HTML injection", scope: "web" },
+      { type: "fix", description: "Changed hover effects from JS event handlers to CSS .pub-card/.pub-nav-link classes for Server Component compatibility", scope: "web" },
+      { type: "fix", description: "Fixed tastingMenus coverImageUrl 404 — replaced broken Unsplash photo ID", scope: "web" },
+      { type: "perf", description: "Added sizes prop to all fill images and priority to above-fold LCP candidates", scope: "web" },
+    ],
+  },
+  {
     version: "v0.10.0",
     date: "2026-05-11",
     session: "Session 11",
