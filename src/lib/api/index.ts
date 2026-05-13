@@ -1,4 +1,5 @@
 import { createServerClient } from "@/lib/supabase-server";
+import { voteCountToLevel } from "@/components/tags/tag-utils";
 import type { Tastemaker, CuratedList, Restaurant, Tag } from "./types";
 
 // ── Image placeholders (deterministic from curated food photos) ───────────────
@@ -55,7 +56,7 @@ function buildTagsByRestaurant(
     if (!name) continue;
     const existing = byRestaurant.get(rid) ?? [];
     if (existing.length < maxTagsPerRestaurant) {
-      existing.push({ id: String(tid), name, level: 2, count });
+      existing.push({ id: String(tid), name, level: voteCountToLevel(count), count });
       byRestaurant.set(rid, existing);
     }
   }

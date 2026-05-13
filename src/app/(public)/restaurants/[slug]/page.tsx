@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { getRestaurant, listRestaurants, listTastemakers, listLists } from "@/lib/api/index";
-import type { Restaurant, Tag, CuratedList } from "@/lib/api/types";
+import type { Restaurant, CuratedList } from "@/lib/api/types";
+import TagCloud from "@/components/tags/TagCloud";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -83,10 +84,6 @@ function buildRestaurantSchema(r: Restaurant): string {
     .replace(/&/g, "\\u0026");
 }
 
-// ── Colors ────────────────────────────────────────────────────────────────────
-
-const TAG_BG: Record<number, string>   = { 1: "#3D296E", 2: "#594094", 3: "#876DC4", 4: "#9B82D4", 5: "#EFE8FE" };
-const TAG_TEXT: Record<number, string> = { 1: "#B7ADCF", 2: "#EFE8FE", 3: "#fff",    4: "#fff",    5: "#2A1A60" };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -197,11 +194,7 @@ export default async function RestaurantPage({
               >
                 Known for
               </p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {restaurant.tags.map((tag) => (
-                  <TagChip key={tag.id} tag={tag} size="lg" />
-                ))}
-              </div>
+              <TagCloud tags={restaurant.tags} showCount />
             </div>
           )}
 
@@ -253,23 +246,6 @@ export default async function RestaurantPage({
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-
-function TagChip({ tag, size = "sm" }: { tag: Tag; size?: "sm" | "lg" }) {
-  return (
-    <span
-      style={{
-        background: TAG_BG[tag.level] ?? "#3D296E",
-        color: TAG_TEXT[tag.level] ?? "#B7ADCF",
-        fontSize: size === "lg" ? 13 : 11,
-        fontWeight: 500,
-        padding: size === "lg" ? "5px 14px" : "3px 10px",
-        borderRadius: 4,
-      }}
-    >
-      {tag.name}
-    </span>
-  );
-}
 
 function FeaturedListCard({ list }: { list: CuratedList }) {
   return (

@@ -4,7 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import Script from "next/script";
 import { getList, listLists } from "@/lib/api/index";
-import type { CuratedList, Restaurant, Tag } from "@/lib/api/types";
+import type { CuratedList, Restaurant } from "@/lib/api/types";
+import TagCloud from "@/components/tags/TagCloud";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -83,10 +84,6 @@ function buildItemListSchema(list: CuratedList): string {
     .replace(/&/g, "\\u0026");
 }
 
-// ── Tag colors ─────────────────────────────────────────────────────────────────
-
-const TAG_BG: Record<number, string>   = { 1: "#3D296E", 2: "#594094", 3: "#876DC4", 4: "#9B82D4", 5: "#EFE8FE" };
-const TAG_TEXT: Record<number, string> = { 1: "#B7ADCF", 2: "#EFE8FE", 3: "#fff",    4: "#fff",    5: "#2A1A60" };
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -287,32 +284,10 @@ function RestaurantRow({
           <p style={{ fontSize: 13, color: "#8b81a3", margin: 0 }}>
             {restaurant.neighborhood} · {restaurant.cuisine}
           </p>
-          {restaurant.tags.length > 0 && (
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 4 }}>
-              {restaurant.tags.slice(0, 3).map((tag) => (
-                <TagChip key={tag.id} tag={tag} />
-              ))}
-            </div>
-          )}
+          <TagCloud tags={restaurant.tags.slice(0, 3)} className="mt-1" />
         </div>
       </article>
     </Link>
   );
 }
 
-function TagChip({ tag }: { tag: Tag }) {
-  return (
-    <span
-      style={{
-        background: TAG_BG[tag.level] ?? "#3D296E",
-        color: TAG_TEXT[tag.level] ?? "#B7ADCF",
-        fontSize: 11,
-        fontWeight: 500,
-        padding: "3px 10px",
-        borderRadius: 4,
-      }}
-    >
-      {tag.name}
-    </span>
-  );
-}
