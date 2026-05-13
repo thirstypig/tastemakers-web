@@ -2,6 +2,7 @@ export interface Tag {
   id: string;
   name: string;
   level: 1 | 2 | 3 | 4 | 5;
+  count?: number; // vote count — how many users applied this tag to a restaurant
 }
 
 export interface Restaurant {

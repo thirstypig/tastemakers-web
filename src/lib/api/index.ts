@@ -26,7 +26,43 @@ function coverImage(id: number, w = 800): string {
   return `https://images.unsplash.com/${FOOD_PHOTOS[idx]}?w=${w}&q=80`;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Tag helpers ───────────────────────────────────────────────────────────────
+
+/**
+ * Build a per-restaurant map of tags sorted by vote count (popularity).
+ * restaurant_tag has one row per user per tag — duplicate (restaurant_id, tag_id)
+ * pairs are votes. More votes = higher rank.
+ */
+function buildTagsByRestaurant(
+  tagRows: Array<{ restaurant_id: number; tag_id: number }>,
+  tagMap: Map<number, string>,
+  maxTagsPerRestaurant = 6,
+): Map<number, Tag[]> {
+  // Count votes: (restaurant_id, tag_id) → count
+  const voteMap = new Map<string, number>();
+  for (const r of tagRows) {
+    const key = `${r.restaurant_id}:${r.tag_id}`;
+    voteMap.set(key, (voteMap.get(key) ?? 0) + 1);
+  }
+
+  // Group by restaurant, sorted by vote count desc
+  const byRestaurant = new Map<number, Tag[]>();
+  for (const [key, count] of [...voteMap.entries()].sort((a, b) => b[1] - a[1])) {
+    const [ridStr, tidStr] = key.split(":");
+    const rid = Number(ridStr);
+    const tid = Number(tidStr);
+    const name = tagMap.get(tid);
+    if (!name) continue;
+    const existing = byRestaurant.get(rid) ?? [];
+    if (existing.length < maxTagsPerRestaurant) {
+      existing.push({ id: String(tid), name, level: 2, count });
+      byRestaurant.set(rid, existing);
+    }
+  }
+  return byRestaurant;
+}
+
+// ── Address helpers ───────────────────────────────────────────────────────────
 
 function cityFromAddress(address: string | null): string {
   if (!address) return "";
@@ -122,14 +158,7 @@ export async function getList(slug: string): Promise<CuratedList | null> {
   const tagMap = new Map<number, string>();
   tagData?.forEach((t) => tagMap.set(t.id, t.name));
 
-  const tagsByRestaurant = new Map<number, Tag[]>();
-  (tagRows.data ?? []).forEach((r) => {
-    const name = tagMap.get(r.tag_id);
-    if (!name) return;
-    const existing = tagsByRestaurant.get(r.restaurant_id) ?? [];
-    if (existing.length < 5) existing.push({ id: String(r.tag_id), name, level: 2 });
-    tagsByRestaurant.set(r.restaurant_id, existing);
-  });
+  const tagsByRestaurant = buildTagsByRestaurant(tagRows.data ?? [], tagMap);
 
   const curatorName = curator
     ? `${curator.first_name ?? ""} ${curator.last_name ?? ""}`.trim() || curator.username || undefined
@@ -206,14 +235,7 @@ export async function listRestaurants(): Promise<Restaurant[]> {
   const tagMap = new Map<number, string>();
   tagData?.forEach((t) => tagMap.set(t.id, t.name));
 
-  const tagsByRestaurant = new Map<number, Tag[]>();
-  (tagRows ?? []).forEach((r) => {
-    const name = tagMap.get(r.tag_id);
-    if (!name) return;
-    const existing = tagsByRestaurant.get(r.restaurant_id) ?? [];
-    if (existing.length < 4) existing.push({ id: String(r.tag_id), name, level: 2 });
-    tagsByRestaurant.set(r.restaurant_id, existing);
-  });
+  const tagsByRestaurant = buildTagsByRestaurant(tagRows ?? [], tagMap, 4);
 
   const orderMap = new Map(topIds.map((id, i) => [id, i]));
   return [...restaurants]
@@ -247,12 +269,18 @@ export async function getRestaurant(id: string): Promise<Restaurant | null> {
 
   if (!r) return null;
 
-  const tagIds = (tagRows ?? []).map((t) => t.tag_id);
+  const tagIds = [...new Set((tagRows ?? []).map((t) => t.tag_id))];
   const { data: tagData } = tagIds.length > 0
     ? await sb.from("tags").select("id, name").in("id", tagIds).is("deleted_at", null)
     : { data: [] };
 
-  const tags: Tag[] = (tagData ?? []).map((t) => ({ id: String(t.id), name: t.name, level: 2 as const }));
+  const tagMap = new Map<number, string>();
+  tagData?.forEach((t) => tagMap.set(t.id, t.name));
+  const tagsByRestaurant = buildTagsByRestaurant(
+    (tagRows ?? []).map((t) => ({ restaurant_id: numId, tag_id: t.tag_id })),
+    tagMap,
+  );
+  const tags = tagsByRestaurant.get(numId) ?? [];
 
   return {
     id: String(r.id),
