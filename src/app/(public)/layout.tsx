@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { NavAuth } from "./NavAuth";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -66,6 +67,7 @@ function Header() {
           <NavLink href="/tastemakers">Tastemakers</NavLink>
           <NavLink href="/lists">Lists</NavLink>
           <NavLink href="/restaurants">Restaurants</NavLink>
+          <NavAuth />
         </div>
       </nav>
     </header>
