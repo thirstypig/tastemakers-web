@@ -7,12 +7,17 @@ interface Props {
 }
 
 export default function TagChip({ tag, showCount = false }: Props) {
-  const { bg, text } = TAG_LEVEL_STYLES[tag.level] ?? TAG_LEVEL_STYLES[5];
+  const { bg, text, weight, opacity } = TAG_LEVEL_STYLES[tag.level] ?? TAG_LEVEL_STYLES[5];
 
   return (
     <span
-      className="inline-block rounded px-2 py-1 text-xs font-medium leading-none"
-      style={{ backgroundColor: bg, color: text }}
+      className="inline-block rounded px-2 py-1 text-xs leading-none"
+      style={{
+        backgroundColor: bg,
+        color: text,
+        fontWeight: weight,
+        opacity,
+      }}
     >
       {tag.name}
       {showCount && tag.count && tag.count > 1 ? (

@@ -10,14 +10,14 @@ export function voteCountToLevel(count: number): Tag["level"] {
   return 5;
 }
 
-// Exact colors from iOS ColorExtension.swift — do not adjust without updating the app too.
+// Colors from iOS ColorExtension.swift. Font weight added on web for extra hierarchy signal.
 export const TAG_LEVEL_STYLES: Record<
   1 | 2 | 3 | 4 | 5,
-  { bg: string; text: string }
+  { bg: string; text: string; weight: string; opacity: string }
 > = {
-  1: { bg: "#3D296E", text: "#ffffff" }, // level1Color — most popular
-  2: { bg: "#594094", text: "#ffffff" }, // level2Color
-  3: { bg: "#876DC4", text: "#ffffff" }, // level3Color
-  4: { bg: "#876DC4", text: "#504273" }, // level4Color — same bg, textPurpleNew
-  5: { bg: "#EFE8FE", text: "#8b81a3" }, // level5Color — least popular, textPurpleLight
+  1: { bg: "#3D296E", text: "#ffffff", weight: "700", opacity: "1"    }, // most popular — bold, full opacity
+  2: { bg: "#594094", text: "#ffffff", weight: "600", opacity: "1"    },
+  3: { bg: "#876DC4", text: "#ffffff", weight: "500", opacity: "0.9"  },
+  4: { bg: "#876DC4", text: "#504273", weight: "400", opacity: "0.75" },
+  5: { bg: "#EFE8FE", text: "#8b81a3", weight: "400", opacity: "0.55" }, // least popular — fades back
 };
