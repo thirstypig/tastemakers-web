@@ -365,8 +365,58 @@ export async function listTastemakers(): Promise<Tastemaker[]> {
 }
 
 export async function getTastemaker(slug: string): Promise<Tastemaker | null> {
-  const tastemakers = await listTastemakers();
-  return tastemakers.find((t) => t.slug === slug || t.id === slug) ?? null;
+  const sb = createServerClient();
+
+  // Try username match first, then numeric id
+  const numId = parseInt(slug, 10);
+  const { data: user } = isNaN(numId)
+    ? await sb.from("users").select("id, first_name, last_name, username, short_description, instagram, image").eq("username", slug).eq("is_testmaker", 1).is("deleted_at", null).single()
+    : await sb.from("users").select("id, first_name, last_name, username, short_description, instagram, image").eq("id", numId).eq("is_testmaker", 1).is("deleted_at", null).single();
+
+  if (!user) return null;
+
+  const [{ data: userLists }, { data: tagRows }] = await Promise.all([
+    sb.from("testmaker_list").select("id, list_name").eq("user_id", user.id).order("created_at", { ascending: false }),
+    sb.from("restaurant_tag").select("user_id").eq("user_id", user.id),
+  ]);
+
+  const listIds = (userLists ?? []).map((l) => l.id);
+  const { data: listRestaurants } = listIds.length > 0
+    ? await sb.from("testmaker_list_restaurant").select("testmaker_list_id").in("testmaker_list_id", listIds)
+    : { data: [] };
+
+  const countMap = new Map<number, number>();
+  listRestaurants?.forEach((r) => {
+    countMap.set(r.testmaker_list_id, (countMap.get(r.testmaker_list_id) ?? 0) + 1);
+  });
+
+  const listCount = userLists?.length ?? 0;
+  const name = `${user.first_name ?? ""} ${user.last_name ?? ""}`.trim() || user.username || "Tastemaker";
+  const userSlug = user.username ?? String(user.id);
+
+  return {
+    id: String(user.id),
+    slug: userSlug,
+    name,
+    username: user.username ?? userSlug,
+    bio: user.short_description ?? "",
+    avatarUrl: coverImage(user.id + 100, 400),
+    location: "",
+    followerCount: tagRows?.length ?? 0,
+    listCount,
+    level: tasteLevel(listCount),
+    lists: (userLists ?? []).map((l) => ({
+      id: String(l.id),
+      slug: String(l.id),
+      title: l.list_name ?? "Untitled",
+      description: "",
+      coverImageUrl: coverImage(l.id),
+      restaurantCount: countMap.get(l.id) ?? 0,
+      restaurants: [],
+      createdAt: "",
+    })),
+    tags: [],
+  };
 }
 
 export type { Tastemaker, CuratedList, Restaurant };

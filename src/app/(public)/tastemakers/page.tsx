@@ -106,7 +106,9 @@ function TastemakerCard({ tastemaker: t }: { tastemaker: Tastemaker }) {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 4 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>{t.name}</h2>
+            <Link href={`/tastemakers/${t.slug}`} style={{ textDecoration: "none" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, color: "#fff", margin: 0 }}>{t.name}</h2>
+            </Link>
             <span
               style={{
                 background: LEVEL_COLOR[t.level] ?? "#594094",
@@ -144,9 +146,15 @@ function TastemakerCard({ tastemaker: t }: { tastemaker: Tastemaker }) {
             </p>
           )}
 
-          <div style={{ display: "flex", gap: 20, marginTop: 12 }}>
+          <div style={{ display: "flex", gap: 20, marginTop: 12, alignItems: "center" }}>
             <Stat label="Lists" value={t.listCount} />
             <Stat label="Tags" value={t.followerCount} />
+            <Link
+              href={`/tastemakers/${t.slug}`}
+              style={{ marginLeft: "auto", fontSize: 13, color: "#DB1657", textDecoration: "none", fontWeight: 600 }}
+            >
+              View profile →
+            </Link>
           </div>
         </div>
       </div>
