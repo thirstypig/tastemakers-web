@@ -6,6 +6,7 @@ import Script from "next/script";
 import { getRestaurant, listRestaurants, listTastemakers, listLists } from "@/lib/api/index";
 import type { Restaurant, CuratedList } from "@/lib/api/types";
 import TagCloud from "@/components/tags/TagCloud";
+import { TagReview } from "@/components/tags/TagReview";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -195,6 +196,7 @@ export default async function RestaurantPage({
                 Known for
               </p>
               <TagCloud tags={restaurant.tags} />
+              <TagReview restaurantId={restaurant.id} initialTags={restaurant.tags} />
             </div>
           )}
 
