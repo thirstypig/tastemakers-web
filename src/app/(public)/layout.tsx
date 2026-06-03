@@ -1,6 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { NavAuth } from "./NavAuth";
+import { Analytics } from "@/components/Analytics";
+import { PrivacySettings } from "@/components/PrivacySettings";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -12,6 +14,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         color: "#fff",
       }}
     >
+      <Analytics />
       <Header />
       <main>{children}</main>
       <Footer />
@@ -176,6 +179,10 @@ function Footer() {
               },
             ]}
           />
+          <FooterCol
+            title="Legal"
+            links={[{ label: "Privacy Policy", href: "/privacy" }]}
+          />
         </div>
       </div>
       <div
@@ -189,6 +196,12 @@ function Footer() {
         }}
       >
         © {new Date().getFullYear()} Tastemakers. All rights reserved.
+        {" · "}
+        <Link href="/privacy" style={{ color: "#8b81a3", textDecoration: "none" }}>
+          Privacy
+        </Link>
+        {" · "}
+        <PrivacySettings />
       </div>
     </footer>
   );
