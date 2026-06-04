@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.8.1",
+    date: "2026-06-04",
+    title: "Tag seeding pipeline deep review",
+    items: [
+      { type: "+", text: "21 new backend todos filed (046–066) from 7-agent parallel code review" },
+      { type: "!", text: "P1: .env_bkp with DB + SMTP passwords committed to git — rotate + purge required (046)" },
+      { type: "!", text: "P1: RestaurantController pluck(user_id) passes NULL to WhereIn post-seeding (047)" },
+      { type: "~", text: "Security findings: prompt injection, placeId URL risk, embedding validation, GDPR author_name (048–052, 060)" },
+      { type: "~", text: "Performance findings: hasCandidates per-tag waste, pgvector double-eval (053–054)" },
+    ],
+  },
+  {
     v: "v8.8.0",
     date: "2026-06-03",
     title: "User auth + site consolidation",

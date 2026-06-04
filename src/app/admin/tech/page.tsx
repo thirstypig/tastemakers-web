@@ -664,6 +664,13 @@ const BUILD_JOURNAL: {
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
   {
+    date: "Session 15",
+    title: "Tag seeding pipeline deep review — 21 new findings",
+    details:
+      "7-agent parallel code review of the tag seeding pipeline (GooglePlacesService, AnthropicService, EmbeddingService, TagSeederService, 2 migrations). Agents: security-sentinel, architecture-strategist, performance-oracle, pattern-recognition-specialist, code-simplicity-reviewer, agent-native-reviewer, data-migration-expert. Found 2 new P1s (046: .env_bkp with committed credentials; 047: RestaurantController pluck(user_id) passes NULL into WhereIn after seeding). 13 new P2s covering prompt injection, placeId URL path risk, embedding validation, tags_skipped conflation, partial-status semantics, dry-run overcounting, hasCandidates per-tag waste, pgvector double-evaluation, allow404 retry bug, 2-char TAG_REGEX, GDPR author_name collection. 6 P3 simplification items. Total backend todos now 066.",
+    type: "refactor",
+  },
+  {
     date: "Session 14",
     title: "Security hardening + GitHub auto-deploy",
     details:
