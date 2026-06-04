@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.8.2",
+    date: "2026-06-04",
+    title: "P1+P2 security & seeder hardening (26 todos resolved)",
+    items: [
+      { type: "~", text: "Auth: move delete endpoints behind auth:api; throttle:5,1 on login/signup/forgot-password" },
+      { type: "~", text: "FCM hardcoded key → config('services.fcm.server_key'); env() → config() in RestaurantController" },
+      { type: "~", text: "Production: restaurant_tag.user_id nullable; UNIQUE(restaurant_id,tag_id) + UNIQUE(tags.name) on Supabase" },
+      { type: "~", text: "TagSeederService: prompt sanitization, placeId URL encode, embedding float validation, hasCandidates hoist, pgvector lateral query, TAG_REGEX 3-char min, tags_invalid counter split, expires_at scope" },
+      { type: "~", text: "Tag model: users() scoped to source='user'; global expires_at scope; author_name removed (GDPR)" },
+    ],
+  },
+  {
     v: "v8.8.1",
     date: "2026-06-04",
     title: "Tag seeding pipeline deep review",
