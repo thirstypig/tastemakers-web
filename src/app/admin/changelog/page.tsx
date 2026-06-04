@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.7.0",
+    date: "2026-06-03",
+    title: "Privacy & analytics",
+    items: [
+      { type: "+", text: "Privacy Policy pages live on marketing + web app (/privacy)" },
+      { type: "+", text: "GA4 (G-062TFF0ZGE) on both sites with Consent Mode v2" },
+      { type: "+", text: "Google AdSense loader + Privacy & messaging consent CMP" },
+      { type: "+", text: "ads.txt deployed; AdSense site submitted for review" },
+      { type: "~", text: "Consent denied by default in EEA/UK until granted" },
+    ],
+  },
+  {
     v: "v8.6.3",
     date: "2026-05-11",
     title: "Security sprint",

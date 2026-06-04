@@ -13,6 +13,8 @@ const ROADMAP_ITEMS = [
   { phase: "P1", title: "Web admin login token path mismatch", owner: "web", status: "open", date: "2026-05-11" },
   { phase: "P1", title: "getallBadges hardcoded user_id=43", owner: "backend", status: "open", date: "2026-05-11" },
   // P2
+  { phase: "P2", title: "Privacy policy + GA4/AdSense consent", owner: "web", status: "done", date: "2026-06-03" },
+  { phase: "P2", title: "Marketing site content for AdSense approval", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P2", title: "Form Request validation", owner: "backend", status: "open", date: "" },
   { phase: "P2", title: "Move token to Keychain", owner: "ios", status: "open", date: "" },
   { phase: "P2", title: "Rate limit auth endpoints", owner: "backend", status: "open", date: "" },
@@ -20,6 +22,7 @@ const ROADMAP_ITEMS = [
   { phase: "P2", title: "Passport token TTL never set (1yr default)", owner: "backend", status: "open", date: "" },
   { phase: "P2", title: "Android tag/follow request wrong fields", owner: "android", status: "open", date: "" },
   // P3
+  { phase: "P3", title: "Place AdSense ad units (post-approval)", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P3", title: "Bulk rename complition→completion", owner: "ios", status: "open", date: "" },
   { phase: "P3", title: "Haversine into shared scope", owner: "backend", status: "open", date: "" },
   { phase: "P3", title: "iOS multipart double boundary", owner: "ios", status: "open", date: "" },
