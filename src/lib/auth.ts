@@ -26,3 +26,25 @@ export function isEmailAllowed(
   if (!email) return false;
   return allowList.includes(email.toLowerCase());
 }
+
+/**
+ * Returns a safe post-login redirect path from a user-supplied `?next` value.
+ *
+ * Only same-origin relative paths are honoured. Everything else falls back:
+ *   - null / empty                         → fallback
+ *   - not starting with "/" ("https://x")  → fallback
+ *   - protocol-relative ("//evil.com")     → fallback (would navigate off-site)
+ *   - backslash trick ("/\\evil.com")      → fallback
+ *
+ * Prevents open redirects: `/login?next=//evil.com` must not bounce the user to
+ * an external site after authenticating.
+ */
+export function safeRedirectPath(
+  raw: string | null | undefined,
+  fallback = "/explore",
+): string {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) {
+    return fallback;
+  }
+  return raw;
+}
