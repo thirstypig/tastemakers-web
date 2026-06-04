@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseAllowedEmails, isEmailAllowed } from "./auth";
+import { parseAllowedEmails, isEmailAllowed, safeRedirectPath } from "./auth";
 
 // ── parseAllowedEmails ────────────────────────────────────────────────────────
 
@@ -68,5 +68,50 @@ describe("isEmailAllowed", () => {
     expect(isEmailAllowed("alice@example.com", list)).toBe(true);
     expect(isEmailAllowed("bob@example.com", list)).toBe(true);
     expect(isEmailAllowed("carol@example.com", list)).toBe(false);
+  });
+});
+
+// ── safeRedirectPath ──────────────────────────────────────────────────────────
+
+describe("safeRedirectPath", () => {
+  it("returns a same-origin relative path unchanged", () => {
+    expect(safeRedirectPath("/review")).toBe("/review");
+  });
+
+  it("preserves nested paths and query strings", () => {
+    // The gate sends ?next=/profile/me; querystrings must survive too
+    expect(safeRedirectPath("/profile/me")).toBe("/profile/me");
+    expect(safeRedirectPath("/lists?sort=new")).toBe("/lists?sort=new");
+  });
+
+  it("allows the bare root path", () => {
+    expect(safeRedirectPath("/")).toBe("/");
+  });
+
+  it("falls back when next is null or empty", () => {
+    expect(safeRedirectPath(null)).toBe("/explore");
+    expect(safeRedirectPath(undefined)).toBe("/explore");
+    expect(safeRedirectPath("")).toBe("/explore");
+  });
+
+  it("rejects protocol-relative URLs (the open-redirect the review caught)", () => {
+    // router.push("//evil.com") would navigate OFF-SITE — must not pass
+    expect(safeRedirectPath("//evil.com")).toBe("/explore");
+    expect(safeRedirectPath("//evil.com/path")).toBe("/explore");
+  });
+
+  it("rejects the backslash trick browsers normalise to //", () => {
+    expect(safeRedirectPath("/\\evil.com")).toBe("/explore");
+  });
+
+  it("rejects absolute URLs that don't start with a slash", () => {
+    expect(safeRedirectPath("https://evil.com")).toBe("/explore");
+    expect(safeRedirectPath("javascript:alert(1)")).toBe("/explore");
+  });
+
+  it("honours a custom fallback", () => {
+    // /review uses safeRedirectPath indirectly; callers may want a different default
+    expect(safeRedirectPath(null, "/restaurants")).toBe("/restaurants");
+    expect(safeRedirectPath("//evil.com", "/restaurants")).toBe("/restaurants");
   });
 });

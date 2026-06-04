@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 66 unit tests green. Deployed to `app.tastemakersapp.com` on Railway (pending).
+Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 74 unit tests green. Deployed to `app.tastemakersapp.com` on Railway (pending).
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -23,7 +23,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 66 unit tests (6 test files)
+npx vitest run     # run 74 unit tests (6 test files)
 ```
 
 ## Project Structure
@@ -154,11 +154,11 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 66 tests across 6 files — all green
+- **Current suite:** 74 tests across 6 files — all green
 
 | File | Tests | What it covers |
 |------|-------|----------------|
-| `src/lib/auth.test.ts` | 12 | `parseAllowedEmails`, `isEmailAllowed` edge cases |
+| `src/lib/auth.test.ts` | 20 | `parseAllowedEmails`, `isEmailAllowed`, `safeRedirectPath` (open-redirect guard) |
 | `src/lib/validation.test.ts` | 17 | `validateEmail`, `validatePassword`, `validateRequired` |
 | `src/lib/api.test.ts` | 12 | `apiFetch` — response handling, headers, auth token |
 | `src/lib/api-probe.test.ts` | 7 | `runCheck` — live health probe utility |

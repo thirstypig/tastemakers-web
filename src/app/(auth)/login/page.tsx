@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import { validateEmail, validatePassword } from "@/lib/validation";
+import { safeRedirectPath } from "@/lib/auth";
 
 const styles = {
   page: {
@@ -148,15 +149,10 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Post-login destination: ?next=… only if it's a same-origin relative path,
-  // else /explore. Rejects protocol-relative ("//host") and backslash tricks
-  // ("/\\host") to prevent open redirects to external sites.
+  // Post-login destination: ?next=… if it's a safe same-origin relative path,
+  // else /explore. Open-redirect protection lives in safeRedirectPath (tested).
   function safeNext(): string {
-    const raw = new URLSearchParams(window.location.search).get("next");
-    if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) {
-      return "/explore";
-    }
-    return raw;
+    return safeRedirectPath(new URLSearchParams(window.location.search).get("next"));
   }
 
   async function handleGoogleSignIn() {
