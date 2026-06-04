@@ -200,7 +200,7 @@ export default function SignupPage() {
       provider: "google",
       options: {
         redirectTo:
-          window.location.origin + "/auth/callback?next=/restaurants",
+          window.location.origin + "/auth/callback?next=/explore",
       },
     });
     if (error) {
@@ -255,7 +255,7 @@ export default function SignupPage() {
     }
 
     setLoading(false);
-    router.push("/restaurants");
+    router.push("/explore");
   }
 
   function clearFieldError(field: keyof FormErrors) {
