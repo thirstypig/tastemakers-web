@@ -6,6 +6,8 @@ import Script from "next/script";
 import { getList, listLists } from "@/lib/api/index";
 import type { CuratedList, Restaurant } from "@/lib/api/types";
 import TagCloud from "@/components/tags/TagCloud";
+import { AdUnit } from "@/components/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -199,6 +201,8 @@ export default async function ListPage({
           ))}
         </div>
       </section>
+
+      <AdUnit slot={AD_SLOTS.detailFooter} />
     </>
   );
 }
