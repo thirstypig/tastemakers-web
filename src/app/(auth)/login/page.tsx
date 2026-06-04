@@ -148,6 +148,17 @@ export default function LoginPage() {
     }
   }, []);
 
+  // Post-login destination: ?next=… only if it's a same-origin relative path,
+  // else /explore. Rejects protocol-relative ("//host") and backslash tricks
+  // ("/\\host") to prevent open redirects to external sites.
+  function safeNext(): string {
+    const raw = new URLSearchParams(window.location.search).get("next");
+    if (!raw || !raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) {
+      return "/explore";
+    }
+    return raw;
+  }
+
   async function handleGoogleSignIn() {
     setGoogleLoading(true);
     setGlobalError(null);
@@ -156,7 +167,9 @@ export default function LoginPage() {
       provider: "google",
       options: {
         redirectTo:
-          window.location.origin + "/auth/callback?next=/restaurants",
+          window.location.origin +
+          "/auth/callback?next=" +
+          encodeURIComponent(safeNext()),
       },
     });
     if (error) {
@@ -186,7 +199,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/restaurants");
+    router.push(safeNext());
   }
 
   return (

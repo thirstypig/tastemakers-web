@@ -89,7 +89,7 @@ async function syncPublicUser(
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/restaurants";
+  const next = searchParams.get("next") ?? "/explore";
 
   if (code) {
     const cookieStore = await cookies();
