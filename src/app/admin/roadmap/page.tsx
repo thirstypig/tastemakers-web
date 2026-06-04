@@ -13,6 +13,9 @@ const ROADMAP_ITEMS = [
   { phase: "P1", title: "Web admin login token path mismatch", owner: "web", status: "open", date: "2026-05-11" },
   { phase: "P1", title: "getallBadges hardcoded user_id=43", owner: "backend", status: "open", date: "2026-05-11" },
   // P2
+  { phase: "P2", title: "Complete Supabase auth — password reset, account mgmt", owner: "web", status: "open", date: "2026-06-03" },
+  { phase: "P2", title: "User access tiers — free vs registered rules", owner: "web", status: "open", date: "2026-06-03" },
+  { phase: "P2", title: "Backend admin — user/content management", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P2", title: "User auth + marketing home (site consolidation)", owner: "web", status: "done", date: "2026-06-03" },
   { phase: "P2", title: "Build /profile page (auth-gated)", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P2", title: "Privacy policy + GA4/AdSense consent", owner: "web", status: "done", date: "2026-06-03" },
@@ -24,6 +27,7 @@ const ROADMAP_ITEMS = [
   { phase: "P2", title: "Passport token TTL never set (1yr default)", owner: "backend", status: "open", date: "" },
   { phase: "P2", title: "Android tag/follow request wrong fields", owner: "android", status: "open", date: "" },
   // P3
+  { phase: "P3", title: "Marketing site — consolidate into Next.js / content", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P3", title: "Review submission form (/review)", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P3", title: "Place AdSense ad units (post-approval)", owner: "web", status: "open", date: "2026-06-03" },
   { phase: "P3", title: "Bulk rename complition→completion", owner: "ios", status: "open", date: "" },
