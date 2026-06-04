@@ -1,7 +1,7 @@
 import Script from "next/script";
+import { ADSENSE_CLIENT } from "@/lib/ads";
 
 const GA_ID = "G-062TFF0ZGE";
-const ADSENSE_CLIENT = "ca-pub-7103672049879516";
 
 // EEA + UK + Switzerland. Consent Mode v2 defaults to denied in these regions
 // until Google's "Privacy & messaging" consent message resolves. Outside this

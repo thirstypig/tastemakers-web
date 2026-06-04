@@ -7,6 +7,8 @@ import { getRestaurant, listRestaurants, listTastemakers, listLists } from "@/li
 import type { Restaurant, CuratedList } from "@/lib/api/types";
 import TagCloud from "@/components/tags/TagCloud";
 import { TagReview } from "@/components/tags/TagReview";
+import { AdUnit } from "@/components/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -243,6 +245,8 @@ export default async function RestaurantPage({
           </div>
         </section>
       )}
+
+      <AdUnit slot={AD_SLOTS.detailFooter} />
     </>
   );
 }

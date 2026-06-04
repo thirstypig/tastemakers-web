@@ -5,6 +5,8 @@ import Image from "next/image";
 import { getTastemaker, listTastemakers } from "@/lib/api/index";
 import type { CuratedList } from "@/lib/api/types";
 import TagCloud from "@/components/tags/TagCloud";
+import { AdUnit } from "@/components/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 
@@ -229,6 +231,8 @@ export default async function TastemakerProfilePage({
           </>
         )}
       </section>
+
+      <AdUnit slot={AD_SLOTS.detailFooter} />
     </>
   );
 }

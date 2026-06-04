@@ -4,6 +4,8 @@ import Image from "next/image";
 import { listRestaurants } from "@/lib/api/index";
 import type { Restaurant } from "@/lib/api/types";
 import TagCloud from "@/components/tags/TagCloud";
+import { AdUnit } from "@/components/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 export const metadata: Metadata = {
   title: "Restaurants — Tastemakers",
@@ -53,6 +55,8 @@ export default async function RestaurantsPage() {
           ))}
         </div>
       </section>
+
+      <AdUnit slot={AD_SLOTS.restaurantsFeed} minHeight={120} />
     </>
   );
 }

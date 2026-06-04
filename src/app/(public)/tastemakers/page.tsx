@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { listTastemakers } from "@/lib/api/index";
 import type { Tastemaker, CuratedList } from "@/lib/api/types";
+import { AdUnit } from "@/components/AdUnit";
+import { AD_SLOTS } from "@/lib/ads";
 
 export const metadata: Metadata = {
   title: "Tastemakers — Tastemakers",
@@ -68,6 +70,8 @@ export default async function TastemakersPage() {
           </div>
         )}
       </section>
+
+      <AdUnit slot={AD_SLOTS.restaurantsFeed} minHeight={120} />
     </>
   );
 }
