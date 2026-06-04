@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.8.0",
+    date: "2026-06-03",
+    title: "User auth + site consolidation",
+    items: [
+      { type: "+", text: "End-user Supabase auth — AuthProvider + useAuth(), session refresh in middleware" },
+      { type: "+", text: "Marketing home at / + /explore hub (replaces / → /restaurants redirect)" },
+      { type: "+", text: "/review inline auth-gate stub; /profile/* route protection" },
+      { type: "+", text: "Auth-aware Nav on marketing/app-shell routes" },
+      { type: "~", text: "Auth redirects default to /explore; login honors ?next (open-redirect-safe)" },
+    ],
+  },
+  {
     v: "v8.7.0",
     date: "2026-06-03",
     title: "Privacy & analytics",
