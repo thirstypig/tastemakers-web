@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Roboto } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { PostHogProvider } from "@/components/providers/PostHogProvider";
+import { Suspense } from "react";
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -30,7 +32,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jetbrainsMono.variable} ${roboto.variable}`}>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <Suspense fallback={null}>
+          <PostHogProvider>
+            <AuthProvider>{children}</AuthProvider>
+          </PostHogProvider>
+        </Suspense>
       </body>
     </html>
   );
