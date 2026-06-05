@@ -24,6 +24,9 @@ const roboto = Roboto({
 export const metadata: Metadata = {
   title: "Tastemakers",
   description: "Discover restaurants through trusted tastemakers",
+  verification: {
+    google: "PYYV7mwMmTDi0yGeN3SNUHlKsQDHDJVhuMztZcIttw8",
+  },
 };
 
 export default function RootLayout({
@@ -34,7 +37,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jetbrainsMono.variable} ${roboto.variable}`}>
       <head>
-        {/* Plausible — lightweight privacy-friendly analytics */}
+        {/* GA4 + AdSense + Consent Mode v2 */}
+        <Analytics />
+        {/* Plausible */}
         <Script
           defer
           data-domain="app.tastemakersapp.com"
@@ -43,8 +48,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        {/* GA4 + AdSense + Consent Mode v2 — on every page */}
-        <Analytics />
         <Suspense fallback={null}>
           <PostHogProvider>
             <AuthProvider>{children}</AuthProvider>
