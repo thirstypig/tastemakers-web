@@ -664,6 +664,13 @@ const BUILD_JOURNAL: {
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
   {
+    date: "Session 16",
+    title: "Live admin — Supabase data wired to all admin pages",
+    details:
+      "Replaced all hardcoded stub arrays in the admin panel with live Supabase reads via a server-only service-role client (lib/supabase-admin.ts). Overview page now shows real KPIs (total_users, total_restaurants, total_tags, total_saves, tag_applications, lists) queried in parallel. Added two new admin pages: /admin/restaurants (name, address, per-row save count, per-row tag count) and /admin/tags (all tags sorted by usage with inline bar chart). Users page converted to async Server Component showing real email, name, username, is_testmaker flag, joined date, last seen. Fixed OAuth post-login redirect bug: admin/login/page.tsx was calling signInWithOAuth without ?next=/admin in redirectTo, causing all admin logins to land on /explore. Also debugged and resolved __webpack_modules__ runtime TypeError caused by stale .next/ production build artifacts conflicting with the running dev server — fixed by wiping .next/ and restarting.",
+    type: "feature",
+  },
+  {
     date: "Session 15",
     title: "Tag seeding pipeline deep review — 21 new findings",
     details:

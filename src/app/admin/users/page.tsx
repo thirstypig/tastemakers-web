@@ -1,15 +1,42 @@
 import Link from "next/link";
+import { createAdminClient } from "@/lib/supabase-admin";
 
-const USERS = [
-  { id: 8421, email: "james@example.com", provider: "google", signedUp: "2026-01-03", restaurants: 47, lists: 12, lastSeen: "2h ago" },
-  { id: 8420, email: "sarah@example.com", provider: "apple", signedUp: "2026-01-02", restaurants: 23, lists: 5, lastSeen: "4h ago" },
-  { id: 8419, email: "mike@example.com", provider: "google", signedUp: "2025-12-31", restaurants: 91, lists: 18, lastSeen: "1d ago" },
-  { id: 8418, email: "priya@example.com", provider: "apple", signedUp: "2025-12-30", restaurants: 12, lists: 3, lastSeen: "2d ago" },
-  { id: 8417, email: "alex@example.com", provider: "email", signedUp: "2025-12-29", restaurants: 5, lists: 1, lastSeen: "5d ago" },
-  { id: 8416, email: "nina@example.com", provider: "google", signedUp: "2025-12-28", restaurants: 38, lists: 9, lastSeen: "1w ago" },
-];
+async function getUsers() {
+  const db = createAdminClient();
+  const { data } = await db
+    .from("users")
+    .select(
+      "id, email, first_name, last_name, username, user_type, is_testmaker, last_login, created_at",
+    )
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  return data ?? [];
+}
 
-const FILTERS = ["all", "signed up <7d", "no restaurants saved", "oauth: google", "oauth: apple"];
+type User = {
+  id: number;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  user_type: string | null;
+  is_testmaker: number | null;
+  last_login: string | null;
+  created_at: string | null;
+};
+
+function relativeTime(iso: string | null): string {
+  if (!iso) return "—";
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
 
 function TRow({ children, last }: { children: React.ReactNode; last?: boolean }) {
   return (
@@ -29,7 +56,9 @@ function TRow({ children, last }: { children: React.ReactNode; last?: boolean })
   );
 }
 
-export default function UsersPage() {
+export default async function UsersPage() {
+  const users = await getUsers();
+
   return (
     <div>
       {/* Tab strip */}
@@ -65,38 +94,14 @@ export default function UsersPage() {
       </div>
 
       <div style={{ padding: "14px 18px", fontFamily: "var(--font-jetbrains-mono), monospace" }}>
-        {/* Shell prompt */}
         <div style={{ color: "var(--tm-muted)", marginBottom: 14, fontSize: 11.5 }}>
-          <span style={{ color: "var(--tm-accent)" }}>$</span> tm users --filter recent
+          <span style={{ color: "var(--tm-accent)" }}>$</span> tm users --limit 100
         </div>
 
-        {/* Filter chips */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-          {FILTERS.map((f, i) => (
-            <span
-              key={f}
-              style={{
-                fontSize: 10.5,
-                padding: "2px 8px",
-                border: "1px solid var(--tm-line)",
-                borderRadius: 3,
-                background: i === 0 ? "var(--tm-accent-bg)" : "transparent",
-                color: i === 0 ? "var(--tm-accent)" : "var(--tm-muted)",
-                cursor: "pointer",
-                fontFamily: "var(--font-jetbrains-mono), monospace",
-              }}
-            >
-              [{f}]
-            </span>
-          ))}
+        <div style={{ color: "var(--tm-muted)", marginBottom: 10, fontSize: 12 }}>
+          # users · {users.length} shown · sorted by signup date
         </div>
 
-        {/* Header */}
-        <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
-          # users · 12,847
-        </div>
-
-        {/* Table */}
         <div
           style={{
             background: "var(--tm-panel)",
@@ -104,37 +109,58 @@ export default function UsersPage() {
             borderRadius: 6,
           }}
         >
-          {/* Header row */}
+          {/* Header */}
           <TRow>
-            <span style={{ color: "var(--tm-muted)", display: "flex", gap: 0, width: "100%" }}>
+            <span style={{ color: "var(--tm-muted)", display: "flex", width: "100%" }}>
               <span style={{ width: 56 }}>ID</span>
               <span style={{ flex: 1 }}>EMAIL</span>
-              <span style={{ width: 80 }}>PROVIDER</span>
-              <span style={{ width: 96 }}>SIGNED UP</span>
-              <span style={{ width: 72 }}>RESTS</span>
-              <span style={{ width: 56 }}>LISTS</span>
-              <span style={{ width: 80 }}>LAST SEEN</span>
+              <span style={{ width: 130 }}>NAME</span>
+              <span style={{ width: 110 }}>USERNAME</span>
+              <span style={{ width: 70 }}>TYPE</span>
+              <span style={{ width: 44 }}>TM</span>
+              <span style={{ width: 90 }}>JOINED</span>
+              <span style={{ width: 90 }}>LAST SEEN</span>
             </span>
           </TRow>
-          {USERS.map((u, i) => (
-            <TRow key={u.id} last={i === USERS.length - 1}>
-              <span style={{ width: 56, color: "var(--tm-muted)" }}>
-                {u.id}
-              </span>
-              <span style={{ flex: 1 }}>{u.email}</span>
-              <span style={{ width: 80, color: "var(--tm-muted)" }}>
-                {u.provider}
-              </span>
-              <span style={{ width: 96, color: "var(--tm-muted)" }}>
-                {u.signedUp}
-              </span>
-              <span style={{ width: 72 }}>{u.restaurants}</span>
-              <span style={{ width: 56 }}>{u.lists}</span>
-              <span style={{ width: 80, color: "var(--tm-muted)" }}>
-                {u.lastSeen}
-              </span>
+
+          {users.length === 0 ? (
+            <TRow last>
+              <span style={{ color: "var(--tm-muted)" }}>no users found</span>
             </TRow>
-          ))}
+          ) : (
+            users.map((u: User, i: number) => (
+              <TRow key={u.id} last={i === users.length - 1}>
+                <span style={{ width: 56, color: "var(--tm-muted)" }}>{u.id}</span>
+                <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {u.email}
+                </span>
+                <span style={{ width: 130, color: "var(--tm-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {[u.first_name, u.last_name].filter(Boolean).join(" ") || "—"}
+                </span>
+                <span style={{ width: 110, color: "var(--tm-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  {u.username ?? "—"}
+                </span>
+                <span style={{ width: 70, color: "var(--tm-muted)" }}>
+                  {u.user_type ?? "—"}
+                </span>
+                <span
+                  style={{
+                    width: 44,
+                    color: u.is_testmaker ? "var(--tm-accent)" : "var(--tm-muted)",
+                    fontWeight: u.is_testmaker ? 600 : 400,
+                  }}
+                >
+                  {u.is_testmaker ? "★" : "—"}
+                </span>
+                <span style={{ width: 90, color: "var(--tm-muted)" }}>
+                  {u.created_at ? new Date(u.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "2-digit" }) : "—"}
+                </span>
+                <span style={{ width: 90, color: "var(--tm-muted)" }}>
+                  {relativeTime(u.last_login)}
+                </span>
+              </TRow>
+            ))
+          )}
         </div>
       </div>
     </div>

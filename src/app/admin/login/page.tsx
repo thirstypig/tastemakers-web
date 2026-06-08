@@ -19,7 +19,7 @@ export default function AdminLogin() {
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
-        options: { redirectTo: `${window.location.origin}/auth/callback` },
+        options: { redirectTo: `${window.location.origin}/auth/callback?next=/admin` },
       });
       if (error) setError(error.message);
     } catch (e) {

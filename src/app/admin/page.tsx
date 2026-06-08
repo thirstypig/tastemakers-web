@@ -1,64 +1,63 @@
 import Link from "next/link";
+import { createAdminClient } from "@/lib/supabase-admin";
 
-// ── Fixture data (wire to real APIs once backend endpoints exist) ─
-const KPIS = [
-  { label: "total_users", value: "12,847", delta: "+184", period: "7d", trend: "up" },
-  { label: "dau", value: "2,143", delta: "+6.2%", period: "24h", trend: "up" },
-  { label: "restaurants_saved", value: "48,219", delta: "+1,204", period: "7d", trend: "up" },
-  { label: "api_p95_latency", value: "142ms", delta: "-18ms", period: "24h", trend: "up" },
-  { label: "error_rate", value: "0.34%", delta: "+0.08", period: "24h", trend: "down" },
-  { label: "tests_passing", value: "1 / 9", delta: "—", period: "", trend: "flat" },
-];
-
-const PLATFORMS = [
-  { id: "ios", name: "ios", status: "live", version: "2.14.0", users: "8,402", notes: "Swift / UIKit · 18 open todos" },
-  { id: "android", name: "android", status: "beta", version: "0.9.2", users: "1,981", notes: "Kotlin / Compose · phase 3" },
-  { id: "web", name: "web", status: "staging", version: "0.4.1", users: "2,464", notes: "Next.js 15 · 5 dashboards live" },
-  { id: "api", name: "api", status: "live", version: "8.6.3", users: "—", notes: "Laravel 8 · Railway · pgsql 5446" },
-];
-
-const ERRORS = [
-  { time: "14:02", code: "500", route: "GET /api/user", msg: "in failed sql transaction", count: 12 },
-  { time: "13:48", code: "500", route: "GET /api/restaurants", msg: "FOURSQUARE_API_KEY missing", count: 47 },
-  { time: "12:31", code: "401", route: "POST /api/apple-login", msg: "JWT verification skipped", count: 3 },
-  { time: "11:09", code: "422", route: "POST /api/signup", msg: "email already exists", count: 8 },
-];
-
-const ROADMAP = [
-  { phase: "P1", title: "Auth on delete endpoints", status: "in_progress" },
-  { phase: "P1", title: "Apple Sign-In JWT verify", status: "open" },
-  { phase: "P1", title: "IDOR — drop user_id from body", status: "in_progress" },
-  { phase: "P2", title: "Form Request validation", status: "open" },
-  { phase: "P2", title: "Move token to Keychain", status: "open" },
-  { phase: "P3", title: "Bulk rename complition→completion", status: "open" },
-];
-
-function statusColor(status: string) {
-  if (status === "live") return "var(--tm-accent)";
-  if (status === "beta") return "var(--tm-warn)";
-  return "var(--tm-muted)";
+async function getKpis() {
+  const db = createAdminClient();
+  const [users, restaurants, tags, saves, tagApps, lists] = await Promise.all([
+    db.from("users").select("*", { count: "exact", head: true }).is("deleted_at", null),
+    db.from("restaurants").select("*", { count: "exact", head: true }).is("deleted_at", null),
+    db.from("tags").select("*", { count: "exact", head: true }).is("deleted_at", null),
+    db.from("restaurant_user").select("*", { count: "exact", head: true }),
+    db.from("restaurant_tag").select("*", { count: "exact", head: true }),
+    db.from("testmaker_list").select("*", { count: "exact", head: true }),
+  ]);
+  return {
+    totalUsers: users.count ?? 0,
+    totalRestaurants: restaurants.count ?? 0,
+    totalTags: tags.count ?? 0,
+    totalSaves: saves.count ?? 0,
+    totalTagApps: tagApps.count ?? 0,
+    totalLists: lists.count ?? 0,
+  };
 }
 
-function phaseColor(phase: string) {
-  if (phase === "P1") return "var(--tm-err)";
-  if (phase === "P2") return "var(--tm-warn)";
-  return "var(--tm-muted)";
+async function getRecentUsers() {
+  const db = createAdminClient();
+  const { data } = await db
+    .from("users")
+    .select("id, email, first_name, last_name, user_type, is_testmaker, created_at")
+    .is("deleted_at", null)
+    .order("created_at", { ascending: false })
+    .limit(5);
+  return data ?? [];
 }
 
-function trendColor(trend: string) {
-  if (trend === "up") return "var(--tm-accent)";
-  if (trend === "down") return "var(--tm-err)";
-  return "var(--tm-muted)";
+async function getTopTags() {
+  const db = createAdminClient();
+  const { data } = await db
+    .from("restaurant_tag")
+    .select("tag_id, tags(name)")
+    .limit(500);
+  if (!data) return [];
+  const counts: Record<number, { name: string; count: number }> = {};
+  for (const row of data) {
+    const tag = (row.tags as unknown) as { name: string } | null;
+    if (!tag) continue;
+    counts[row.tag_id] = counts[row.tag_id]
+      ? { ...counts[row.tag_id], count: counts[row.tag_id].count + 1 }
+      : { name: tag.name, count: 1 };
+  }
+  return Object.entries(counts)
+    .map(([id, v]) => ({ id: Number(id), ...v }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 6);
 }
 
-// Shared row component
-function TRow({
-  children,
-  last,
-}: {
-  children: React.ReactNode;
-  last?: boolean;
-}) {
+function fmt(n: number) {
+  return n.toLocaleString();
+}
+
+function TRow({ children, last }: { children: React.ReactNode; last?: boolean }) {
   return (
     <div
       style={{
@@ -74,7 +73,22 @@ function TRow({
   );
 }
 
-export default function AdminOverview() {
+export default async function AdminOverview() {
+  const [kpis, recentUsers, topTags] = await Promise.all([
+    getKpis(),
+    getRecentUsers(),
+    getTopTags(),
+  ]);
+
+  const KPI_ROWS = [
+    { label: "total_users", value: fmt(kpis.totalUsers) },
+    { label: "total_restaurants", value: fmt(kpis.totalRestaurants) },
+    { label: "total_tags", value: fmt(kpis.totalTags) },
+    { label: "total_saves", value: fmt(kpis.totalSaves) },
+    { label: "total_tag_applications", value: fmt(kpis.totalTagApps) },
+    { label: "total_lists", value: fmt(kpis.totalLists) },
+  ];
+
   return (
     <div>
       {/* Tab strip */}
@@ -111,24 +125,20 @@ export default function AdminOverview() {
         ))}
       </div>
 
-      {/* Scroll content */}
       <div
         style={{
           padding: "14px 18px",
           fontFamily: "var(--font-jetbrains-mono), monospace",
         }}
       >
-        {/* Shell prompt */}
         <div style={{ color: "var(--tm-muted)", marginBottom: 16, fontSize: 11.5 }}>
           <span style={{ color: "var(--tm-accent)" }}>$</span> tm status --all
         </div>
 
         {/* KPIs */}
         <div style={{ marginBottom: 18 }}>
-          <div
-            style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}
-          >
-            # kpis · 24h
+          <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
+            # kpis · live
           </div>
           <div
             style={{
@@ -137,112 +147,18 @@ export default function AdminOverview() {
               borderRadius: 6,
             }}
           >
-            {KPIS.map((k, i) => (
-              <TRow key={k.label} last={i === KPIS.length - 1}>
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: 170,
-                    color: "var(--tm-muted)",
-                  }}
-                >
+            {KPI_ROWS.map((k, i) => (
+              <TRow key={k.label} last={i === KPI_ROWS.length - 1}>
+                <span style={{ display: "inline-block", width: 200, color: "var(--tm-muted)" }}>
                   {k.label}
                 </span>
-                <span
-                  style={{
-                    display: "inline-block",
-                    width: 90,
-                    color: "var(--tm-ink)",
-                    fontWeight: 600,
-                  }}
-                >
-                  {k.value}
-                </span>
-                <span style={{ color: trendColor(k.trend) }}>{k.delta}</span>
-                {k.period && (
-                  <span
-                    style={{ color: "var(--tm-muted)", marginLeft: 8 }}
-                  >
-                    · {k.period}
-                  </span>
-                )}
+                <span style={{ color: "var(--tm-ink)", fontWeight: 600 }}>{k.value}</span>
               </TRow>
             ))}
           </div>
         </div>
 
-        {/* Platforms */}
-        <div style={{ marginBottom: 18 }}>
-          <div
-            style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}
-          >
-            # platforms
-          </div>
-          <div
-            style={{
-              background: "var(--tm-panel)",
-              border: "1px solid var(--tm-line)",
-              borderRadius: 6,
-            }}
-          >
-            {/* Header row */}
-            <TRow>
-              <span style={{ color: "var(--tm-muted)" }}>
-                <span style={{ display: "inline-block", width: 74 }}>SERVICE</span>
-                <span style={{ display: "inline-block", width: 86 }}>VERSION</span>
-                <span style={{ display: "inline-block", width: 74 }}>USERS</span>
-                <span style={{ display: "inline-block", width: 80 }}>STATUS</span>
-                <span>NOTES</span>
-              </span>
-            </TRow>
-            {PLATFORMS.map((pl, i) => (
-              <Link
-                key={pl.id}
-                href={`/admin/platforms/${pl.id}`}
-                style={{ textDecoration: "none", display: "block" }}
-              >
-                <TRow last={i === PLATFORMS.length - 1}>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: 74,
-                      fontWeight: 600,
-                      color: "var(--tm-ink)",
-                    }}
-                  >
-                    {pl.name}
-                  </span>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: 86,
-                      color: "var(--tm-muted)",
-                    }}
-                  >
-                    {pl.version}
-                  </span>
-                  <span
-                    style={{ display: "inline-block", width: 74 }}
-                  >
-                    {pl.users}
-                  </span>
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: 80,
-                      color: statusColor(pl.status),
-                    }}
-                  >
-                    ● {pl.status}
-                  </span>
-                  <span style={{ color: "var(--tm-muted)" }}>{pl.notes}</span>
-                </TRow>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Two-column: errors | roadmap */}
+        {/* Two-column: recent users | top tags */}
         <div
           style={{
             display: "grid",
@@ -251,16 +167,10 @@ export default function AdminOverview() {
             marginBottom: 18,
           }}
         >
-          {/* Errors */}
+          {/* Recent signups */}
           <div>
-            <div
-              style={{
-                color: "var(--tm-muted)",
-                marginBottom: 6,
-                fontSize: 12,
-              }}
-            >
-              # tail errors.log -n 4
+            <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
+              # recent signups
             </div>
             <div
               style={{
@@ -269,51 +179,45 @@ export default function AdminOverview() {
                 borderRadius: 6,
               }}
             >
-              {ERRORS.map((e, i) => (
-                <TRow key={i} last={i === ERRORS.length - 1}>
-                  <div>
-                    <span style={{ color: "var(--tm-muted)" }}>
-                      [{e.time}]
-                    </span>{" "}
-                    <span
-                      style={{
-                        color: e.code.startsWith("5")
-                          ? "var(--tm-err)"
-                          : "var(--tm-warn)",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {e.code}
-                    </span>{" "}
-                    <span>{e.route}</span>{" "}
-                    <span style={{ color: "var(--tm-muted)" }}>
-                      ×{e.count}
-                    </span>
-                  </div>
-                  <div
-                    style={{
-                      color: "var(--tm-muted)",
-                      paddingLeft: 48,
-                      marginTop: 2,
-                    }}
-                  >
-                    ↳ {e.msg}
-                  </div>
+              {recentUsers.length === 0 ? (
+                <TRow last>
+                  <span style={{ color: "var(--tm-muted)" }}>no users found</span>
                 </TRow>
-              ))}
+              ) : (
+                recentUsers.map((u, i) => (
+                  <TRow key={u.id} last={i === recentUsers.length - 1}>
+                    <div>
+                      <span style={{ fontWeight: 600 }}>
+                        {u.first_name ?? ""} {u.last_name ?? ""}
+                      </span>
+                      {u.is_testmaker ? (
+                        <span style={{ color: "var(--tm-accent)", marginLeft: 6 }}>★</span>
+                      ) : null}
+                    </div>
+                    <div style={{ color: "var(--tm-muted)", fontSize: 10.5, marginTop: 2 }}>
+                      {u.email}
+                    </div>
+                    <div style={{ color: "var(--tm-muted)", fontSize: 10.5 }}>
+                      {u.created_at ? new Date(u.created_at).toLocaleDateString() : "—"}
+                    </div>
+                  </TRow>
+                ))
+              )}
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <Link
+                href="/admin/users"
+                style={{ fontSize: 10.5, color: "var(--tm-accent)", textDecoration: "none" }}
+              >
+                → view all users
+              </Link>
             </div>
           </div>
 
-          {/* Roadmap */}
+          {/* Top tags */}
           <div>
-            <div
-              style={{
-                color: "var(--tm-muted)",
-                marginBottom: 6,
-                fontSize: 12,
-              }}
-            >
-              # cat roadmap.md
+            <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
+              # top tags · by usage
             </div>
             <div
               style={{
@@ -322,26 +226,30 @@ export default function AdminOverview() {
                 borderRadius: 6,
               }}
             >
-              {ROADMAP.map((r, i) => (
-                <TRow key={i} last={i === ROADMAP.length - 1}>
-                  <span
-                    style={{
-                      color: phaseColor(r.phase),
-                      fontWeight: 600,
-                    }}
-                  >
-                    [{r.phase}]
-                  </span>{" "}
-                  <span>
-                    {r.status === "in_progress" ? "◐" : "○"} {r.title}
-                  </span>
+              {topTags.length === 0 ? (
+                <TRow last>
+                  <span style={{ color: "var(--tm-muted)" }}>no tags found</span>
                 </TRow>
-              ))}
+              ) : (
+                topTags.map((t, i) => (
+                  <TRow key={t.id} last={i === topTags.length - 1}>
+                    <span style={{ display: "inline-block", width: 160 }}>{t.name}</span>
+                    <span style={{ color: "var(--tm-muted)" }}>×{t.count}</span>
+                  </TRow>
+                ))
+              )}
+            </div>
+            <div style={{ marginTop: 6 }}>
+              <Link
+                href="/admin/tags"
+                style={{ fontSize: 10.5, color: "var(--tm-accent)", textDecoration: "none" }}
+              >
+                → view all tags
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Blinking cursor */}
         <div style={{ color: "var(--tm-muted)", fontSize: 11.5 }}>
           <span style={{ color: "var(--tm-accent)" }}>$</span>{" "}
           <span

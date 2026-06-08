@@ -2,6 +2,20 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.9.0",
+    date: "2026-06-07",
+    title: "Live admin — real Supabase data, restaurants + tags pages",
+    items: [
+      { type: "+", text: "supabase-admin.ts — server-only service-role client; never bundled to browser" },
+      { type: "+", text: "Admin overview wired to live KPIs: total_users, total_restaurants, total_tags, total_saves, total_tag_applications, total_lists" },
+      { type: "+", text: "Admin overview: recent signups panel + top tags by usage (live)" },
+      { type: "+", text: "/admin/users — real user table (email, name, username, is_testmaker flag, joined, last seen)" },
+      { type: "+", text: "/admin/restaurants — real restaurant table with per-row save + tag counts" },
+      { type: "+", text: "/admin/tags — real tag table sorted by usage with inline usage bar" },
+      { type: "~", text: "Admin login: fixed post-OAuth redirect landing on /explore instead of /admin (missing ?next=/admin in redirectTo)" },
+    ],
+  },
+  {
     v: "v8.8.2",
     date: "2026-06-04",
     title: "P1+P2 security & seeder hardening (26 todos resolved)",

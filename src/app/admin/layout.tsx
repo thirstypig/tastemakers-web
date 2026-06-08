@@ -34,6 +34,8 @@ const NAV_GROUPS = [
     icon: LayoutDashboard,
     children: [
       { label: "users", href: "/admin/users", icon: Users },
+      { label: "restaurants", href: "/admin/restaurants", icon: Map },
+      { label: "tags", href: "/admin/tags", icon: BarChart2 },
       { label: "errors.log", href: "/admin/errors", icon: AlertTriangle },
     ],
   },
@@ -70,6 +72,8 @@ const NAV_GROUPS = [
 const CMD_ITEMS = [
   { label: "Go to Overview", href: "/admin" },
   { label: "Go to Users", href: "/admin/users" },
+  { label: "Go to Restaurants", href: "/admin/restaurants" },
+  { label: "Go to Tags", href: "/admin/tags" },
   { label: "Go to Errors", href: "/admin/errors" },
   { label: "Go to Roadmap", href: "/admin/roadmap" },
   { label: "Go to Changelog", href: "/admin/changelog" },
