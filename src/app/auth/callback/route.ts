@@ -87,7 +87,13 @@ async function syncPublicUser(
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  // Railway serves Next.js on an internal port (e.g. localhost:8080), so
+  // request.url reflects the internal address, not the public domain.
+  // Use NEXT_PUBLIC_SITE_URL when available to build the correct redirect.
+  const origin =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    new URL(request.url).origin;
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/explore";
 
