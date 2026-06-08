@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.9.1",
+    date: "2026-06-08",
+    title: "Live platforms commits + real analytics service status",
+    items: [
+      { type: "+", text: "Platforms page: live commits from GitHub API for web (5min cache); private repos fall back to hardcoded" },
+      { type: "+", text: "Platforms page: repo field shows public/private status per platform" },
+      { type: "+", text: "Analytics page: GA4, Plausible, Search Console show real 'active/verified' status" },
+      { type: "+", text: "Analytics page: PostHog event table (last 7d) when POSTHOG_PERSONAL_API_KEY is set" },
+      { type: "~", text: "Analytics page: upgraded from stub placeholder to async Server Component with env-gated data" },
+    ],
+  },
+  {
     v: "v8.9.0",
     date: "2026-06-07",
     title: "Live admin — real Supabase data, restaurants + tags pages",

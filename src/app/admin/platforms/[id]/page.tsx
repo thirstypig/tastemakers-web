@@ -2,6 +2,35 @@ import Link from "next/link";
 
 type PlatformId = "ios" | "android" | "web" | "api";
 
+// Only tastemakers-web is a public GitHub repo — others are private.
+const GITHUB_REPOS: Partial<Record<PlatformId, string>> = {
+  web: "thirstypig/tastemakers-web",
+};
+
+type Commit = { sha: string; date: string; subject: string };
+
+async function fetchCommits(repo: string): Promise<Commit[]> {
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${repo}/commits?per_page=6`,
+      {
+        headers: { Accept: "application/vnd.github.v3+json" },
+        next: { revalidate: 300 },
+      },
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((c: any) => ({
+      sha: (c.sha as string).slice(0, 7),
+      date: (c.commit.author.date as string).slice(0, 10),
+      subject: (c.commit.message as string).split("\n")[0].slice(0, 72),
+    }));
+  } catch {
+    return [];
+  }
+}
+
 const PLATFORM_DATA: Record<
   PlatformId,
   {
@@ -12,57 +41,59 @@ const PLATFORM_DATA: Record<
     tech: string;
     crashFree: string;
     lastRelease: string;
-    todos: { priority: string; title: string; status: string }[];
-    commits: { sha: string; date: string; subject: string }[];
+    repoPublic: boolean;
+    todos: { priority: string; title: string }[];
+    fallbackCommits: Commit[];
     routes: string[];
   }
 > = {
   ios: {
     name: "iOS",
     version: "2.14.0",
-    users: "8,402",
+    users: "—",
     status: "live",
     tech: "Swift / UIKit",
-    crashFree: "99.2%",
+    crashFree: "—",
     lastRelease: "2026-04-10",
+    repoPublic: false,
     todos: [
-      { priority: "P1", title: "Fix multipart Content-Type boundary mismatch", status: "open" },
-      { priority: "P1", title: "Move Bearer token from UserDefaults to Keychain", status: "open" },
-      { priority: "P2", title: "Fix double completion callback in getProfileAPI", status: "open" },
-      { priority: "P2", title: "Update API URL to api.tastemakersapp.com", status: "open" },
-      { priority: "P3", title: "Fix otherUser enum case baking query string into path", status: "open" },
-      { priority: "P3", title: "Delete arrayToNSData and makeNetworkActivityHidden (dead)", status: "open" },
+      { priority: "P1", title: "Fix multipart Content-Type boundary mismatch" },
+      { priority: "P1", title: "Move Bearer token from UserDefaults to Keychain" },
+      { priority: "P2", title: "Fix double completion callback in getProfileAPI" },
+      { priority: "P2", title: "Update API URL → api.tastemakersapp.com" },
+      { priority: "P3", title: "Fix otherUser enum case baking query into path" },
+      { priority: "P3", title: "Delete arrayToNSData + makeNetworkActivityHidden (dead code)" },
     ],
-    commits: [
+    fallbackCommits: [
       { sha: "a1b2c3d", date: "2026-04-10", subject: "bump version to 2.14.0" },
       { sha: "e4f5g6h", date: "2026-03-22", subject: "fix profile image upload flow" },
       { sha: "i7j8k9l", date: "2026-03-15", subject: "add Apple Sign-In support" },
-      { sha: "m0n1o2p", date: "2026-03-01", subject: "update Foursquare API endpoints" },
     ],
     routes: [
       "POST /api/login", "POST /api/apple-login", "GET /api/user",
-      "POST /api/restaurant-save", "POST /api/restaurant-tag", "GET /api/restaurants",
-      "GET /api/gettastemaker-List", "POST /api/ListTitleSave",
+      "POST /api/restaurant-save", "POST /api/restaurant-tag",
+      "GET /api/restaurants", "GET /api/gettastemaker-List", "POST /api/ListTitleSave",
     ],
   },
   android: {
     name: "Android",
     version: "0.9.2",
-    users: "1,981",
+    users: "—",
     status: "beta",
     tech: "Kotlin / Jetpack Compose",
     crashFree: "—",
     lastRelease: "2026-02-01",
+    repoPublic: false,
     todos: [
-      { priority: "P1", title: "Create Hilt DI module (app won't compile)", status: "open" },
-      { priority: "P1", title: "Fix AuthResponse envelope mismatch (login broken)", status: "open" },
-      { priority: "P2", title: "Fix TagRestaurantRequest field names", status: "open" },
-      { priority: "P2", title: "Fix FollowRequest wrong key (tastemaker_id vs testmaker_id)", status: "open" },
-      { priority: "P2", title: "Add nearbycuisine endpoint to API interface", status: "open" },
-      { priority: "P3", title: "Set allowBackup=false in AndroidManifest", status: "open" },
-      { priority: "P3", title: "Migrate kapt to KSP", status: "open" },
+      { priority: "P1", title: "Create Hilt DI module (app won't compile)" },
+      { priority: "P1", title: "Fix AuthResponse envelope mismatch (login broken)" },
+      { priority: "P2", title: "Fix TagRestaurantRequest field names" },
+      { priority: "P2", title: "Fix FollowRequest wrong key (tastemaker_id vs testmaker_id)" },
+      { priority: "P2", title: "Add nearbycuisine endpoint to API interface" },
+      { priority: "P3", title: "Set allowBackup=false in AndroidManifest" },
+      { priority: "P3", title: "Migrate kapt → KSP" },
     ],
-    commits: [
+    fallbackCommits: [
       { sha: "q3r4s5t", date: "2026-02-01", subject: "scaffold Jetpack Compose navigation" },
       { sha: "u6v7w8x", date: "2026-01-20", subject: "add Retrofit API interface" },
       { sha: "y9z0a1b", date: "2026-01-10", subject: "initial Hilt setup (incomplete)" },
@@ -74,24 +105,19 @@ const PLATFORM_DATA: Record<
   },
   web: {
     name: "Web",
-    version: "0.4.1",
-    users: "2,464",
-    status: "staging",
+    version: "v8.9.0",
+    users: "—",
+    status: "live",
     tech: "Next.js 15 / TypeScript",
     crashFree: "—",
-    lastRelease: "2026-05-11",
+    lastRelease: "2026-06-08",
+    repoPublic: true,
     todos: [
-      { priority: "P1", title: "Admin login token path mismatch (data.token vs data.data.token)", status: "open" },
-      { priority: "P2", title: "Move Bearer token from localStorage to httpOnly cookie", status: "open" },
-      { priority: "P2", title: "Fix TastemakerList.name → list_name field mismatch", status: "open" },
-      { priority: "P3", title: "Add TypeScript null safety for nullable API fields", status: "open" },
+      { priority: "P2", title: "Move Bearer token from localStorage to httpOnly cookie" },
+      { priority: "P2", title: "Fix TastemakerList.name → list_name field mismatch" },
+      { priority: "P3", title: "Add TypeScript null safety for nullable API fields" },
     ],
-    commits: [
-      { sha: "c2d3e4f", date: "2026-05-11", subject: "add terminal admin dashboard" },
-      { sha: "g5h6i7j", date: "2026-05-04", subject: "add status, analytics, changelog pages" },
-      { sha: "k8l9m0n", date: "2026-04-22", subject: "add roadmap page with 49 findings" },
-      { sha: "o1p2q3r", date: "2026-04-15", subject: "initial Next.js 15 scaffold" },
-    ],
+    fallbackCommits: [],
     routes: [
       "POST /api/login", "GET /api/user", "GET /api/restaurants",
       "GET /api/tags", "GET /api/gettastemaker-List",
@@ -99,27 +125,27 @@ const PLATFORM_DATA: Record<
   },
   api: {
     name: "API",
-    version: "8.6.3",
+    version: "8.9.0",
     users: "—",
     status: "live",
     tech: "Laravel 8 / PostgreSQL",
-    crashFree: "99.66%",
-    lastRelease: "2026-05-11",
+    crashFree: "—",
+    lastRelease: "2026-06-04",
+    repoPublic: false,
     todos: [
-      { priority: "P1", title: "Remove debug routes from web.php (/debug-signup, /run-schema-fix)", status: "open" },
-      { priority: "P1", title: "Remove hardcoded FCM key from UserController.php:561", status: "open" },
-      { priority: "P1", title: "Fix Apple Sign-In JWT — base64 decode only, no signature verify", status: "open" },
-      { priority: "P2", title: "Wrap multi-step writes in DB::transaction()", status: "open" },
-      { priority: "P2", title: "Uncomment JSON exception handler in Handler.php", status: "open" },
-      { priority: "P2", title: "Set Passport::tokensExpireIn() (currently 1 year)", status: "open" },
+      { priority: "P1", title: "Remove debug routes from web.php (/debug-signup, /run-schema-fix)" },
+      { priority: "P1", title: "Fix Apple Sign-In JWT — base64 decode only, no signature verify" },
+      { priority: "P2", title: "Wrap multi-step writes in DB::transaction()" },
+      { priority: "P2", title: "Uncomment JSON exception handler in Handler.php" },
+      { priority: "P2", title: "Set Passport::tokensExpireIn() (currently 1 year)" },
     ],
-    commits: [
-      { sha: "s4t5u6v", date: "2026-05-11", subject: "remove FCM key, fix mass assignment" },
-      { sha: "w7x8y9z", date: "2026-05-04", subject: "Railway deployment + Passport env keys" },
-      { sha: "a0b1c2d", date: "2026-04-22", subject: "add PHPUnit feature tests" },
-      { sha: "e3f4g5h", date: "2026-04-01", subject: "migrate to PostgreSQL / Supabase" },
+    fallbackCommits: [
+      { sha: "5197215", date: "2026-06-04", subject: "chore: remove temporary admin token generator route" },
+      { sha: "527196e", date: "2026-06-04", subject: "fix: harden temp admin token route (hash_equals + throttle)" },
+      { sha: "974f0b2", date: "2026-06-04", subject: "temp: add one-time Budibase admin token generator route" },
+      { sha: "eb25933", date: "2026-06-03", subject: "fix: resolve P1+P2 todos — security, seeder hardening" },
     ],
-    routes: ["all"],
+    routes: ["all — see /admin/routes"],
   },
 };
 
@@ -133,6 +159,22 @@ function priorityColor(p: string) {
   if (p === "P1") return "var(--tm-err)";
   if (p === "P2") return "var(--tm-warn)";
   return "var(--tm-muted)";
+}
+
+function TRow({ children, last }: { children: React.ReactNode; last?: boolean }) {
+  return (
+    <div
+      style={{
+        padding: "7px 14px",
+        borderBottom: last ? "none" : "1px solid var(--tm-line)",
+        fontSize: 11.5,
+        color: "var(--tm-ink)",
+        fontFamily: "var(--font-jetbrains-mono), monospace",
+      }}
+    >
+      {children}
+    </div>
+  );
 }
 
 export default async function PlatformPage({
@@ -150,6 +192,13 @@ export default async function PlatformPage({
       </div>
     );
   }
+
+  const githubRepo = GITHUB_REPOS[id as PlatformId];
+  const commits = githubRepo
+    ? await fetchCommits(githubRepo)
+    : platform.fallbackCommits;
+
+  const commitsFromGitHub = githubRepo && commits.length > 0;
 
   return (
     <div>
@@ -190,7 +239,7 @@ export default async function PlatformPage({
           <span style={{ color: "var(--tm-accent)" }}>$</span> tm platform {id} --stats
         </div>
 
-        {/* Stats KPIs */}
+        {/* Stats */}
         <div style={{ marginBottom: 18 }}>
           <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}># stats</div>
           <div
@@ -202,11 +251,11 @@ export default async function PlatformPage({
           >
             {[
               { label: "version", value: platform.version },
-              { label: "users", value: platform.users },
               { label: "status", value: `● ${platform.status}`, color: statusColor(platform.status) },
               { label: "tech", value: platform.tech },
               { label: "crash_free", value: platform.crashFree },
               { label: "last_release", value: platform.lastRelease },
+              { label: "repo", value: githubRepo ?? "private", color: githubRepo ? "var(--tm-accent)" : "var(--tm-muted)" },
             ].map((k, i, arr) => (
               <div
                 key={k.label}
@@ -217,15 +266,10 @@ export default async function PlatformPage({
                   display: "flex",
                 }}
               >
-                <span style={{ display: "inline-block", width: 170, color: "var(--tm-muted)" }}>
+                <span style={{ display: "inline-block", width: 140, color: "var(--tm-muted)" }}>
                   {k.label}
                 </span>
-                <span
-                  style={{
-                    fontWeight: 600,
-                    color: k.color ?? "var(--tm-ink)",
-                  }}
-                >
+                <span style={{ fontWeight: 600, color: k.color ?? "var(--tm-ink)" }}>
                   {k.value}
                 </span>
               </div>
@@ -233,7 +277,7 @@ export default async function PlatformPage({
           </div>
         </div>
 
-        {/* Two-column: todos | commits */}
+        {/* Todos | Commits */}
         <div
           style={{
             display: "grid",
@@ -245,7 +289,7 @@ export default async function PlatformPage({
           {/* Todos */}
           <div>
             <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
-              # todos.md ({platform.todos.length})
+              # todos ({platform.todos.length})
             </div>
             <div
               style={{
@@ -259,8 +303,7 @@ export default async function PlatformPage({
                   key={i}
                   style={{
                     padding: "7px 14px",
-                    borderBottom:
-                      i === platform.todos.length - 1 ? "none" : "1px solid var(--tm-line)",
+                    borderBottom: i === platform.todos.length - 1 ? "none" : "1px solid var(--tm-line)",
                     fontSize: 11.5,
                     display: "flex",
                     gap: 8,
@@ -279,7 +322,7 @@ export default async function PlatformPage({
           {/* Commits */}
           <div>
             <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
-              # recent commits
+              # recent commits{commitsFromGitHub ? " · github.com/live" : " · hardcoded"}
             </div>
             <div
               style={{
@@ -288,30 +331,26 @@ export default async function PlatformPage({
                 borderRadius: 6,
               }}
             >
-              {platform.commits.map((c, i) => (
-                <div
-                  key={c.sha}
-                  style={{
-                    padding: "7px 14px",
-                    borderBottom:
-                      i === platform.commits.length - 1 ? "none" : "1px solid var(--tm-line)",
-                    fontSize: 11.5,
-                  }}
-                >
-                  <span style={{ color: "var(--tm-muted)" }}>{c.date}</span>{" "}
-                  <span style={{ color: "var(--tm-accent)" }}>{c.sha}</span>{" "}
-                  <span style={{ color: "var(--tm-ink)" }}>{c.subject}</span>
-                </div>
-              ))}
+              {commits.length === 0 ? (
+                <TRow last>
+                  <span style={{ color: "var(--tm-muted)" }}>no commits available</span>
+                </TRow>
+              ) : (
+                commits.map((c, i) => (
+                  <TRow key={c.sha} last={i === commits.length - 1}>
+                    <span style={{ color: "var(--tm-muted)", marginRight: 8 }}>{c.date}</span>
+                    <span style={{ color: "var(--tm-accent)", marginRight: 8 }}>{c.sha}</span>
+                    <span style={{ color: "var(--tm-ink)" }}>{c.subject}</span>
+                  </TRow>
+                ))
+              )}
             </div>
           </div>
         </div>
 
-        {/* API routes used */}
+        {/* API routes */}
         <div>
-          <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
-            # api routes used
-          </div>
+          <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}># api routes used</div>
           <div
             style={{
               background: "var(--tm-panel)",
@@ -320,18 +359,10 @@ export default async function PlatformPage({
             }}
           >
             {platform.routes.map((r, i) => (
-              <div
-                key={r}
-                style={{
-                  padding: "7px 14px",
-                  borderBottom:
-                    i === platform.routes.length - 1 ? "none" : "1px solid var(--tm-line)",
-                  fontSize: 11.5,
-                  color: "var(--tm-muted)",
-                }}
-              >
-                <span style={{ color: "var(--tm-accent)" }}>→</span> {r}
-              </div>
+              <TRow key={r} last={i === platform.routes.length - 1}>
+                <span style={{ color: "var(--tm-accent)" }}>→</span>{" "}
+                <span style={{ color: "var(--tm-muted)" }}>{r}</span>
+              </TRow>
             ))}
           </div>
         </div>
