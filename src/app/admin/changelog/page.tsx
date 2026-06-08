@@ -2,6 +2,16 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.9.2",
+    date: "2026-06-08",
+    title: "Fix PostHog project ID + confirm analytics live",
+    items: [
+      { type: "~", text: "Analytics page: correct PostHog project ID from 348330 (Fantasy Leagues) → 455919 (Tastemakers)" },
+      { type: "~", text: "PostHog write key corrected in env — tracking now active on Tastemakers project" },
+      { type: "+", text: "Admin analytics page fully live: GA4 active, Plausible active, PostHog event counts rendering real data" },
+    ],
+  },
+  {
     v: "v8.9.1",
     date: "2026-06-08",
     title: "Live platforms commits + real analytics service status",

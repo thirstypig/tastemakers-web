@@ -2,7 +2,7 @@ import Link from "next/link";
 
 // GA4 measurement ID is hardcoded in src/components/Analytics.tsx
 const GA_ID = "G-062TFF0ZGE";
-const POSTHOG_PROJECT_ID = "348330";
+const POSTHOG_PROJECT_ID = "455919";
 const POSTHOG_HOST = "https://us.posthog.com";
 
 type EventRow = [string, number];
