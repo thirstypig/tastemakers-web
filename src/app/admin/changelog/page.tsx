@@ -2,6 +2,17 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.9.3",
+    date: "2026-06-08",
+    title: "Fix production OAuth login — Railway port + email allowlist",
+    items: [
+      { type: "~", text: "auth/callback: use NEXT_PUBLIC_SITE_URL as redirect origin — request.url inside Railway resolves to localhost:8080, not the public domain" },
+      { type: "~", text: "Removed x-forwarded-host fallback (open redirect vulnerability — host header is client-controlled)" },
+      { type: "~", text: "Root cause of loop-to-login: ADMIN_EMAILS in Railway had a typo (jimmyc316 vs jimmychang316) — corrected in Railway env vars" },
+      { type: "+", text: "Production admin fully live: app.tastemakersapp.com/admin — login, users, restaurants, tags, platforms, analytics all working" },
+    ],
+  },
+  {
     v: "v8.9.2",
     date: "2026-06-08",
     title: "Fix PostHog project ID + confirm analytics live",
