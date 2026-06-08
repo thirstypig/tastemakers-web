@@ -90,15 +90,11 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   // Railway serves Next.js on an internal port (e.g. localhost:8080), so
   // request.url reflects the internal address, not the public domain.
-  // Resolution order:
-  //  1. NEXT_PUBLIC_SITE_URL env var (explicit, most reliable)
-  //  2. x-forwarded-host + x-forwarded-proto headers (set by Railway proxy)
-  //  3. request.url origin (local dev fallback)
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const forwardedProto = request.headers.get("x-forwarded-proto") ?? "https";
+  // NEXT_PUBLIC_SITE_URL must be set in production (Railway env var).
+  // Never derive origin from x-forwarded-host — it is client-controlled
+  // and would open an open-redirect vulnerability in this auth callback.
   const origin =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    (forwardedHost ? `${forwardedProto}://${forwardedHost}` : null) ||
     new URL(request.url).origin;
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/explore";
