@@ -233,11 +233,26 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           {sidebarOpen ? <X size={14} /> : <Menu size={14} />}
         </button>
 
-        {/* Avatar */}
-        <div
-          className="w-[22px] h-[22px] rounded flex-shrink-0 hidden sm:block"
-          style={{ background: "var(--tm-line)" }}
-        />
+        {/* Sign out */}
+        <button
+          className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded text-[10.5px] cursor-pointer"
+          style={{
+            background: "transparent",
+            border: "1px solid var(--tm-line)",
+            color: "var(--tm-muted)",
+            fontFamily: "var(--font-jetbrains-mono), monospace",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "var(--tm-err)"; e.currentTarget.style.borderColor = "var(--tm-err)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "var(--tm-muted)"; e.currentTarget.style.borderColor = "var(--tm-line)"; }}
+          onClick={async () => {
+            const { createClient } = await import("@/lib/supabase");
+            await createClient().auth.signOut();
+            router.push("/admin/login");
+          }}
+          title="Sign out"
+        >
+          exit
+        </button>
       </header>
 
       {/* ── Body ─────────────────────────────────────────────── */}
