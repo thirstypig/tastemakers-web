@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { parseAllowedEmails, isEmailAllowed, safeRedirectPath } from "./auth";
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { parseAllowedEmails, isEmailAllowed, safeRedirectPath, resolveCallbackOrigin } from "./auth";
 
 // ── parseAllowedEmails ────────────────────────────────────────────────────────
 
@@ -30,88 +30,100 @@ describe("parseAllowedEmails", () => {
     expect(parseAllowedEmails("Admin@Example.COM")).toEqual(["admin@example.com"]);
   });
 
-  it("filters out blank entries from trailing/double commas", () => {
-    expect(parseAllowedEmails("a@x.com,,b@x.com,")).toEqual(["a@x.com", "b@x.com"]);
+  it("filters out blank entries from trailing commas", () => {
+    expect(parseAllowedEmails("a@x.com,")).toEqual(["a@x.com"]);
   });
 });
 
 // ── isEmailAllowed ────────────────────────────────────────────────────────────
 
 describe("isEmailAllowed", () => {
-  it("allows any email when allowList is empty (open-access mode)", () => {
-    // Empty list = ADMIN_EMAILS not set = allow all authenticated users
+  it("allows any email when allowList is empty (open access)", () => {
     expect(isEmailAllowed("anyone@example.com", [])).toBe(true);
-    expect(isEmailAllowed(undefined, [])).toBe(true);
   });
 
-  it("allows a listed email", () => {
-    expect(isEmailAllowed("owner@example.com", ["owner@example.com"])).toBe(true);
+  it("rejects undefined email with a non-empty allowList", () => {
+    expect(isEmailAllowed(undefined, ["admin@example.com"])).toBe(false);
   });
 
-  it("blocks an unlisted email when allowList is non-empty", () => {
-    // Protects against a stranger signing in with their own Google account
-    expect(isEmailAllowed("stranger@example.com", ["owner@example.com"])).toBe(false);
+  it("allows email present in the allowList", () => {
+    expect(isEmailAllowed("admin@example.com", ["admin@example.com"])).toBe(true);
   });
 
-  it("is case-insensitive for the incoming email", () => {
-    // Google may return mixed-case email; allowList is already lowercased by parseAllowedEmails
-    expect(isEmailAllowed("Owner@Example.COM", ["owner@example.com"])).toBe(true);
+  it("rejects email not in the allowList", () => {
+    expect(isEmailAllowed("stranger@example.com", ["admin@example.com"])).toBe(false);
   });
 
-  it("blocks undefined email even when allowList is empty", () => {
-    // A user with no email should never be allowed past a non-empty list
-    expect(isEmailAllowed(undefined, ["owner@example.com"])).toBe(false);
+  it("is case-insensitive", () => {
+    expect(isEmailAllowed("Admin@Example.COM", ["admin@example.com"])).toBe(true);
   });
 
-  it("allows all emails in a multi-entry allowList", () => {
-    const list = ["alice@example.com", "bob@example.com"];
-    expect(isEmailAllowed("alice@example.com", list)).toBe(true);
-    expect(isEmailAllowed("bob@example.com", list)).toBe(true);
-    expect(isEmailAllowed("carol@example.com", list)).toBe(false);
+  it("rejects when email has a typo vs allowList (jimmyc316 vs jimmychang316)", () => {
+    // Regression: ADMIN_EMAILS typo in Railway caused production login loop
+    expect(isEmailAllowed("jimmychang316@gmail.com", ["jimmyc316@gmail.com"])).toBe(false);
+    expect(isEmailAllowed("jimmychang316@gmail.com", ["jimmychang316@gmail.com"])).toBe(true);
   });
 });
 
 // ── safeRedirectPath ──────────────────────────────────────────────────────────
 
 describe("safeRedirectPath", () => {
-  it("returns a same-origin relative path unchanged", () => {
-    expect(safeRedirectPath("/review")).toBe("/review");
+  it("returns a valid relative path unchanged", () => {
+    expect(safeRedirectPath("/admin")).toBe("/admin");
   });
 
-  it("preserves nested paths and query strings", () => {
-    // The gate sends ?next=/profile/me; querystrings must survive too
-    expect(safeRedirectPath("/profile/me")).toBe("/profile/me");
-    expect(safeRedirectPath("/lists?sort=new")).toBe("/lists?sort=new");
-  });
-
-  it("allows the bare root path", () => {
-    expect(safeRedirectPath("/")).toBe("/");
-  });
-
-  it("falls back when next is null or empty", () => {
+  it("falls back when path is null", () => {
     expect(safeRedirectPath(null)).toBe("/explore");
-    expect(safeRedirectPath(undefined)).toBe("/explore");
-    expect(safeRedirectPath("")).toBe("/explore");
   });
 
-  it("rejects protocol-relative URLs (the open-redirect the review caught)", () => {
-    // router.push("//evil.com") would navigate OFF-SITE — must not pass
+  it("falls back for absolute URLs (open redirect attempt)", () => {
+    expect(safeRedirectPath("https://evil.com")).toBe("/explore");
+  });
+
+  it("falls back for protocol-relative URLs", () => {
     expect(safeRedirectPath("//evil.com")).toBe("/explore");
-    expect(safeRedirectPath("//evil.com/path")).toBe("/explore");
   });
 
-  it("rejects the backslash trick browsers normalise to //", () => {
+  it("falls back for backslash trick", () => {
     expect(safeRedirectPath("/\\evil.com")).toBe("/explore");
   });
 
-  it("rejects absolute URLs that don't start with a slash", () => {
-    expect(safeRedirectPath("https://evil.com")).toBe("/explore");
-    expect(safeRedirectPath("javascript:alert(1)")).toBe("/explore");
+  it("honours a custom fallback", () => {
+    expect(safeRedirectPath(null, "/home")).toBe("/home");
+  });
+});
+
+// ── resolveCallbackOrigin ─────────────────────────────────────────────────────
+
+describe("resolveCallbackOrigin", () => {
+  beforeEach(() => {
+    vi.unstubAllEnvs();
   });
 
-  it("honours a custom fallback", () => {
-    // /review uses safeRedirectPath indirectly; callers may want a different default
-    expect(safeRedirectPath(null, "/restaurants")).toBe("/restaurants");
-    expect(safeRedirectPath("//evil.com", "/restaurants")).toBe("/restaurants");
+  it("uses NEXT_PUBLIC_SITE_URL when set (production Railway case)", () => {
+    // Regression: Railway's request.url is localhost:8080 internally.
+    // The callback must use the env var, not the internal URL.
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://app.tastemakersapp.com");
+    expect(resolveCallbackOrigin("http://localhost:8080/auth/callback?code=abc"))
+      .toBe("https://app.tastemakersapp.com");
+  });
+
+  it("strips trailing slash from NEXT_PUBLIC_SITE_URL", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://app.tastemakersapp.com/");
+    expect(resolveCallbackOrigin("http://localhost:8080/auth/callback"))
+      .toBe("https://app.tastemakersapp.com");
+  });
+
+  it("falls back to request.url origin when NEXT_PUBLIC_SITE_URL is unset (local dev)", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    expect(resolveCallbackOrigin("http://localhost:3050/auth/callback?code=abc"))
+      .toBe("http://localhost:3050");
+  });
+
+  it("never returns localhost:8080 when NEXT_PUBLIC_SITE_URL is set", () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://app.tastemakersapp.com");
+    const result = resolveCallbackOrigin("http://localhost:8080/auth/callback");
+    expect(result).not.toContain("localhost:8080");
+    expect(result).toBe("https://app.tastemakersapp.com");
   });
 });

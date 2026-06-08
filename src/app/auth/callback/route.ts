@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
+import { resolveCallbackOrigin } from "@/lib/auth";
 
 async function syncPublicUser(
   supabaseAuthUrl: string,
@@ -88,14 +89,7 @@ async function syncPublicUser(
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  // Railway serves Next.js on an internal port (e.g. localhost:8080), so
-  // request.url reflects the internal address, not the public domain.
-  // NEXT_PUBLIC_SITE_URL must be set in production (Railway env var).
-  // Never derive origin from x-forwarded-host — it is client-controlled
-  // and would open an open-redirect vulnerability in this auth callback.
-  const origin =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    new URL(request.url).origin;
+  const origin = resolveCallbackOrigin(request.url);
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/explore";
 

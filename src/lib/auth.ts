@@ -28,6 +28,26 @@ export function isEmailAllowed(
 }
 
 /**
+ * Resolves the public-facing origin for use in OAuth callback redirects.
+ *
+ * Railway (and many reverse-proxy hosts) serve the Next.js process on an
+ * internal port (e.g. localhost:8080). Inside server code, `request.url`
+ * reflects that internal address, not the public domain. We must never
+ * derive the redirect target from `x-forwarded-host` either — that header
+ * is client-controlled and would open an open-redirect vulnerability.
+ *
+ * Resolution order:
+ *   1. NEXT_PUBLIC_SITE_URL env var — set explicitly in production (Railway).
+ *   2. Origin extracted from requestUrl — correct in local dev (localhost:3050).
+ */
+export function resolveCallbackOrigin(requestUrl: string): string {
+  return (
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
+    new URL(requestUrl).origin
+  );
+}
+
+/**
  * Returns a safe post-login redirect path from a user-supplied `?next` value.
  *
  * Only same-origin relative paths are honoured. Everything else falls back:
