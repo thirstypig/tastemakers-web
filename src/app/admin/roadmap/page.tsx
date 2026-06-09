@@ -2,30 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
-type Status = "open" | "in_progress" | "done";
-type Phase = "P1" | "P2" | "P3";
-type Platform = "backend" | "ios" | "android" | "web" | "marketing";
+import { summarizeRoadmap } from "@/lib/admin-filters";
+import type { Status, Phase, Platform, Milestone, PlatformRoadmap } from "@/lib/admin-filters";
 
 const STATUS_ICON: Record<Status, string> = {
   open: "○",
   in_progress: "◐",
   done: "●",
 };
-
-interface Milestone {
-  title: string;
-  phase: Phase;
-  status: Status;
-  date: string;
-  detail?: string;
-}
-
-interface PlatformRoadmap {
-  platform: Platform;
-  label: string;
-  milestones: Milestone[];
-}
 
 const PLATFORM_ROADMAP: PlatformRoadmap[] = [
   {
@@ -134,15 +118,7 @@ export default function RoadmapPage() {
     });
   }
 
-  const totalOpen = PLATFORM_ROADMAP.flatMap((p) => p.milestones).filter(
-    (m) => m.status !== "done",
-  ).length;
-  const totalDone = PLATFORM_ROADMAP.flatMap((p) => p.milestones).filter(
-    (m) => m.status === "done",
-  ).length;
-  const totalP1 = PLATFORM_ROADMAP.flatMap((p) => p.milestones).filter(
-    (m) => m.phase === "P1" && m.status !== "done",
-  ).length;
+  const { open: totalOpen, done: totalDone, p1Open: totalP1 } = summarizeRoadmap(PLATFORM_ROADMAP);
 
   return (
     <div>

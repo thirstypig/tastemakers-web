@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
-type Status = "open" | "in_progress" | "done";
-type Phase = "P1" | "P2" | "P3";
-type Platform = "backend" | "ios" | "android" | "web" | "marketing";
+import { filterTodos } from "@/lib/admin-filters";
+import type { Status, Phase, Platform, TodoItem } from "@/lib/admin-filters";
 
 const STATUS_ICON: Record<Status, string> = {
   open: "○",
@@ -13,16 +11,6 @@ const STATUS_ICON: Record<Status, string> = {
   done: "●",
 };
 
-interface TodoItem {
-  id: string;
-  platform: Platform;
-  title: string;
-  phase: Phase;
-  status: Status;
-  detail: string;
-  file?: string;
-  date: string;
-}
 
 const TODO_ITEMS: TodoItem[] = [
   // ── Backend P1 ──────────────────────────────────
@@ -307,12 +295,7 @@ export default function TodoPage() {
     });
   }
 
-  const filtered = TODO_ITEMS.filter(
-    (item) =>
-      (filterPlatform === "all" || item.platform === filterPlatform) &&
-      (filterPhase === "all" || item.phase === filterPhase) &&
-      (filterStatus === "all" || item.status === filterStatus),
-  );
+  const filtered = filterTodos(TODO_ITEMS, filterPlatform, filterPhase, filterStatus);
 
   const openCount = TODO_ITEMS.filter((i) => i.status !== "done").length;
   const p1Count = TODO_ITEMS.filter((i) => i.phase === "P1" && i.status !== "done").length;
