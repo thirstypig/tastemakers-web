@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 74 unit tests green. Deployed to `app.tastemakersapp.com` on Railway (pending).
+Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 96 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -23,7 +23,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 74 unit tests (6 test files)
+npx vitest run     # run 96 unit tests (8 test files)
 ```
 
 ## Project Structure
@@ -55,11 +55,13 @@ tastemakers-web/
 │   │       ├── login/page.tsx      Supabase OAuth (Google) login
 │   │       ├── users/page.tsx      User table with filter chips
 │   │       ├── platforms/[id]/     Per-platform: stats, todos, commits, routes
-│   │       ├── roadmap/page.tsx    Accordion P1/P2/P3 with clickable status toggle
+│   │       ├── roadmap/page.tsx    Platform-grouped macro milestones (backend/ios/android/web/marketing)
+│   │       ├── todo/page.tsx       Detailed implementation tasks, filterable by platform/priority/status
 │   │       ├── changelog/page.tsx  Versioned changelog with + / ~ / - diff style
 │   │       ├── routes/page.tsx     API route table with method/auth filters
 │   │       ├── errors/page.tsx     Error log with severity filters
-│   │       ├── analytics/page.tsx  PostHog / GA / Search Console stubs
+│   │       ├── analytics/page.tsx  PostHog / GA / Search Console — live links + event counts
+│   │       ├── status/page.tsx     Live health checks for all services
 │   │       ├── docs/page.tsx       Documentation file index
 │   │       └── docs/[id]/page.tsx  Individual doc detail
 │   ├── components/            Shared React components (JsonLd.tsx)
@@ -72,15 +74,17 @@ tastemakers-web/
 │   │   │   ├── client.ts          apiFetch() wrapper for api.tastemakersapp.com
 │   │   │   └── index.ts           Exported fns: getTastemaker, getList, getRestaurant, etc.
 │   │   │                          ↑ Swap stub→real here when Laravel endpoints come online
+│   │   ├── admin-filters.ts   filterTodos() + summarizeRoadmap() — shared by admin roadmap + todo pages
 │   │   ├── api.ts             Admin API client (apiFetch<T>() with auth headers) — NOT the same as lib/api/
-│   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed (used by middleware)
+│   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
+│   │   ├── github.ts          fetchCommits() — GitHub API wrapper (used by platforms page)
 │   │   ├── supabase.ts        Supabase client factory (SSR-safe)
 │   │   └── validation.ts      Form validation helpers (email, password, required)
 │   └── types/
 │       └── index.ts           TypeScript interfaces matching API models
 ├── public/                    Static assets
 ├── next.config.ts             API proxy rewrites + devIndicators: false
-├── vitest.config.ts           Vitest config — @/ alias, jsdom env for hook tests
+├── vitest.config.ts           Vitest config — @/ alias, node environment
 ├── tsconfig.json              TypeScript config (strict, path aliases)
 ├── tailwind.config.ts         Tailwind CSS config
 ├── package.json               Dependencies and scripts
@@ -154,16 +158,18 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 74 tests across 6 files — all green
+- **Current suite:** 96 tests across 8 files — all green
 
 | File | Tests | What it covers |
 |------|-------|----------------|
-| `src/lib/auth.test.ts` | 20 | `parseAllowedEmails`, `isEmailAllowed`, `safeRedirectPath` (open-redirect guard) |
+| `src/lib/auth.test.ts` | 22 | `parseAllowedEmails`, `isEmailAllowed`, `safeRedirectPath`, `resolveCallbackOrigin` (Railway port fix) |
 | `src/lib/validation.test.ts` | 17 | `validateEmail`, `validatePassword`, `validateRequired` |
 | `src/lib/api.test.ts` | 12 | `apiFetch` — response handling, headers, auth token |
-| `src/lib/api-probe.test.ts` | 7 | `runCheck` — live health probe utility |
-| `src/lib/docs.test.ts` | 10 | Docs library utilities |
-| `src/hooks/useAuth.test.ts` | 8 | `useAuth` — session resolution, auth events, cleanup |
+| `src/lib/api-probe.test.ts` | 12 | `runCheck` — live health probe utility |
+| `src/lib/admin-filters.test.ts` | 13 | `filterTodos` (AND logic, sentinel), `summarizeRoadmap` (P1 counter excludes done) |
+| `src/lib/github.test.ts` | 7 | `fetchCommits` — GitHub API fetch, cache, error handling |
+| `src/lib/docs.test.ts` | 6 | `fetchMarkdown` — local + GitHub source loading |
+| `src/hooks/useAuth.test.ts` | 7 | `useAuth` — session resolution, auth events, cleanup |
 
 **Mock pattern for `useAuth.test.ts`:** `vi.mock("@/lib/supabase", ...)` + `vi.clearAllMocks()` in `beforeEach`. Use `mockFetch.mock.lastCall!` not `calls[0]` to avoid stale-call bugs across tests.
 
@@ -243,7 +249,8 @@ After ANY development work, update the relevant dashboard pages before finishing
 | `/analytics` | `src/app/analytics/page.tsx` | VELOCITY_DATA (new session), PRODUCT_METRICS status |
 | `/status` | `src/app/status/page.tsx` | SYSTEM_INFO if infra changes |
 | `/admin` | `src/app/admin/layout.tsx` | NAV_ITEMS if new pages added |
-| `/admin/roadmap` | `src/app/admin/roadmap/page.tsx` | ROADMAP_ITEMS array — add new todos, update statuses |
+| `/admin/roadmap` | `src/app/admin/roadmap/page.tsx` | PLATFORM_ROADMAP array — milestones per platform, update status/detail |
+| `/admin/todo` | `src/app/admin/todo/page.tsx` | TODO_ITEMS array — add new tasks, update status |
 | `/admin/changelog` | `src/app/admin/changelog/page.tsx` | RELEASES array — add new version entries |
 | `/admin/platforms/[id]` | `src/app/admin/platforms/[id]/page.tsx` | PLATFORM_DATA — todos, commits, versions per platform |
 

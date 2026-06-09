@@ -2,6 +2,19 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.9.4",
+    date: "2026-06-09",
+    title: "Admin style consistency pass + /todo page + test lib",
+    items: [
+      { type: "+", text: "/admin/todo — new page with 22 detailed implementation tasks filterable by platform (backend/ios/android/web/marketing), priority (P1/P2/P3), and status" },
+      { type: "~", text: "Roadmap reorganized from flat P1/P2/P3 list to platform-grouped macro milestones with expandable detail notes" },
+      { type: "~", text: "tech + status pages: replaced hardcoded dark tokens (#0f0f23) with CSS vars — light/dark theme toggle now applies consistently across all admin pages" },
+      { type: "~", text: "tech + status pages: removed standalone sticky header/footer that was duplicating admin chrome; replaced with standard tab strip pattern" },
+      { type: "~", text: "analytics page: service names are clickable links to GA4, PostHog, Search Console, AdSense dashboards; AdSense added to services list" },
+      { type: "+", text: "admin-filters.ts — extracted filterTodos() + summarizeRoadmap() as shared pure lib; 13 unit tests covering AND-logic filter, 'all' sentinel, P1 counter excludes done items" },
+    ],
+  },
+  {
     v: "v8.9.3",
     date: "2026-06-08",
     title: "Fix production OAuth login — Railway port + email allowlist",
