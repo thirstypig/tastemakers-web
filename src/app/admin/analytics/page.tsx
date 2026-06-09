@@ -64,20 +64,15 @@ export default async function AnalyticsPage() {
     {
       id: "ga4",
       name: "Google Analytics 4",
+      href: "https://analytics.google.com/",
       desc: `pageviews · sessions · acquisition · measurement id: ${GA_ID}`,
-      status: "active" as const,
-      note: null,
-    },
-    {
-      id: "plausible",
-      name: "Plausible",
-      desc: "pageviews · sessions · privacy-first · domain: app.tastemakersapp.com",
       status: "active" as const,
       note: null,
     },
     {
       id: "posthog",
       name: "PostHog",
+      href: `https://us.posthog.com/project/${POSTHOG_PROJECT_ID}`,
       desc: `product analytics · session replay · feature flags · project: ${POSTHOG_PROJECT_ID}`,
       status: (posthogWriteKey ? "active" : "needs_key") as "active" | "needs_key",
       note: posthogWriteKey
@@ -87,9 +82,18 @@ export default async function AnalyticsPage() {
     {
       id: "search-console",
       name: "Search Console",
+      href: "https://search.google.com/search-console/",
       desc: "impressions · clicks · keywords · indexing · verified via meta tag",
       status: "verified" as const,
       note: null,
+    },
+    {
+      id: "adsense",
+      name: "AdSense",
+      href: "https://www.google.com/adsense/",
+      desc: "ca-pub-7103672049879516 · pending approval · content requirements not met",
+      status: "needs_key" as const,
+      note: "Marketing site needs substantial content before AdSense approval",
     },
   ];
 
@@ -155,8 +159,15 @@ export default async function AnalyticsPage() {
               const st = statusStyle(s.status);
               return (
                 <TRow key={s.id} last={i === SERVICES.length - 1}>
-                  <span style={{ display: "inline-block", width: 200, color: "var(--tm-ink)", fontWeight: 600 }}>
-                    {s.name}
+                  <span style={{ display: "inline-block", width: 200, fontWeight: 600 }}>
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "var(--tm-accent)", textDecoration: "none" }}
+                    >
+                      → {s.name}
+                    </a>
                   </span>
                   <span style={{ display: "inline-block", width: 130, color: st.color, fontWeight: 600 }}>
                     {st.label}

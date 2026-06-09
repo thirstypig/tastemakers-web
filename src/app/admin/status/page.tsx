@@ -6,21 +6,21 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
    Design tokens — shared across all pages
    ───────────────────────────────────────────── */
 const t = {
-  bg: "#0f0f23",
-  surface: "#16162a",
-  border: "#2a2a4a",
-  text: "#e2e8f0",
-  muted: "#94a3b8",
-  dim: "#64748b",
-  accent: "#60a5fa",
+  bg: "var(--tm-bg)",
+  surface: "var(--tm-panel)",
+  border: "var(--tm-line)",
+  text: "var(--tm-ink)",
+  muted: "var(--tm-muted)",
+  dim: "var(--tm-muted)",
+  accent: "var(--tm-accent)",
   green: "#34d399",
   yellow: "#facc15",
   red: "#f87171",
   purple: "#a78bfa",
   orange: "#fb923c",
   cyan: "#22d3ee",
-  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
+  font: "var(--font-jetbrains-mono), monospace",
+  mono: "var(--font-jetbrains-mono), monospace",
 };
 
 /* ─────────────────────────────────────────────
@@ -312,66 +312,48 @@ export default function StatusPage() {
   const overallCfg = OVERALL_CONFIG[overall];
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: t.bg,
-        color: t.text,
-        fontFamily: t.font,
-      }}
-    >
+    <div>
       {/* ── Keyframes for spinner ── */}
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
-      {/* ── Sticky Header ── */}
-      <header
+      {/* Tab strip */}
+      <div
         style={{
-          borderBottom: `1px solid ${t.border}`,
-          padding: "24px 32px",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-          position: "sticky",
-          top: 0,
-          background: `${t.bg}ee`,
-          backdropFilter: "blur(12px)",
-          zIndex: 10,
+          borderBottom: "1px solid var(--tm-line)",
+          background: "var(--tm-panel)",
+          fontSize: 11,
+          fontFamily: "var(--font-jetbrains-mono), monospace",
         }}
       >
-        <div>
-          <h1
+        {[
+          { label: "status", active: true, href: "/admin/status" },
+          { label: "overview.tsx", active: false, href: "/admin" },
+        ].map((tab) => (
+          <a
+            key={tab.label}
+            href={tab.href}
             style={{
-              margin: 0,
-              fontSize: 22,
-              fontWeight: 700,
-              letterSpacing: -0.5,
+              padding: "7px 14px",
+              borderRight: "1px solid var(--tm-line)",
+              color: tab.active ? "var(--tm-ink)" : "var(--tm-muted)",
+              background: tab.active ? "var(--tm-bg)" : "transparent",
+              fontWeight: tab.active ? 600 : 400,
+              textDecoration: "none",
+              display: "block",
             }}
           >
-            System Status
-          </h1>
-          <p style={{ margin: "4px 0 0", color: t.muted, fontSize: 13 }}>
-            Tastemakers &middot; Live Health Checks
-          </p>
-        </div>
-        <nav style={{ display: "flex", gap: 16, fontSize: 13, flexWrap: "wrap" }}>
-          {[
-            { href: "/", label: "Home" },
-            { href: "/tech", label: "Under the Hood" },
-            { href: "/roadmap", label: "Roadmap" },
-            { href: "/changelog", label: "Changelog" },
-            { href: "/analytics", label: "Analytics" },
-            { href: "/admin", label: "Admin" },
-          ].map((link) => (
-            <a key={link.href} href={link.href} style={{ color: t.accent, textDecoration: "none" }}>
-              {link.label}
-            </a>
-          ))}
-        </nav>
-      </header>
+            {tab.label}
+          </a>
+        ))}
+      </div>
 
-      <main style={{ padding: "40px 32px", maxWidth: 1100, margin: "0 auto" }}>
+      <div style={{ padding: "14px 18px", fontFamily: t.font, color: t.text }}>
+        <div style={{ color: t.muted, marginBottom: 16, fontSize: 11.5 }}>
+          <span style={{ color: t.accent }}>$</span> tm status --live
+        </div>
+
+      <div style={{ maxWidth: 1100 }}>
         {/* ── 01 Overall Status Banner ── */}
         <div
           style={{
@@ -673,49 +655,8 @@ export default function StatusPage() {
             </Card>
           ))}
         </div>
-      </main>
-
-      {/* ── Footer ── */}
-      <footer
-        style={{
-          borderTop: `1px solid ${t.border}`,
-          padding: "24px 32px",
-          textAlign: "center",
-          color: t.dim,
-          fontSize: 12,
-        }}
-      >
-        <div style={{ marginBottom: 8 }}>
-          Checks run client-side on page load &middot; Latency measured from
-          browser to service
-        </div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 16 }}>
-          <a
-            href="/tech"
-            style={{ color: t.accent, textDecoration: "none", fontSize: 12 }}
-          >
-            Under the Hood
-          </a>
-          <a
-            href="/roadmap"
-            style={{ color: t.accent, textDecoration: "none", fontSize: 12 }}
-          >
-            Roadmap
-          </a>
-          <a
-            href="/changelog"
-            style={{ color: t.accent, textDecoration: "none", fontSize: 12 }}
-          >
-            Changelog
-          </a>
-          <a
-            href="/"
-            style={{ color: t.accent, textDecoration: "none", fontSize: 12 }}
-          >
-            Home
-          </a>
-        </div>
-      </footer>
+      </div>
+      </div>
     </div>
   );
 }

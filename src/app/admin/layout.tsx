@@ -23,6 +23,7 @@ import {
   Menu,
   X,
   Search,
+  ListTodo,
 } from "lucide-react";
 
 // ── Nav structure matching the Terminal mockup ──────────────────
@@ -58,6 +59,7 @@ const NAV_GROUPS = [
     icon: Map,
     children: [
       { label: "roadmap.md", href: "/admin/roadmap", icon: Map },
+      { label: "todo.md", href: "/admin/todo", icon: ListTodo },
       { label: "changelog.md", href: "/admin/changelog", icon: FileClock },
       { label: "routes.json", href: "/admin/routes", icon: Route },
       { label: "docs/", href: "/admin/docs", icon: BookOpen },
@@ -76,6 +78,7 @@ const CMD_ITEMS = [
   { label: "Go to Tags", href: "/admin/tags" },
   { label: "Go to Errors", href: "/admin/errors" },
   { label: "Go to Roadmap", href: "/admin/roadmap" },
+  { label: "Go to Todo", href: "/admin/todo" },
   { label: "Go to Changelog", href: "/admin/changelog" },
   { label: "Go to Routes", href: "/admin/routes" },
   { label: "Go to Docs", href: "/admin/docs" },

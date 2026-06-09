@@ -3,17 +3,17 @@ import { notFound } from "next/navigation";
 import { fetchMarkdown, type DocSource } from "@/lib/docs";
 
 const t = {
-  bg: "#0f0f23",
-  surface: "#16162a",
-  border: "#2a2a4a",
-  text: "#e2e8f0",
-  muted: "#94a3b8",
-  dim: "#64748b",
-  accent: "#60a5fa",
-  green: "#34d399",
-  red: "#f87171",
-  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
+  bg: "var(--tm-bg)",
+  surface: "var(--tm-panel)",
+  border: "var(--tm-line)",
+  text: "var(--tm-ink)",
+  muted: "var(--tm-muted)",
+  dim: "var(--tm-muted)",
+  accent: "var(--tm-accent)",
+  green: "var(--tm-accent)",
+  red: "var(--tm-err)",
+  font: "var(--font-jetbrains-mono), monospace",
+  mono: "var(--font-jetbrains-mono), monospace",
 };
 
 type DocMeta = {
