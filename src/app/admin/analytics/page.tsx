@@ -1,38 +1,9 @@
 import Link from "next/link";
+import { posthogQuery } from "@/lib/posthog";
 
 // GA4 measurement ID is hardcoded in src/components/Analytics.tsx
 const GA_ID = "G-062TFF0ZGE";
 const POSTHOG_PROJECT_ID = "455919";
-const POSTHOG_HOST = "https://us.posthog.com";
-
-type EventRow = [string, number];
-
-async function fetchPostHogEvents(apiKey: string): Promise<EventRow[] | null> {
-  try {
-    const res = await fetch(`${POSTHOG_HOST}/api/projects/${POSTHOG_PROJECT_ID}/query/`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        query: {
-          kind: "HogQLQuery",
-          query:
-            "SELECT event, count(*) AS total FROM events " +
-            "WHERE toDate(timestamp) >= today() - 7 " +
-            "GROUP BY event ORDER BY total DESC LIMIT 15",
-        },
-      }),
-      next: { revalidate: 300 },
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return (data.results as EventRow[]) ?? null;
-  } catch {
-    return null;
-  }
-}
 
 function TRow({ children, last }: { children: React.ReactNode; last?: boolean }) {
   return (
@@ -57,7 +28,11 @@ export default async function AnalyticsPage() {
   const posthogApiKey = process.env.POSTHOG_PERSONAL_API_KEY;
 
   const posthogEvents = posthogApiKey
-    ? await fetchPostHogEvents(posthogApiKey)
+    ? ((await posthogQuery(
+        posthogApiKey,
+        "SELECT event, count(*) AS total FROM events WHERE toDate(timestamp) >= today() - 7 " +
+          "GROUP BY event ORDER BY total DESC LIMIT 15",
+      )) as [string, number][] | null)
     : null;
 
   const SERVICES = [
