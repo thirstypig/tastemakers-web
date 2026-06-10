@@ -5,6 +5,15 @@ export type DocSource =
   | { type: "local"; file: string }
   | { type: "github"; repo: string; branch: string; file: string };
 
+function githubHeaders(): HeadersInit {
+  return {
+    Accept: "application/vnd.github.v3+json",
+    ...(process.env.GITHUB_TOKEN
+      ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }
+      : {}),
+  };
+}
+
 export async function fetchMarkdown(source: DocSource): Promise<string | null> {
   if (source.type === "local") {
     try {
@@ -15,7 +24,7 @@ export async function fetchMarkdown(source: DocSource): Promise<string | null> {
   }
   const url = `https://raw.githubusercontent.com/${source.repo}/${source.branch}/${source.file}`;
   try {
-    const res = await fetch(url, { next: { revalidate: 300 } } as RequestInit);
+    const res = await fetch(url, { headers: githubHeaders(), next: { revalidate: 300 } } as RequestInit);
     if (!res.ok) return null;
     return res.text();
   } catch {
@@ -86,7 +95,7 @@ export async function fetchDocUpdated(source: DocSource): Promise<string | null>
   try {
     const url = `https://api.github.com/repos/${source.repo}/commits?path=${encodeURIComponent(source.file)}&sha=${source.branch}&per_page=1`;
     const res = await fetch(url, {
-      headers: { Accept: "application/vnd.github.v3+json" },
+      headers: githubHeaders(),
       next: { revalidate: 300 },
     } as RequestInit);
     if (!res.ok) return null;
