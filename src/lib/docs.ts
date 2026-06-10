@@ -91,7 +91,7 @@ export async function fetchDocUpdated(source: DocSource): Promise<string | null>
     } as RequestInit);
     if (!res.ok) return null;
     const data = await res.json();
-    return (data?.[0]?.commit?.author?.date as string | undefined)?.slice(0, 10) ?? null;
+    return (data?.[0]?.commit?.committer?.date as string | undefined)?.slice(0, 10) ?? null;
   } catch {
     return null;
   }

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { fetchMarkdown } from "./docs";
+import fs from "fs";
+import path from "path";
+import { fetchMarkdown, DOCS_REGISTRY, DOC_CATEGORIES, getDoc, fetchDocUpdated } from "./docs";
 
 describe("fetchMarkdown — local source", () => {
   it("returns file content when the file exists", async () => {
@@ -92,10 +94,6 @@ describe("fetchMarkdown — github source", () => {
   });
 });
 
-import { DOCS_REGISTRY, DOC_CATEGORIES, getDoc, fetchDocUpdated } from "./docs";
-import fs from "fs";
-import path from "path";
-
 describe("DOCS_REGISTRY", () => {
   it("has unique ids", () => {
     const ids = DOCS_REGISTRY.map((d) => d.id);
@@ -133,7 +131,7 @@ describe("fetchDocUpdated", () => {
   it("returns latest commit date for github files", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => [{ commit: { author: { date: "2026-06-01T10:00:00Z" } } }],
+      json: async () => [{ commit: { committer: { date: "2026-06-01T10:00:00Z" } } }],
     });
     vi.stubGlobal("fetch", mockFetch);
     const date = await fetchDocUpdated({
