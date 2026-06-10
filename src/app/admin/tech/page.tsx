@@ -664,6 +664,13 @@ const BUILD_JOURNAL: {
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
   {
+    date: "2026-06-09",
+    title: "Docs reorg + live dashboard",
+    details:
+      "Rebuilt /admin/docs around a single DOCS_REGISTRY in src/lib/docs.ts that drives the index, viewer, and generateStaticParams — eliminating 5 desync 404s from the old parallel arrays. Docs grouped into 5 categories (planning / operations / product / reference / context). Computed updated-dates from GitHub commits API + fs.stat; live·github / local source badges. Added 3 new ops docs (operations.md, architecture.md, metrics.md), refreshed going-live.md (merged in blockers.md), regenerated cross-todos.md, added root-claude.md snapshot. Rebuilt /admin landing as a live dashboard: 12-week trend sparkbars for users/restaurants/tags/saves; 30d trending-cities leaderboard with week-over-week deltas; PostHog 7d web stats via shared HogQL client (5min cache); merged activity feed (signups/tags/lists). Rendering is force-dynamic with Promise.allSettled failure isolation so one failing query can't break the whole page. Extracted posthog.ts as a shared HogQL client; analytics page refactored to use it. Test suite grew from 96 to 118 tests (12 files).",
+    type: "feature",
+  },
+  {
     date: "Session 16",
     title: "Live admin — Supabase data wired to all admin pages",
     details:
