@@ -126,7 +126,7 @@ async function getActivityFeed() {
     })),
     ...(lists.data ?? []).map((l) => ({
       type: "list" as const,
-      label: l.list_name as string,
+      label: (l.list_name as string | null) ?? "(untitled list)",
       createdAt: l.created_at as string,
     })),
   ];
@@ -192,15 +192,17 @@ export default async function AdminOverview() {
     getTopTags(),
     posthogKey ? fetchWebStats(posthogKey) : Promise.resolve(null),
   ]);
-  const val = <T,>(r: PromiseSettledResult<T>): T | null =>
-    r.status === "fulfilled" ? r.value : null;
+  const val = <T,>(r: PromiseSettledResult<T>, label: string): T | null => {
+    if (r.status === "rejected") console.error(`[admin] ${label} failed:`, r.reason);
+    return r.status === "fulfilled" ? r.value : null;
+  };
 
-  const kpis = val(kpisR);
-  const trends = val(trendsR);
-  const cities = val(citiesR);
-  const feed = val(feedR);
-  const topTags = val(topTagsR);
-  const webStats = val(webStatsR);
+  const kpis = val(kpisR, "kpis");
+  const trends = val(trendsR, "trends");
+  const cities = val(citiesR, "cities");
+  const feed = val(feedR, "feed");
+  const topTags = val(topTagsR, "top-tags");
+  const webStats = val(webStatsR, "web-stats");
 
   const KPI_ROWS = kpis
     ? [
@@ -411,7 +413,7 @@ export default async function AdminOverview() {
         {/* 5. Web / PostHog */}
         <div style={{ marginBottom: 18 }}>
           <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
-            # web · posthog 7d
+            # web · posthog 7d · cached 5m
           </div>
           <div
             style={{
