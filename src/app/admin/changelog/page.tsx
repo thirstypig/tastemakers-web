@@ -2,6 +2,18 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v8.10.0",
+    date: "2026-06-09",
+    title: "Docs reorg + live dashboard",
+    items: [
+      { type: "~", text: "/admin/docs rebuilt: single DOCS_REGISTRY in src/lib/docs.ts drives index + viewer + static params — killed 5 desync 404s; docs grouped into 5 categories (planning/operations/product/reference/context)" },
+      { type: "+", text: "New ops docs: operations.md (deploy/rollback/incident/env inventory), architecture.md (system map), metrics.md (KPI definitions); going-live.md refreshed (+blockers.md merged in, deleted); cross-todos.md regenerated; root-claude.md snapshot added" },
+      { type: "+", text: "/admin landing dashboard rebuilt: 12-week trend sparkbars (users/restaurants/tags/saves), 30d trending-cities leaderboard with deltas, PostHog 7d web stats (cached 5min), merged activity feed (signups/tags/lists) — force-dynamic, Promise.allSettled failure-isolated" },
+      { type: "~", text: "posthog.ts shared HogQL client extracted — analytics page refactored to use it; GITHUB_TOKEN optional env var for authenticated GitHub requests in docs viewer" },
+      { type: "+", text: "22 new tests: trends.ts (5), city-stats.ts (4), activity-feed.ts (3), posthog.ts (3), docs.test.ts expanded — suite now 118 tests across 12 files" },
+    ],
+  },
+  {
     v: "v8.9.4",
     date: "2026-06-09",
     title: "Admin style consistency pass + /todo page + test lib",

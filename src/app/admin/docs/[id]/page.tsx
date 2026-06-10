@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import { notFound } from "next/navigation";
-import { fetchMarkdown, type DocSource } from "@/lib/docs";
+import { fetchMarkdown, DOCS_REGISTRY, DOC_CATEGORIES, getDoc } from "@/lib/docs";
 
 const t = {
   bg: "var(--tm-bg)",
@@ -15,60 +15,6 @@ const t = {
   font: "var(--font-jetbrains-mono), monospace",
   mono: "var(--font-jetbrains-mono), monospace",
 };
-
-type DocMeta = {
-  id: string;
-  title: string;
-  source: DocSource;
-};
-
-const DOCS: DocMeta[] = [
-  {
-    id: "blockers",
-    title: "Blockers & Next Steps",
-    source: { type: "local", file: "src/content/docs/blockers.md" },
-  },
-  {
-    id: "going-live",
-    title: "Going Live Roadmap",
-    source: { type: "local", file: "src/content/docs/going-live.md" },
-  },
-  {
-    id: "backend-claude",
-    title: "Backend — CLAUDE.md",
-    source: {
-      type: "github",
-      repo: "thirstypig/tastemakers-backend",
-      branch: "main",
-      file: "CLAUDE.md",
-    },
-  },
-  {
-    id: "web-claude",
-    title: "Web App — CLAUDE.md",
-    source: {
-      type: "github",
-      repo: "thirstypig/tastemakers-web",
-      branch: "main",
-      file: "CLAUDE.md",
-    },
-  },
-  {
-    id: "backend-todos",
-    title: "Backend Todos — 31 items",
-    source: {
-      type: "github",
-      repo: "thirstypig/tastemakers-backend",
-      branch: "main",
-      file: "todos/README.md",
-    },
-  },
-  {
-    id: "cross-todos",
-    title: "Cross-Project Todos — 49 items",
-    source: { type: "local", file: "src/content/docs/cross-todos.md" },
-  },
-];
 
 // Override renderer for dark theme styling
 const renderer = new marked.Renderer();
@@ -124,7 +70,7 @@ export default async function DocPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const doc = DOCS.find((d) => d.id === id);
+  const doc = getDoc(id);
   if (!doc) notFound();
 
   const markdown = await fetchMarkdown(doc.source);
@@ -152,23 +98,34 @@ export default async function DocPage({
         >
           ← All docs
         </a>
-        {DOCS.map((d) => (
-          <a
-            key={d.id}
-            href={`/admin/docs/${d.id}`}
-            style={{
-              display: "block",
-              padding: "8px 16px",
-              fontSize: 12,
-              color: d.id === id ? t.text : t.muted,
-              textDecoration: "none",
-              background: d.id === id ? `${t.accent}12` : "transparent",
-              borderLeft: d.id === id ? `2px solid ${t.accent}` : "2px solid transparent",
-            }}
-          >
-            {d.title}
-          </a>
-        ))}
+        {DOC_CATEGORIES.map((cat) => {
+          const docs = DOCS_REGISTRY.filter((d) => d.category === cat.id);
+          if (docs.length === 0) return null;
+          return (
+            <div key={cat.id}>
+              <div style={{ padding: "10px 16px 4px", fontSize: 10, color: t.dim, textTransform: "uppercase", letterSpacing: 1 }}>
+                {cat.label}
+              </div>
+              {docs.map((d) => (
+                <a
+                  key={d.id}
+                  href={`/admin/docs/${d.id}`}
+                  style={{
+                    display: "block",
+                    padding: "8px 16px",
+                    fontSize: 12,
+                    color: d.id === id ? t.text : t.muted,
+                    textDecoration: "none",
+                    background: d.id === id ? `${t.accent}12` : "transparent",
+                    borderLeft: d.id === id ? `2px solid ${t.accent}` : "2px solid transparent",
+                  }}
+                >
+                  {d.title}
+                </a>
+              ))}
+            </div>
+          );
+        })}
       </aside>
 
       {/* Content */}
@@ -231,5 +188,5 @@ export default async function DocPage({
 }
 
 export function generateStaticParams() {
-  return DOCS.map((d) => ({ id: d.id }));
+  return DOCS_REGISTRY.map((d) => ({ id: d.id }));
 }

@@ -1,3 +1,5 @@
+> Snapshot of tastemakers/todos/README.md · refreshed 2026-06-09 by /doc skill
+
 # Tastemakers — Cross-Project Todos
 
 Code review findings from multi-repo reviews. These are cross-project issues spanning backend, web, iOS, Android, WordPress, and documentation.
@@ -16,7 +18,7 @@ Code review findings from multi-repo reviews. These are cross-project issues spa
 
 ---
 
-## P1 — Critical (12 findings)
+## P1 — Critical (22 findings)
 
 | # | Issue | Scope | Action |
 |---|-------|-------|--------|
@@ -32,8 +34,18 @@ Code review findings from multi-repo reviews. These are cross-project issues spa
 | 024 | [iOS hardcoded API keys in Constant.swift + GoogleService-Info.plist](024-pending-p1-ios-hardcoded-api-keys.md) | iOS | Move to .xcconfig, gitignore plist |
 | 025 | [Hardcoded Google OAuth client_id in backend](025-pending-p1-hardcoded-google-oauth-backend.md) | Backend | Move to .env and config() |
 | 026 | [`old_Laravel_Backup/` directory (457 MB dead weight)](026-pending-p1-old-laravel-backup-in-repo.md) | Backend | Delete directory, add to .gitignore |
+| 050 | [FCM server key hardcoded in UserController (regression)](050-pending-p1-fcm-key-hardcoded-regression.md) | Backend | Remove hardcoded key; use config('services.fcm.key') |
+| 051 | [Apple Sign-In JWT signature never verified](051-pending-p1-apple-signin-jwt-bypass.md) | Backend | Fetch Apple public keys; verify RS256 signature |
+| 052 | [`nearbycuisine` POST returns 500 — method missing](052-pending-p1-nearbycuisine-500.md) | Backend | Implement RestaurantController::nearbyCuisine() |
+| 053 | [Web admin login always fails (token path mismatch)](053-pending-p1-web-admin-login-broken.md) | Web | Change `data.token` → `data.data?.token` |
+| 054 | [No DB transactions — all multi-step writes can partially succeed](054-pending-p1-no-db-transactions.md) | Backend | Wrap multi-step writes in DB::transaction() |
+| 055 | [Android AuthResponse misses `data` envelope — login broken](055-pending-p1-android-auth-response-envelope.md) | Android | Wrap AuthResponse in ApiResponse\<T\> envelope |
+| 056 | [Bookmark toggle checks wrong pivot — broken for all users](056-pending-p1-save-restaurant-wrong-pivot.md) | Backend | Check restaurant_user, not category_restaurant |
+| 057 | [`getallBadges()` hardcoded user_id=43 — returns wrong user's data](057-pending-p1-getall-badges-hardcoded-user.md) | Backend | Replace hardcoded 43 with Auth::id() |
+| 058 | [`getAllRecentReviewRestaurant` leaks full user profiles unauthenticated](058-pending-p1-recent-review-profile-leak.md) | Backend | Add auth:api middleware; strip sensitive fields |
+| 059 | [Debug `/debug-signup` route live in production — creates real users](059-pending-p1-debug-signup-live-prod.md) | Backend | Delete /debug-schema, /debug-signup, /run-schema-fix from web.php |
 
-## P2 — Important (20 findings)
+## P2 — Important (35 findings)
 
 | # | Issue | Scope | Action |
 |---|-------|-------|--------|
@@ -57,8 +69,23 @@ Code review findings from multi-repo reviews. These are cross-project issues spa
 | 037 | [iOS hardcoded production API URL](037-pending-p2-ios-hardcoded-production-url.md) | iOS | Move to .xcconfig with Debug/Release |
 | 038 | [next.config.ts hardcoded to localhost](038-pending-p2-next-config-hardcoded-localhost.md) | Web | Conditionalize to dev only |
 | 039 | [User migration missing 9+ columns from model](039-pending-p2-missing-user-migration-columns.md) | Backend | Create migration for missing columns |
+| 060 | [Android TagRestaurantRequest uses wrong field `tag_name` instead of `tags`](060-pending-p2-android-tag-request-wrong-fields.md) | Android | Fix field name and add missing required fields |
+| 061 | [Android FollowRequest uses `tastemaker_id` instead of `testmaker_id`, missing fields](061-pending-p2-android-follow-request-wrong-fields.md) | Android | Fix key name; add user_id and is_follow fields |
+| 062 | [Android SaveRestaurantRequest missing 4 required fields](062-pending-p2-android-save-restaurant-missing-fields.md) | Android | Add name, address, lat, lng to request model |
+| 063 | [Android Tag model uses `tag_name` — backend column is `name`](063-pending-p2-android-tag-model-field-name.md) | Android | Rename to `name`; update all usages |
+| 064 | [Update-profile response envelope missing in Web types](064-pending-p2-update-profile-response-envelope.md) | Web | Wrap response in ApiResponse\<User\> |
+| 065 | [API exception handler commented out — all errors return HTML](065-pending-p2-api-exception-handler-commented-out.md) | Backend | Uncomment JSON exception handler in Handler.php |
+| 066 | [Passport token TTL never configured — tokens last 1 year](066-pending-p2-passport-token-ttl-never-set.md) | Backend | Add Passport::tokensExpireIn(7 days) |
+| 067 | [7 production tables have no migration files](067-pending-p2-missing-table-migrations.md) | Backend | Create migrations for all missing tables |
+| 068 | [`imageLikeunlike` accepts `user_id` from body — IDOR](068-pending-p2-imagelikeunlike-idor.md) | Backend | Replace with Auth::id() |
+| 069 | [Password reset OTP in URL path with no expiry](069-pending-p2-otp-url-path-no-expiry.md) | Backend | Move to POST body; add expiry column |
+| 070 | [iOS `getProfileAPI` calls completion handler twice on success](070-pending-p2-ios-double-completion-bug.md) | iOS | Remove unconditional `complition(nil)` after success block |
+| 071 | [iOS Bearer token stored in UserDefaults (not Keychain)](071-pending-p2-ios-token-userdefaults.md) | iOS | Migrate to Keychain via Security framework |
+| 072 | [Android missing `nearbycuisine` endpoint in API interface](072-pending-p2-android-cuisine-endpoint-missing.md) | Android | Add nearbycuisine to TastemakersApi.kt |
+| 073 | [`TastemakerList.name` should be `list_name` — cross-platform](073-pending-p2-tastemakerlist-name-field.md) | Cross-project | Rename field in Android model and Web types |
+| 074 | [`restaurantImageSave` serializes `$_POST`+`$_FILES` to api_logs](074-pending-p2-restaurant-image-save-logging.md) | Backend | Remove logging; never log raw request superglobals |
 
-## P3 — Nice-to-Have (17 findings)
+## P3 — Nice-to-Have (27 findings)
 
 | # | Issue | Scope | Action |
 |---|-------|-------|--------|
@@ -79,6 +106,16 @@ Code review findings from multi-repo reviews. These are cross-project issues spa
 | 047 | [No pagination on list endpoints (1/8)](047-pending-p3-no-pagination-on-list-endpoints.md) | Backend | Add Laravel paginate() to all lists |
 | 048 | [Zero caching despite Redis being configured](048-pending-p3-zero-caching-in-backend.md) | Backend | Add Cache::remember() for hot paths |
 | 049 | [Zero eager loading (N+1 everywhere)](049-pending-p3-zero-eager-loading.md) | Backend | Add with() to all relationship queries |
+| 075 | [iOS multipart upload sends double Content-Type header with mismatched boundaries](075-pending-p3-ios-multipart-double-boundary.md) | iOS | Remove manual Content-Type header; let URLSession set it |
+| 076 | [iOS dead methods: `arrayToNSData`, `makeNetworkActivityHidden`](076-pending-p3-ios-dead-methods.md) | iOS | Delete both dead methods |
+| 077 | [web.php has 68-line commented block + duplicate admin route](077-pending-p3-webphp-dead-code-cleanup.md) | Backend | Delete commented routes; remove duplicate Route::get('/admin') |
+| 078 | [`review_count1()` dead method with guaranteed runtime crash](078-pending-p3-dead-review-count1-method.md) | Backend | Delete the method |
+| 079 | [`checkpermission()` copy-pasted into every controller](079-pending-p3-check-permission-inline.md) | Backend | Extract to middleware or base controller |
+| 080 | [`review_count` leaks restaurant IDs for any user ID](080-pending-p3-review-count-user-enum.md) | Backend | Add User::findOrFail(); strip restaurant_ids from non-self response |
+| 081 | [Admin plane accessible only via browser session — no API](081-pending-p3-admin-api-parity.md) | Backend | Add admin API group with auth:api + admin.role middleware |
+| 082 | [Backend test command hardcodes Homebrew path — fails on Linux/CI](082-pending-p3-test-command-fragile.md) | Backend | Add `composer test` script shorthand |
+| 083 | [iOS `otherUser` enum case bakes query string into path](083-pending-p3-ios-other-user-url-enum.md) | iOS | Change to `case otherUser = "user"`; pass param via dict |
+| 084 | [Android CLAUDE.md documents stale prod URL + no gradlew commands](084-pending-p3-android-docs-stale.md) | Android | Update URL; add assembleDebug/test/lint commands |
 
 ---
 
@@ -102,3 +139,16 @@ mv todos/007-pending-p2-android-wont-compile.md todos/007-ready-p2-android-wont-
 # When done, rename to complete:
 mv todos/007-ready-p2-android-wont-compile.md todos/007-complete-p2-android-wont-compile.md
 ```
+
+---
+
+## Future Work (Roadmap)
+
+Forward-looking product/feature work (not code-review findings). Tracked in the admin roadmap dashboard too.
+
+| # | Item | Scope | Priority |
+|---|------|-------|----------|
+| 085 | [Marketing site consolidation / content build-out](085-pending-p3-marketing-site-consolidation.md) | Marketing / Web | p3 |
+| 086 | [Complete Supabase end-user auth (profile, reset, account mgmt)](086-pending-p2-complete-supabase-auth.md) | Web | p2 |
+| 087 | [User access tiers — free vs registered rules](087-pending-p2-user-access-tiers.md) | Web / Backend | p2 |
+| 088 | [Backend admin — user/content management](088-pending-p2-backend-admin-buildout.md) | Web | p2 |
