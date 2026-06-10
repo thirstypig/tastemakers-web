@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 118 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
+Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 122 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -23,7 +23,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 118 unit tests (12 test files)
+npx vitest run     # run 122 unit tests (13 test files)
 ```
 
 ## Project Structure
@@ -79,7 +79,8 @@ tastemakers-web/
 │   │   ├── admin-filters.ts   filterTodos() + summarizeRoadmap() — shared by admin roadmap + todo pages
 │   │   ├── api.ts             Admin API client (apiFetch<T>() with auth headers) — NOT the same as lib/api/
 │   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
-│   │   ├── docs.ts            DOCS_REGISTRY (13 entries), fetchMarkdown(), fetchDocUpdated() — drives /admin/docs
+│   │   ├── docs.ts            DOCS_REGISTRY (13 entries), fetchMarkdown() via GitHub Contents API (needs GITHUB_TOKEN for private repos), fetchDocUpdated()
+│   │   ├── markdown.ts        renderMarkdown() — default marked renderer (custom renderers broke on marked v13+ token API); styling via .md-body CSS
 │   │   ├── github.ts          fetchCommits() — GitHub API wrapper (used by platforms page)
 │   │   ├── posthog.ts         posthogQuery() shared HogQL client — used by analytics + dashboard
 │   │   ├── trends.ts          12-week KPI trend data (users/restaurants/tags/saves)
@@ -165,7 +166,7 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 118 tests across 12 files — all green
+- **Current suite:** 122 tests across 13 files — all green
 
 | File | Tests | What it covers |
 |------|-------|----------------|
@@ -181,6 +182,7 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 | `src/lib/city-stats.test.ts` | 4 | 30d city leaderboard sorting, delta calculation |
 | `src/lib/activity-feed.test.ts` | 3 | Merged feed ordering, type tagging |
 | `src/lib/posthog.test.ts` | 3 | `posthogQuery` — HogQL client, error handling |
+| `src/lib/markdown.test.ts` | 4 | `renderMarkdown` — tables, inline formatting, link targets, escaping |
 
 **Mock pattern for `useAuth.test.ts`:** `vi.mock("@/lib/supabase", ...)` + `vi.clearAllMocks()` in `beforeEach`. Use `mockFetch.mock.lastCall!` not `calls[0]` to avoid stale-call bugs across tests.
 

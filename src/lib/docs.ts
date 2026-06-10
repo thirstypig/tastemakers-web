@@ -22,9 +22,14 @@ export async function fetchMarkdown(source: DocSource): Promise<string | null> {
       return null;
     }
   }
-  const url = `https://raw.githubusercontent.com/${source.repo}/${source.branch}/${source.file}`;
+  // Contents API (not raw.githubusercontent.com): honors GITHUB_TOKEN auth,
+  // which is required for the private repos (backend, ios, android).
+  const url = `https://api.github.com/repos/${source.repo}/contents/${encodeURIComponent(source.file)}?ref=${source.branch}`;
   try {
-    const res = await fetch(url, { headers: githubHeaders(), next: { revalidate: 300 } } as RequestInit);
+    const res = await fetch(url, {
+      headers: { ...githubHeaders(), Accept: "application/vnd.github.raw+json" },
+      next: { revalidate: 300 },
+    } as RequestInit);
     if (!res.ok) return null;
     return res.text();
   } catch {

@@ -1,6 +1,6 @@
-import { marked } from "marked";
 import { notFound } from "next/navigation";
 import { fetchMarkdown, DOCS_REGISTRY, DOC_CATEGORIES, getDoc } from "@/lib/docs";
+import { renderMarkdown } from "@/lib/markdown";
 
 const t = {
   bg: "var(--tm-bg)",
@@ -15,54 +15,6 @@ const t = {
   font: "var(--font-jetbrains-mono), monospace",
   mono: "var(--font-jetbrains-mono), monospace",
 };
-
-// Override renderer for dark theme styling
-const renderer = new marked.Renderer();
-
-renderer.heading = ({ text, depth }) => {
-  const sizes: Record<number, string> = { 1: "24px", 2: "18px", 3: "15px", 4: "13px" };
-  const margins: Record<number, string> = { 1: "0 0 20px", 2: "32px 0 12px", 3: "24px 0 10px", 4: "20px 0 8px" };
-  const colors: Record<number, string> = { 1: t.text, 2: t.text, 3: t.muted, 4: t.dim };
-  return `<h${depth} style="font-size:${sizes[depth] ?? "13px"};margin:${margins[depth] ?? "16px 0 8px"};color:${colors[depth] ?? t.dim};font-weight:600;line-height:1.3">${text}</h${depth}>`;
-};
-
-renderer.paragraph = ({ text }) =>
-  `<p style="margin:0 0 14px;color:${t.muted};font-size:13px;line-height:1.7">${text}</p>`;
-
-renderer.strong = ({ text }) =>
-  `<strong style="color:${t.text};font-weight:600">${text}</strong>`;
-
-renderer.em = ({ text }) =>
-  `<em style="color:${t.dim}">${text}</em>`;
-
-renderer.code = ({ text, lang }) =>
-  `<pre style="background:${t.bg};border:1px solid ${t.border};border-radius:6px;padding:14px 16px;overflow-x:auto;margin:0 0 16px"><code style="font-family:${t.mono};font-size:11px;color:${t.muted};white-space:pre">${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code></pre>`;
-
-renderer.codespan = ({ text }) =>
-  `<code style="font-family:${t.mono};font-size:11px;background:${t.border}80;color:${t.accent};padding:2px 5px;border-radius:3px">${text}</code>`;
-
-
-renderer.hr = () =>
-  `<hr style="border:none;border-top:1px solid ${t.border};margin:24px 0" />`;
-
-renderer.link = ({ href, text }) =>
-  `<a href="${href}" style="color:${t.accent};text-decoration:none" target="_blank" rel="noopener">${text}</a>`;
-
-renderer.table = ({ header, rows }) =>
-  `<div style="overflow-x:auto;margin:0 0 16px"><table style="width:100%;border-collapse:collapse;font-size:12px">${header}${rows}</table></div>`;
-
-renderer.tablerow = ({ text }) =>
-  `<tr style="border-bottom:1px solid ${t.border}">${text}</tr>`;
-
-renderer.tablecell = ({ text, header }) => {
-  const tag = header ? "th" : "td";
-  return `<${tag} style="padding:8px 12px;text-align:left;color:${header ? t.text : t.muted};font-weight:${header ? 600 : 400};background:${header ? t.surface : "transparent"}">${text}</${tag}>`;
-};
-
-renderer.blockquote = ({ text }) =>
-  `<blockquote style="border-left:3px solid ${t.accent}60;margin:0 0 16px;padding:8px 16px;color:${t.dim};font-style:italic">${text}</blockquote>`;
-
-marked.use({ renderer });
 
 export default async function DocPage({
   params,
@@ -133,6 +85,43 @@ export default async function DocPage({
         {markdown ? (
           <>
             <style>{`
+              .md-body h1, .md-body h2 { color: ${t.text}; font-weight: 600; line-height: 1.3; }
+              .md-body h3 { color: ${t.muted}; font-weight: 600; line-height: 1.3; }
+              .md-body h4, .md-body h5, .md-body h6 { color: ${t.dim}; font-weight: 600; line-height: 1.3; }
+              .md-body h1 { font-size: 24px; margin: 0 0 20px; }
+              .md-body h2 { font-size: 18px; margin: 32px 0 12px; }
+              .md-body h3 { font-size: 15px; margin: 24px 0 10px; }
+              .md-body h4 { font-size: 13px; margin: 20px 0 8px; }
+              .md-body p { margin: 0 0 14px; color: ${t.muted}; font-size: 13px; line-height: 1.7; }
+              .md-body strong { color: ${t.text}; font-weight: 600; }
+              .md-body em { color: ${t.dim}; }
+              .md-body pre {
+                background: ${t.bg}; border: 1px solid ${t.border}; border-radius: 6px;
+                padding: 14px 16px; overflow-x: auto; margin: 0 0 16px;
+              }
+              .md-body pre code {
+                font-family: ${t.mono}; font-size: 11px; color: ${t.muted};
+                white-space: pre; background: transparent; padding: 0;
+              }
+              .md-body :not(pre) > code {
+                font-family: ${t.mono}; font-size: 11px; background: ${t.border}80;
+                color: ${t.accent}; padding: 2px 5px; border-radius: 3px;
+              }
+              .md-body hr { border: none; border-top: 1px solid ${t.border}; margin: 24px 0; }
+              .md-body a { color: ${t.accent}; text-decoration: none; }
+              .md-body table {
+                width: 100%; border-collapse: collapse; font-size: 12px;
+                display: block; overflow-x: auto; margin: 0 0 16px;
+              }
+              .md-body tr { border-bottom: 1px solid ${t.border}; }
+              .md-body th, .md-body td { padding: 8px 12px; text-align: left; }
+              .md-body th { color: ${t.text}; font-weight: 600; background: ${t.surface}; }
+              .md-body td { color: ${t.muted}; font-weight: 400; }
+              .md-body blockquote {
+                border-left: 3px solid ${t.accent}60; margin: 0 0 16px;
+                padding: 8px 16px; color: ${t.dim}; font-style: italic;
+              }
+              .md-body blockquote p { margin: 0; }
               .md-body ul,
               .md-body ol {
                 margin: 0 0 16px;
@@ -146,7 +135,7 @@ export default async function DocPage({
             `}</style>
             <div
               className="md-body"
-              dangerouslySetInnerHTML={{ __html: marked.parse(markdown) as string }}
+              dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
             />
             <p
               style={{
