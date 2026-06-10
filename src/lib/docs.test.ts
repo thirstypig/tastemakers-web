@@ -11,7 +11,7 @@ describe("fetchMarkdown — local source", () => {
       file: "src/content/docs/going-live.md",
     });
     expect(result).not.toBeNull();
-    expect(result).toContain("Going Live");
+    expect(result).toContain("Going-Live Runbook");
   });
 
   it("returns null (not throws) when the file does not exist", async () => {
