@@ -73,7 +73,7 @@ describe("fetchMarkdown — github source", () => {
     expect(result).toBeNull();
   });
 
-  it("fetches from the correct raw GitHub URL", async () => {
+  it("fetches via the GitHub Contents API with a raw accept header", async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
       text: async () => "content",
@@ -87,9 +87,12 @@ describe("fetchMarkdown — github source", () => {
       file: "todos/README.md",
     });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://raw.githubusercontent.com/thirstypig/tastemakers-backend/main/todos/README.md",
-      expect.any(Object)
+    const [url, init] = mockFetch.mock.lastCall!;
+    expect(url).toBe(
+      "https://api.github.com/repos/thirstypig/tastemakers-backend/contents/todos%2FREADME.md?ref=main",
+    );
+    expect((init.headers as Record<string, string>).Accept).toBe(
+      "application/vnd.github.raw+json",
     );
   });
 });
