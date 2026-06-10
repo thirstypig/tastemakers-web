@@ -5,6 +5,9 @@ import { cityLeaderboard, type CityEvent } from "@/lib/city-stats";
 import { mergeFeed, type FeedItem } from "@/lib/activity-feed";
 import { fetchWebStats } from "@/lib/posthog";
 
+// Admin dashboard must reflect live data on every request — never ISR-frozen
+export const dynamic = "force-dynamic";
+
 const TREND_WEEKS = 12;
 
 async function getKpis() {
