@@ -25,10 +25,18 @@ describe("posthogQuery", () => {
 });
 
 describe("fetchWebStats", () => {
-  it("maps rows to day/views/visitors", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true, json: async () => ({ results: [["2026-06-08", 42, 7]] }),
-    }));
-    expect(await fetchWebStats("key")).toEqual([{ day: "2026-06-08", views: 42, visitors: 7 }]);
+  it("maps rows to day/views/visitors and returns true distinct visitors", async () => {
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true, json: async () => ({ results: [["2026-06-08", 42, 7]] }),
+      })
+      .mockResolvedValueOnce({
+        ok: true, json: async () => ({ results: [[9]] }),
+      });
+    vi.stubGlobal("fetch", mockFetch);
+    expect(await fetchWebStats("key")).toEqual({
+      days: [{ day: "2026-06-08", views: 42, visitors: 7 }],
+      visitors: 9,
+    });
   });
 });

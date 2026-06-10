@@ -20,6 +20,12 @@ async function getKpis() {
     db.from("restaurant_tag").select("*", { count: "exact", head: true }),
     db.from("testmaker_list").select("*", { count: "exact", head: true }),
   ]);
+  if (users.error) throw new Error(`getKpis: ${users.error.message}`);
+  if (restaurants.error) throw new Error(`getKpis: ${restaurants.error.message}`);
+  if (tags.error) throw new Error(`getKpis: ${tags.error.message}`);
+  if (saves.error) throw new Error(`getKpis: ${saves.error.message}`);
+  if (tagApps.error) throw new Error(`getKpis: ${tagApps.error.message}`);
+  if (lists.error) throw new Error(`getKpis: ${lists.error.message}`);
   return {
     totalUsers: users.count ?? 0,
     totalRestaurants: restaurants.count ?? 0,
@@ -32,10 +38,11 @@ async function getKpis() {
 
 async function getTopTags() {
   const db = createAdminClient();
-  const { data } = await db
+  const { data, error } = await db
     .from("restaurant_tag")
     .select("tag_id, tags(name)")
     .limit(500);
+  if (error) throw new Error(`getTopTags: ${error.message}`);
   if (!data) return [];
   const counts: Record<number, { name: string; count: number }> = {};
   for (const row of data) {
@@ -57,10 +64,14 @@ async function getTrends(now: Date) {
   // Row cap: Supabase returns ≤1000 rows/request — fine at current volume (see metrics.md)
   const [users, restaurants, tags, saves] = await Promise.all([
     db.from("users").select("created_at").gte("created_at", cutoff).is("deleted_at", null),
-    db.from("restaurants").select("created_at").gte("created_at", cutoff),
+    db.from("restaurants").select("created_at").gte("created_at", cutoff).is("deleted_at", null),
     db.from("restaurant_tag").select("created_at").gte("created_at", cutoff),
     db.from("restaurant_user").select("created_at").gte("created_at", cutoff),
   ]);
+  if (users.error) throw new Error(`getTrends: ${users.error.message}`);
+  if (restaurants.error) throw new Error(`getTrends: ${restaurants.error.message}`);
+  if (tags.error) throw new Error(`getTrends: ${tags.error.message}`);
+  if (saves.error) throw new Error(`getTrends: ${saves.error.message}`);
   const dates = (rows: { data: { created_at: string | null }[] | null }) =>
     (rows.data ?? []).map((r) => r.created_at ?? "");
   return {
@@ -79,6 +90,9 @@ async function getCityStats(now: Date) {
     db.from("restaurant_tag").select("restaurant_id, created_at").gte("created_at", cutoff),
     db.from("restaurant_user").select("restaurant_id, created_at").gte("created_at", cutoff),
   ]);
+  if (restaurants.error) throw new Error(`getCityStats: ${restaurants.error.message}`);
+  if (tagEvents.error) throw new Error(`getCityStats: ${tagEvents.error.message}`);
+  if (saveEvents.error) throw new Error(`getCityStats: ${saveEvents.error.message}`);
   const cityById = new Map<number, string | null>(
     (restaurants.data ?? []).map((r) => [r.id as number, r.city as string | null]),
   );
@@ -108,10 +122,14 @@ async function getActivityFeed() {
     db.from("testmaker_list").select("list_name, created_at")
       .order("created_at", { ascending: false }).limit(10),
   ]);
+  if (users.error) throw new Error(`getActivityFeed: ${users.error.message}`);
+  if (tagEvents.error) throw new Error(`getActivityFeed: ${tagEvents.error.message}`);
+  if (lists.error) throw new Error(`getActivityFeed: ${lists.error.message}`);
   const tagIds = [...new Set((tagEvents.data ?? []).map((e) => e.tag_id as number))];
   const tagNames = tagIds.length
     ? await db.from("tags").select("id, name").in("id", tagIds)
     : { data: [] as { id: number; name: string }[] };
+  if ("error" in tagNames && tagNames.error) throw new Error(`getActivityFeed: ${tagNames.error.message}`);
   const nameById = new Map((tagNames.data ?? []).map((t) => [t.id as number, t.name as string]));
   const items: FeedItem[] = [
     ...(users.data ?? []).map((u) => ({
@@ -438,13 +456,13 @@ export default async function AdminOverview() {
                   views
                 </span>
                 <span style={{ fontWeight: 600 }}>
-                  {fmt(webStats.reduce((s, d) => s + d.views, 0))}
+                  {fmt(webStats.days.reduce((s, d) => s + d.views, 0))}
                 </span>
                 <span style={{ color: "var(--tm-muted)", marginLeft: 14 }}>
-                  visitors {fmt(webStats.reduce((s, d) => s + d.visitors, 0))}
+                  visitors {fmt(webStats.visitors)}
                 </span>
                 <span style={{ marginLeft: 14 }}>
-                  <Spark values={webStats.map((d) => d.views)} />
+                  <Spark values={webStats.days.map((d) => d.views)} />
                 </span>
               </TRow>
             )}

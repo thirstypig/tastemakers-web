@@ -21,14 +21,25 @@ export async function posthogQuery(
 }
 
 export type WebStatDay = { day: string; views: number; visitors: number };
+export type WebStats = { days: WebStatDay[]; visitors: number };
 
-export async function fetchWebStats(apiKey: string): Promise<WebStatDay[] | null> {
-  const rows = await posthogQuery(
-    apiKey,
-    "SELECT toDate(timestamp) AS day, count(*) AS views, count(DISTINCT person_id) AS visitors " +
-      "FROM events WHERE event = '$pageview' AND toDate(timestamp) >= today() - 7 " +
-      "GROUP BY day ORDER BY day",
-  );
-  if (!rows) return null;
-  return rows.map((r) => ({ day: String(r[0]), views: Number(r[1]), visitors: Number(r[2]) }));
+export async function fetchWebStats(apiKey: string): Promise<WebStats | null> {
+  const [rows, totals] = await Promise.all([
+    posthogQuery(
+      apiKey,
+      "SELECT toDate(timestamp) AS day, count(*) AS views, count(DISTINCT person_id) AS visitors " +
+        "FROM events WHERE event = '$pageview' AND toDate(timestamp) >= today() - 7 " +
+        "GROUP BY day ORDER BY day",
+    ),
+    posthogQuery(
+      apiKey,
+      "SELECT count(DISTINCT person_id) FROM events " +
+        "WHERE event = '$pageview' AND toDate(timestamp) >= today() - 7",
+    ),
+  ]);
+  if (!rows || !totals) return null;
+  return {
+    days: rows.map((r) => ({ day: String(r[0]), views: Number(r[1]), visitors: Number(r[2]) })),
+    visitors: Number(totals[0]?.[0] ?? 0),
+  };
 }

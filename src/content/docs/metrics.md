@@ -19,6 +19,7 @@ Bucket = trailing 7-day windows ending now (bar 12 = last 7 days, bar 1 = 78–8
 days ago). Counted by `created_at`. Computed in `src/lib/trends.ts#bucketByWeek`.
 Caveat: source queries fetch at most ~1000 rows per table per 84-day window
 (Supabase row cap) — migrate to a Postgres RPC when any table exceeds that.
+User and restaurant trend counts exclude soft-deleted rows, matching their KPI definitions.
 
 ## Trending cities
 

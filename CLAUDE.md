@@ -57,7 +57,7 @@ tastemakers-web/
 │   │       ├── analytics/page.tsx  PostHog / GA / Search Console — live links + event counts
 │   │       ├── status/page.tsx     Live health checks for all services
 │   │       ├── docs/page.tsx       Documentation index — registry-driven, 13 docs, 5 categories
-│   │       └── docs/[id]/page.tsx  Individual doc viewer (local + GitHub sources, updated-date badge)
+│   │       └── docs/[id]/page.tsx  Individual doc viewer (local + GitHub sources)
 │   ├── content/
 │   │   └── docs/              Local markdown docs (6 files)
 │   │       ├── going-live.md      Going-live runbook (merged in blockers.md)
