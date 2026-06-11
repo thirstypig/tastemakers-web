@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 122 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
+Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 127 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
 <!-- /now-tldr -->
 
 ## Project Overview
@@ -23,7 +23,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 122 unit tests (13 test files)
+npx vitest run     # run 127 unit tests (13 test files)
 ```
 
 ## Project Structure
@@ -166,7 +166,7 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 122 tests across 13 files — all green
+- **Current suite:** 127 tests across 13 files — all green
 
 | File | Tests | What it covers |
 |------|-------|----------------|
@@ -176,10 +176,10 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 | `src/lib/api-probe.test.ts` | 12 | `runCheck` — live health probe utility |
 | `src/lib/admin-filters.test.ts` | 13 | `filterTodos` (AND logic, sentinel), `summarizeRoadmap` (P1 counter excludes done) |
 | `src/lib/github.test.ts` | 7 | `fetchCommits` — GitHub API fetch, cache, error handling |
-| `src/lib/docs.test.ts` | 13 | `fetchMarkdown` — local + GitHub source loading, DOCS_REGISTRY completeness, `fetchDocUpdated` |
+| `src/lib/docs.test.ts` | 14 | `fetchMarkdown` — local + GitHub source loading, DOCS_REGISTRY completeness, `fetchDocUpdated` |
 | `src/hooks/useAuth.test.ts` | 7 | `useAuth` — session resolution, auth events, cleanup |
 | `src/lib/trends.test.ts` | 5 | 12-week trend data shape, week-over-week deltas |
-| `src/lib/city-stats.test.ts` | 4 | 30d city leaderboard sorting, delta calculation |
+| `src/lib/city-stats.test.ts` | 8 | 30d city leaderboard sorting, delta calculation; `buildCityEvents` no-FK join (unknown ids, cutoff) |
 | `src/lib/activity-feed.test.ts` | 3 | Merged feed ordering, type tagging |
 | `src/lib/posthog.test.ts` | 3 | `posthogQuery` — HogQL client, error handling |
 | `src/lib/markdown.test.ts` | 4 | `renderMarkdown` — tables, inline formatting, link targets, escaping |

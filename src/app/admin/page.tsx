@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { bucketByWeek } from "@/lib/trends";
-import { cityLeaderboard, type CityEvent } from "@/lib/city-stats";
+import { cityLeaderboard, buildCityEvents, type RestaurantRow, type RestaurantEventRow } from "@/lib/city-stats";
 import { mergeFeed, type FeedItem } from "@/lib/activity-feed";
 import { fetchWebStats } from "@/lib/posthog";
 
@@ -93,22 +93,11 @@ async function getCityStats(now: Date) {
   if (restaurants.error) throw new Error(`getCityStats: ${restaurants.error.message}`);
   if (tagEvents.error) throw new Error(`getCityStats: ${tagEvents.error.message}`);
   if (saveEvents.error) throw new Error(`getCityStats: ${saveEvents.error.message}`);
-  const cityById = new Map<number, string | null>(
-    (restaurants.data ?? []).map((r) => [r.id as number, r.city as string | null]),
+  const events = buildCityEvents(
+    (restaurants.data ?? []) as RestaurantRow[],
+    [...(tagEvents.data ?? []), ...(saveEvents.data ?? [])] as RestaurantEventRow[],
+    cutoff,
   );
-  const events: CityEvent[] = [
-    ...(restaurants.data ?? [])
-      .filter((r) => r.created_at && r.created_at >= cutoff)
-      .map((r) => ({ city: r.city as string | null, createdAt: r.created_at as string })),
-    ...(tagEvents.data ?? []).map((e) => ({
-      city: cityById.get(e.restaurant_id as number) ?? null,
-      createdAt: e.created_at as string,
-    })),
-    ...(saveEvents.data ?? []).map((e) => ({
-      city: cityById.get(e.restaurant_id as number) ?? null,
-      createdAt: e.created_at as string,
-    })),
-  ];
   return cityLeaderboard(events, now);
 }
 

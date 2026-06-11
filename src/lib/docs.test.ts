@@ -153,4 +153,9 @@ describe("fetchDocUpdated", () => {
     expect(date).toBeNull();
     vi.unstubAllGlobals();
   });
+
+  it("returns null for a missing local file instead of throwing", async () => {
+    const date = await fetchDocUpdated({ type: "local", file: "src/content/docs/does-not-exist.md" });
+    expect(date).toBeNull();
+  });
 });

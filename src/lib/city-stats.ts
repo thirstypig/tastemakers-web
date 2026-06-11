@@ -29,3 +29,27 @@ export function cityLeaderboard(
     .sort((a, b) => b.current - a.current || a.city.localeCompare(b.city))
     .slice(0, top);
 }
+
+export type RestaurantRow = { id: number; city: string | null; created_at: string | null };
+export type RestaurantEventRow = { restaurant_id: number; created_at: string };
+
+/** Assembles CityEvents from raw rows. The legacy schema has no FK constraints,
+ *  so tag/save rows may reference unknown restaurants — those map to city null.
+ *  All restaurants feed the id→city map; only those created since `cutoff`
+ *  count as events themselves. */
+export function buildCityEvents(
+  restaurants: RestaurantRow[],
+  eventRows: RestaurantEventRow[],
+  cutoff: string,
+): CityEvent[] {
+  const cityById = new Map<number, string | null>(restaurants.map((r) => [r.id, r.city]));
+  return [
+    ...restaurants
+      .filter((r) => r.created_at !== null && r.created_at >= cutoff)
+      .map((r) => ({ city: r.city, createdAt: r.created_at as string })),
+    ...eventRows.map((e) => ({
+      city: cityById.get(e.restaurant_id) ?? null,
+      createdAt: e.created_at,
+    })),
+  ];
+}
