@@ -1,4 +1,10 @@
 ---
+id: SOL-001
+type: solution
+owner: james
+tags: [web, infra]
+links: []
+updated: 2026-06-03
 title: 'Next.js build fails on host with "Cannot find module src/app/page.js" after deleting a route'
 category: build-errors
 problem_type: build_failure

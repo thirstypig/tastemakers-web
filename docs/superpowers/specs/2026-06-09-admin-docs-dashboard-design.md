@@ -1,3 +1,14 @@
+---
+id: DOC-022
+type: note
+status: done
+phase: null
+owner: james
+tags: [web]
+links: [DOC-021]
+updated: 2026-06-09
+---
+
 # Admin Docs Reorganization + Landing Dashboard — Design
 
 **Date:** 2026-06-09

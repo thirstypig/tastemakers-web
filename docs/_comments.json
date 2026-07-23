@@ -1,0 +1,70 @@
+{
+  "_readme": "LOCAL STUB DATA SOURCE for scripts/sync-inbox.mjs. Replace with a real query against Supabase once the admin board can post comments — see the TODO in sync-inbox.mjs. Shape: see docs/README-DOCS.md section 7. Do not hand-edit docs/INBOX.md; edit this file and re-run the script.",
+  "_schema": {
+    "id": "C-### — stable, never reused",
+    "doc": "the id of the doc this comment is on (PRD-001, ADR-001, DOC-004, ...)",
+    "kind": "question | change_request | note",
+    "status": "open | in_review | resolved",
+    "author": "who wrote it",
+    "created": "ISO 8601 timestamp",
+    "body": "the comment text",
+    "resolution": "null while unresolved; otherwise { note, link, resolved, by }"
+  },
+  "comments": [
+    {
+      "id": "C-001",
+      "doc": "PRD-001",
+      "kind": "change_request",
+      "status": "open",
+      "author": "james",
+      "created": "2026-07-23T09:12:00Z",
+      "body": "The vote-count ceiling is too low. Top tier is >=10 votes, so a tag with 10 votes and one with 500 render identically. Propose adding a level 0 for >=50, or showing the raw number once a tag passes some threshold.",
+      "resolution": null
+    },
+    {
+      "id": "C-002",
+      "doc": "DOC-008",
+      "kind": "question",
+      "status": "open",
+      "author": "james",
+      "created": "2026-07-23T09:20:00Z",
+      "body": "What is /restaurants1 actually for? If it is dead, it should be removed before the module extraction in ADR-001 rather than carried across.",
+      "resolution": null
+    },
+    {
+      "id": "C-003",
+      "doc": "PRD-001",
+      "kind": "question",
+      "status": "in_review",
+      "author": "james",
+      "created": "2026-07-22T16:40:00Z",
+      "body": "Should machine-seeded tags count as votes? They currently land in the same table with user_id NULL and no read query filters on source.",
+      "resolution": null
+    },
+    {
+      "id": "C-004",
+      "doc": "DOC-002",
+      "kind": "note",
+      "status": "open",
+      "author": "james",
+      "created": "2026-07-21T11:05:00Z",
+      "body": "The 'deliberately excluded' list in the launch spec is still empty. Only I can fill that in - the code cannot tell the difference between 'decided against' and 'never got to'.",
+      "resolution": null
+    },
+    {
+      "id": "C-005",
+      "doc": "DOC-004",
+      "kind": "change_request",
+      "status": "resolved",
+      "author": "james",
+      "created": "2026-07-20T14:00:00Z",
+      "body": "The glossary entry for 'level' says it is a raw count, but the web client treats it as a 1-5 tier. One of these is wrong.",
+      "resolution": {
+        "note": "Both were right - the word means different things on each side of the API. Glossary entry rewritten to name the collision explicitly.",
+        "link": "DOC-004",
+        "resolved": "2026-07-23T10:30:00Z",
+        "by": "claude"
+      }
+    }
+  ]
+}

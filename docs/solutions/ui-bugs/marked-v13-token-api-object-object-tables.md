@@ -1,4 +1,10 @@
 ---
+id: SOL-003
+type: solution
+status: done
+owner: james
+links: [DOC-011]
+updated: 2026-06-10
 title: "Admin doc viewer renders tables as '[object Object]' and private-repo docs fail to load"
 slug: "marked-v13-token-api-object-object-tables"
 category: "ui-bugs"

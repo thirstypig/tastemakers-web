@@ -1,39 +1,33 @@
 import Link from "next/link";
-import { DOCS_REGISTRY, DOC_CATEGORIES, fetchDocUpdated, type DocEntry } from "@/lib/docs";
-
-function sourceLabel(d: DocEntry): { repo: string; badge: string; badgeColor: string } {
-  if (d.source.type === "github")
-    return { repo: d.source.repo.replace("thirstypig/", ""), badge: "live·github", badgeColor: "var(--tm-accent)" };
-  return { repo: "tastemakers-web", badge: "local", badgeColor: "var(--tm-muted)" };
-}
-
-function TRow({ children, last }: { children: React.ReactNode; last?: boolean }) {
-  return (
-    <div
-      style={{
-        padding: "7px 14px",
-        borderBottom: last ? "none" : "1px solid var(--tm-line)",
-        fontSize: 11.5,
-        color: "var(--tm-ink)",
-        fontFamily: "var(--font-jetbrains-mono), monospace",
-        display: "flex",
-        alignItems: "center",
-      }}
-    >
-      {children}
-    </div>
-  );
-}
+import { getDocsRegistry, groupBySection, statusBadge, fetchDocUpdated } from "@/lib/docs";
+import DocsBrowser, { type BrowserGroup } from "./DocsBrowser";
 
 export default async function DocsPage() {
-  const updated = await Promise.all(
-    DOCS_REGISTRY.map((d) => fetchDocUpdated(d.source).catch(() => null)),
-  );
-  const updatedById = new Map(DOCS_REGISTRY.map((d, i) => [d.id, updated[i]]));
+  const registry = getDocsRegistry();
+
+  const updated = await Promise.all(registry.map((d) => fetchDocUpdated(d.source).catch(() => null)));
+  const updatedById = new Map(registry.map((d, i) => [d.id, updated[i]]));
+
+  const groups: BrowserGroup[] = groupBySection(registry).map((g) => ({
+    section: g.section,
+    label: g.label,
+    blurb: g.blurb,
+    docs: g.docs.map((d) => ({
+      id: d.id,
+      title: d.title,
+      section: d.section,
+      docType: d.docType,
+      tags: d.tags,
+      path: d.path,
+      remote: d.source.type === "github" ? d.source.repo.replace("thirstypig/", "") : undefined,
+      generated: d.generated,
+      updated: updatedById.get(d.id) ?? null,
+      badge: statusBadge(d),
+    })),
+  }));
 
   return (
     <div>
-      {/* Tab strip */}
       <div
         style={{
           display: "flex",
@@ -65,57 +59,7 @@ export default async function DocsPage() {
         ))}
       </div>
 
-      <div style={{ padding: "14px 18px", fontFamily: "var(--font-jetbrains-mono), monospace" }}>
-        <div style={{ color: "var(--tm-muted)", marginBottom: 14, fontSize: 11.5 }}>
-          <span style={{ color: "var(--tm-accent)" }}>$</span> ls docs/ --group-by category
-        </div>
-
-        {DOC_CATEGORIES.map((cat) => {
-          const docs = DOCS_REGISTRY.filter((d) => d.category === cat.id);
-          if (docs.length === 0) return null;
-          return (
-            <div key={cat.id} style={{ marginBottom: 18 }}>
-              <div style={{ color: "var(--tm-muted)", marginBottom: 6, fontSize: 12 }}>
-                # {cat.label} · {docs.length}
-              </div>
-              <div
-                style={{
-                  background: "var(--tm-panel)",
-                  border: "1px solid var(--tm-line)",
-                  borderRadius: 6,
-                }}
-              >
-                {docs.map((doc, i) => {
-                  const { repo, badge, badgeColor } = sourceLabel(doc);
-                  const date = updatedById.get(doc.id) ?? "—";
-                  return (
-                    <Link
-                      key={doc.id}
-                      href={`/admin/docs/${doc.id}`}
-                      style={{ textDecoration: "none", display: "block" }}
-                    >
-                      <TRow last={i === docs.length - 1}>
-                        <span style={{ flex: 1, color: "var(--tm-accent)" }}>
-                          → {doc.title}
-                        </span>
-                        <span style={{ width: 180, color: "var(--tm-muted)" }}>
-                          {repo}
-                        </span>
-                        <span style={{ width: 100, color: badgeColor }}>
-                          {badge}
-                        </span>
-                        <span style={{ width: 90, color: "var(--tm-muted)" }}>
-                          {date}
-                        </span>
-                      </TRow>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <DocsBrowser groups={groups} />
     </div>
   );
 }

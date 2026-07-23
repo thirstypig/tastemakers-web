@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { fetchMarkdown, DOCS_REGISTRY, DOC_CATEGORIES, getDoc } from "@/lib/docs";
+import { fetchMarkdown, getDoc, getDocsRegistry, groupBySection, statusBadge } from "@/lib/docs";
 import { renderMarkdown } from "@/lib/markdown";
 
 const t = {
@@ -10,78 +10,123 @@ const t = {
   muted: "var(--tm-muted)",
   dim: "var(--tm-muted)",
   accent: "var(--tm-accent)",
-  green: "var(--tm-accent)",
   red: "var(--tm-err)",
+  warn: "var(--tm-warn)",
   font: "var(--font-jetbrains-mono), monospace",
   mono: "var(--font-jetbrains-mono), monospace",
 };
 
-export default async function DocPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+const TONE: Record<string, string> = {
+  ok: t.accent, warn: t.warn, accent: t.accent, muted: t.muted,
+};
+
+export default async function DocPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const doc = getDoc(id);
   if (!doc) notFound();
 
   const markdown = await fetchMarkdown(doc.source);
+  const groups = groupBySection(getDocsRegistry());
+  const badge = statusBadge(doc);
 
   return (
     <div style={{ display: "flex", minHeight: "100vh", fontFamily: t.font }}>
-      {/* Doc list sidebar */}
+      {/* Sidebar — wide enough that titles aren't truncated to uselessness */}
       <aside
         style={{
-          width: 200,
+          width: 268,
           borderRight: `1px solid ${t.border}`,
           padding: "20px 0",
           flexShrink: 0,
+          maxHeight: "100vh",
+          overflowY: "auto",
         }}
       >
         <a
           href="/admin/docs"
-          style={{
-            display: "block",
-            padding: "6px 16px 14px",
-            fontSize: 11,
-            color: t.dim,
-            textDecoration: "none",
-          }}
+          style={{ display: "block", padding: "6px 16px 14px", fontSize: 11, color: t.dim, textDecoration: "none" }}
         >
           ← All docs
         </a>
-        {DOC_CATEGORIES.map((cat) => {
-          const docs = DOCS_REGISTRY.filter((d) => d.category === cat.id);
-          if (docs.length === 0) return null;
-          return (
-            <div key={cat.id}>
-              <div style={{ padding: "10px 16px 4px", fontSize: 10, color: t.dim, textTransform: "uppercase", letterSpacing: 1 }}>
-                {cat.label}
-              </div>
-              {docs.map((d) => (
-                <a
-                  key={d.id}
-                  href={`/admin/docs/${d.id}`}
-                  style={{
-                    display: "block",
-                    padding: "8px 16px",
-                    fontSize: 12,
-                    color: d.id === id ? t.text : t.muted,
-                    textDecoration: "none",
-                    background: d.id === id ? `${t.accent}12` : "transparent",
-                    borderLeft: d.id === id ? `2px solid ${t.accent}` : "2px solid transparent",
-                  }}
-                >
-                  {d.title}
-                </a>
-              ))}
+
+        {groups.map((g) => (
+          <div key={g.section}>
+            <div
+              title={g.blurb}
+              style={{
+                padding: "10px 16px 4px",
+                fontSize: 10,
+                color: t.dim,
+                textTransform: "uppercase",
+                letterSpacing: 1,
+              }}
+            >
+              {g.label}
             </div>
-          );
-        })}
+            {g.docs.map((d) => (
+              <a
+                key={d.id}
+                href={`/admin/docs/${d.id}`}
+                title={`${d.title}\n${d.path}`}
+                style={{
+                  display: "block",
+                  padding: "7px 16px",
+                  fontSize: 11.5,
+                  color: d.id === id ? t.text : t.muted,
+                  textDecoration: "none",
+                  background: d.id === id ? `${t.accent}12` : "transparent",
+                  borderLeft: d.id === id ? `2px solid ${t.accent}` : "2px solid transparent",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {d.title}
+              </a>
+            ))}
+          </div>
+        ))}
       </aside>
 
-      {/* Content */}
-      <main style={{ flex: 1, padding: "32px 40px", overflowY: "auto", maxWidth: 840 }}>
+      <main style={{ flex: 1, padding: "28px 40px", overflowY: "auto", maxWidth: 900 }}>
+        {/* Metadata strip */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexWrap: "wrap",
+            fontSize: 10.5,
+            color: t.dim,
+            marginBottom: 20,
+            paddingBottom: 12,
+            borderBottom: `1px solid ${t.border}`,
+          }}
+        >
+          <span style={{ color: t.accent }}>{doc.id}</span>
+          {doc.docType && <span>· {doc.docType}</span>}
+          {badge && <span style={{ color: TONE[badge.tone] }}>· {badge.label}</span>}
+          {doc.generated && <span title="Regenerated by npm run docs:refresh">· generated</span>}
+          {doc.tags.length > 0 && <span>· {doc.tags.join(" ")}</span>}
+          <span style={{ marginLeft: "auto", opacity: 0.7 }}>{doc.path}</span>
+        </div>
+
+        {doc.generated && (
+          <div
+            style={{
+              margin: "0 0 20px",
+              padding: "10px 14px",
+              border: `1px solid ${t.border}`,
+              borderLeft: `3px solid ${t.warn}`,
+              borderRadius: 4,
+              fontSize: 11.5,
+              color: t.muted,
+            }}
+          >
+            Generated file — do not hand-edit. Regenerate with <code>npm run docs:refresh</code>.
+          </div>
+        )}
+
         {markdown ? (
           <>
             <style>{`
@@ -122,52 +167,32 @@ export default async function DocPage({
                 padding: 8px 16px; color: ${t.dim}; font-style: italic;
               }
               .md-body blockquote p { margin: 0; }
-              .md-body ul,
-              .md-body ol {
-                margin: 0 0 16px;
-                padding-left: 22px;
-                color: ${t.muted};
-                font-size: 13px;
-                line-height: 1.8;
+              .md-body ul, .md-body ol {
+                margin: 0 0 16px; padding-left: 22px; color: ${t.muted};
+                font-size: 13px; line-height: 1.8;
               }
               .md-body li { margin-bottom: 4px; }
               .md-body input[type="checkbox"] { margin-right: 6px; accent-color: ${t.accent}; }
             `}</style>
-            <div
-              className="md-body"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }}
-            />
+            <div className="md-body" dangerouslySetInnerHTML={{ __html: renderMarkdown(markdown) }} />
             <p
               style={{
-                marginTop: 40,
-                fontSize: 11,
-                color: t.dim,
-                fontFamily: t.mono,
-                borderTop: `1px solid ${t.border}`,
-                paddingTop: 16,
+                marginTop: 40, fontSize: 11, color: t.dim, fontFamily: t.mono,
+                borderTop: `1px solid ${t.border}`, paddingTop: 16,
               }}
             >
               {doc.source.type === "github"
-                ? `Source: github.com/${(doc.source as { repo: string }).repo} · cached 5 min`
-                : "Source: local file in tastemakers-web repo"}
+                ? `Source: github.com/${doc.source.repo} · cached 5 min`
+                : `Source: ${doc.path}`}
             </p>
           </>
         ) : (
-          <div
-            style={{
-              padding: "32px",
-              background: `${t.red}10`,
-              border: `1px solid ${t.red}30`,
-              borderRadius: 8,
-            }}
-          >
-            <p style={{ margin: 0, color: t.red, fontSize: 14 }}>
-              Could not load document
-            </p>
+          <div style={{ padding: 32, background: `${t.red}10`, border: `1px solid ${t.red}30`, borderRadius: 8 }}>
+            <p style={{ margin: 0, color: t.red, fontSize: 14 }}>Could not load document</p>
             <p style={{ margin: "8px 0 0", color: t.muted, fontSize: 12 }}>
               {doc.source.type === "github"
-                ? `Failed to fetch from github.com/${(doc.source as { repo: string }).repo}`
-                : "Local file not found"}
+                ? `Failed to fetch from github.com/${doc.source.repo} — check GITHUB_TOKEN has not expired.`
+                : `Local file not found: ${doc.path}`}
             </p>
           </div>
         )}
@@ -177,5 +202,5 @@ export default async function DocPage({
 }
 
 export function generateStaticParams() {
-  return DOCS_REGISTRY.map((d) => ({ id: d.id }));
+  return getDocsRegistry().map((d) => ({ id: d.id }));
 }

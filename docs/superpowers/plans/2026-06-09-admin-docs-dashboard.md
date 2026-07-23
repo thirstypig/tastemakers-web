@@ -1,3 +1,14 @@
+---
+id: DOC-021
+type: note
+status: done
+phase: null
+owner: james
+tags: [web]
+links: [DOC-022]
+updated: 2026-06-09
+---
+
 # Admin Docs Reorg + Landing Dashboard Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

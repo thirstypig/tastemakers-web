@@ -9,7 +9,9 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "docs:refresh": "node scripts/refresh-docs.mjs",
+    "docs:inbox": "node scripts/sync-inbox.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.3",
