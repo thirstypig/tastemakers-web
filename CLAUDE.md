@@ -6,6 +6,24 @@
 Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 127 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
 <!-- /now-tldr -->
 
+<!-- DOCS:STATUS:START -->
+
+## Current focus
+
+_Generated 2026-07-23 by `npm run docs:refresh` — do not edit between these markers._
+
+**Now:** RM-01 Finish the hosting migration · RM-02 Fix the P1 security backlog · RM-13 PostgreSQL compatibility sweep
+
+**Next 3 to-dos:**
+
+1. **TASK-01** (p1) — Change the pending `restaurant_tag` unique constraint from `(restaurant_id, tag_id)` to `(restaurant_id, tag_id, user_id)` — as written it deletes every vote and 500s on popular tags
+2. **TASK-02** (p1) — Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id
+3. **TASK-03** (p1) — Replace body `user_id` with `Auth::id()` in `tagsdelete` — the add path authenticates, the delete path doesn't
+
+→ Full roadmap: [`docs/product/roadmap.md`](docs/product/roadmap.md)
+
+<!-- DOCS:STATUS:END -->
+
 ## Project Overview
 Web frontend for the Tastemakers restaurant discovery platform. Built with Next.js 15 and TypeScript. This is a new project being built to bring the Tastemakers experience to the browser.
 
@@ -242,6 +260,75 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 2. Add web app manifest
 3. Push notification support via FCM web
 4. Install prompt for mobile browsers
+
+## Docs system (`docs/`)
+
+This repo hosts the project knowledge base, rendered by the admin board at `/admin/docs`.
+Full spec: **`docs/README-DOCS.md`**. Summary below — read it before writing any doc.
+
+### Session ritual — do this first
+
+**At the start of a session, read `docs/INBOX.md`.**
+1. Act on `change_request` items first (they render at the top for that reason)
+2. Answer `question` items
+3. Write a resolution for each one handled: set `status: resolved`, add a note **and a
+   link** (commit SHA or doc id) in `docs/_comments.json`
+4. Re-run `npm run docs:inbox` so it clears
+
+A comment cannot reach `resolved` without a link — a resolution nobody can verify is
+just a claim it was handled. Leaving an item `open` is a legitimate outcome.
+
+### Frontmatter — required on every authored doc
+
+No frontmatter → the board cannot index it. It must be the first thing in the file.
+
+```yaml
+---
+id: PRD-001          # stable, never reused or renumbered
+type: prd            # decides which board section it lands in
+status: draft        # draft | active | locked | done | deprecated
+phase: null
+owner: james
+tags: []             # controlled vocabulary ONLY (below)
+links: []            # ids of related docs — this is the traceability trail
+updated: 2026-07-23
+---
+```
+
+Optional: `priority` (`p1|p2|p3`, for todos/risks) · `shipped` (`true|false`, PRDs only —
+`status` describes the doc's lifecycle, `shipped` describes the feature's).
+
+### Controlled tag vocabulary — 14 tags, no freeform
+
+| Domain | Platform | Concern |
+|---|---|---|
+| `tagging` `discovery` `lists` `social` `photos` `accounts` | `backend` `ios` `web` `android` | `security` `data-model` `ai` `infra` |
+
+Most docs want 2–4: one domain, one platform, one concern. **Never invent a tag inline** —
+adding a 15th is a deliberate decision, recorded in `docs/engineering/decision-log.md`.
+
+### ID scheme — one number block per section, never reused
+
+`PRD-###` product reqs · `ADR-###` architecture decisions · `DOC-###` general docs ·
+`RISK-###` risks · `EXP-###` experiments · `SOL-###` solved problems ·
+`TODO-###` code-review findings · `RM-##` roadmap rows · `TASK-##` to-do rows
+
+**ADR vs decision-log:** an ADR is for decisions expensive to reverse (framework, database,
+auth model, module boundaries). Everything smaller is one line in the decision log:
+date · decision · why. If unsure, it's a decision-log entry.
+
+### Generated docs — never hand-edit
+
+`under-the-hood/stats.md`, `costs.md`, `system-status.md`, and `INBOX.md` are regenerated
+from real data. Edit the **inputs** (`docs/costs.config.json`, `docs/_comments.json`).
+
+```bash
+npm run docs:refresh   # stats, costs, system status, + the status block in README/CLAUDE
+npm run docs:inbox     # regenerate docs/INBOX.md from _comments.json
+```
+
+**Run `npm run docs:refresh` before every push.** What the board shows should be what is
+true. Templates in `docs/_templates/` are excluded from indexing by design.
 
 ## Rules
 - Port **3050** for dev server — never use other ports

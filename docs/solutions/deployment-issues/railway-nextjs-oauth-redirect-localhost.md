@@ -1,4 +1,10 @@
 ---
+id: SOL-002
+type: solution
+status: done
+owner: james
+links: [DOC-020]
+updated: 2026-06-10
 title: "Next.js Railway OAuth redirect resolves to localhost:8080 instead of public domain"
 slug: "railway-nextjs-oauth-redirect-localhost"
 category: "deployment-issues"
