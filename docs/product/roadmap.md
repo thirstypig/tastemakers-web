@@ -40,11 +40,12 @@ it isn't re-litigated) · `done`.
 | id | Item | Why it matters | Status | Links |
 |---|---|---|---|---|
 | **RM-03** | Instrument the core loop | The central question — do tags change where people eat — has never been measurable. Every KPI in `PRD-001` §5 is currently unanswerable. | `next` | `PRD-001` |
-| **RM-04** | Ship the AI tag-seeding pipeline | Four services and 55 passing tests exist; the queued job and CLI command to actually run them do not. Built and idle. | `next` | `PRD-001` §7 |
+| **RM-04** | Ship the AI tag-seeding pipeline | 🔺 **PROMOTED 2026-07-24.** `EXP-001` refuted human tag density (86% of restaurants have one tagger) and tagging is down 98.5%. This is now **the only realistic route to the consensus the product rests on** — not enrichment, load-bearing. Four services + 55 tests exist; the job and CLI do not. | `next` | `PRD-001` §7, `EXP-001` |
+| **RM-16** | Understand the 98.5% activity decline | 3,068 tags in 2021 → 44 in 2025; 67 taggers → 6. Every other roadmap item assumes users who are no longer here. **This outranks the technical backlog.** | `next` | RISK-016, `EXP-001` |
 | **RM-05** | Feature module isolation | Six features share one 2,985-line controller. Every change has an outsized blast radius. Best done while no live client points at Railway. | `next` | `ADR-001` |
 | **RM-06** | Tag vocabulary normalisation | Free-text tag creation fragments the vocabulary — the core ranking signal degrades as the corpus grows. | `next` | `PRD-001` §9, TODO-037 |
 | **RM-10** | Account management & deletion | No way to delete an account exists. Likely **gates the iOS submission in RM-01** (App Store 5.1.1(v)) and there is no way to honour an erasure request today. | `next` | `PRD-002`, DOC-019 |
-| **RM-11** | Search & ranking | Vote counts drive tag colour and nothing else — `searchByTags` has no `ORDER BY` at all. Makes the core signal actually affect discovery. | `next` | `PRD-003`, `EXP-001` |
+| **RM-11** | Search & ranking | **Split 2026-07-24 by `EXP-001`.** Req 1 (untagged restaurants stay findable) still ships now — TASK-11. Req 2 (vote-weighted ranking) is **blocked on density**: with a 1-vote ceiling on 86% of restaurants, weighting would reorder nothing. Waits on RM-04. | `next` (req 1) · `later` (req 2) | `PRD-003`, `EXP-001` |
 | **RM-12** | Test coverage for the 2021 features | 55 tests on services that have never run in production; **0** on the code live on the App Store since 2021. Also a prerequisite for safe module extraction. | `next` | `ADR-001`, DOC-010 |
 
 ## Later

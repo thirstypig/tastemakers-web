@@ -62,9 +62,14 @@ This is not a new practice to adopt. It is an existing practice to extend backwa
 
 ### Why now, and why the window closes
 
-The Railway production database is empty; the App Store iOS build still calls the
-legacy Namecheap host. **No shipped client currently depends on the Railway API's
-response shapes.** That makes restructuring unusually cheap right now.
+**Corrected 2026-07-24:** the Railway/Supabase production database is **not** empty — it
+holds the full 2021–2025 dataset (4,230 tag rows, 1,388 restaurants, 232 users). The
+earlier claim here was stale.
+
+The window argument still holds, for a different reason: the App Store iOS build still
+calls the legacy Namecheap host, so **no shipped client currently depends on the Railway
+API's response shapes.** That makes restructuring cheap right now — but the data is live,
+so schema changes are no longer free. Treat the database as production from here.
 
 The moment iOS is repointed and submitted, old app versions live in the wild for
 months, and every response shape becomes a compatibility contract. **[inferred]** —

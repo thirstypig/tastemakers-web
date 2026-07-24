@@ -36,7 +36,8 @@ keeping done items in place means you can see what actually happened this month.
 
 | id | Task | Serves | Priority | Status |
 |---|---|---|---|---|
-| **TASK-01** | Change the pending `restaurant_tag` unique constraint from `(restaurant_id, tag_id)` to `(restaurant_id, tag_id, user_id)` — as written it deletes every vote and 500s on popular tags | `PRD-001`, RM-06 | p1 | `open` |
+| **TASK-01** | 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18. | `PRD-001`, `EXP-001` | p1 | `open` |
+| **TASK-18** | Attempt vote recovery: get a pre-migration dump of `restaurant_tag` from the legacy Namecheap MySQL host (cPanel → phpMyAdmin export, or any backup). The legacy DB was bound to `127.0.0.1` so it is unreachable remotely — this needs cPanel access. **Do it before the hosting is cancelled**, or the original vote counts are gone permanently. | `EXP-001`, RISK-001 | p1 | `open` |
 | **TASK-02** | Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id | RM-02 | p1 | `open` |
 | **TASK-03** | Replace body `user_id` with `Auth::id()` in `tagsdelete` — the add path authenticates, the delete path doesn't | `PRD-001` §9, RM-02 | p1 | `open` |
 | **TASK-04** | Commit the four uncommitted code-review findings (todos 067–070) in the backend repo | RM-02 | p3 | `open` |

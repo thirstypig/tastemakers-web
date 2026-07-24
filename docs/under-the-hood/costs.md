@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Costs
@@ -62,4 +62,4 @@ Treat those rows as placeholders, not estimates.
 - **`paymentPctFee`** — Standard card-processing rate. Not verified against any processor because none is integrated.
 - **`knownFixedCosts`** — Apple Developer Program is a real recurring cost (~$99/yr) not modelled here - it is not per-user. Add it if you want total burn rather than unit economics.
 
-<!-- generated 2026-07-23T18:53:28.873Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-07-24T08:03:25.133Z by scripts/refresh-docs.mjs -->

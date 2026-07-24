@@ -62,20 +62,84 @@ SELECT restaurant_id, tag_id, COUNT(*) AS votes
 - **Refuted** if **> 70%** of (restaurant, tag) pairs have exactly **1 vote**
 - **Inconclusive** in between, or if fewer than 100 restaurants carry any tag
 
-**Result:** `pending`
+**Result: 🔴 REFUTED** — run 2026-07-24 against Supabase production.
 
-**Blocked on:** the Railway production database is empty — live data is still on the
-legacy Namecheap MySQL host. This can only run after RM-01 (hosting migration), or
-directly against the legacy DB before it's decommissioned.
+> **Correction to this doc's earlier "blocked" note:** production was *not* empty. It
+> holds the full 2021–2025 dataset — 4,230 tag rows, 1,388 restaurants, 232 users,
+> 108 taggers. The migration happened; the docs saying otherwise were stale.
 
-**Why it matters either way:**
-- *Supported* → the consensus model works; invest in surfacing it better (the
-  vote-count ceiling of "≥10" is probably too low — see C-001 in the inbox).
-- *Refuted* → the ranking is decoration. That reframes the AI tag-seeding pipeline
-  from "nice enrichment" to "load-bearing," because machine tags would be the only
-  thing producing meaningful density.
+### The direct measurement — and why it's invalid
 
-**What we did about it:** _pending_
+| Metric | Value |
+|---|---|
+| (restaurant, tag) pairs | 4,230 |
+| Tagged restaurants | 819 |
+| Median votes per pair | **1** |
+| **Max** votes per pair | **1** |
+| Pairs with exactly 1 vote | **100%** |
+
+A maximum of exactly 1 across 4,230 rows is not user behaviour — it's a constraint.
+**`UNIQUE (restaurant_id, tag_id)` is live in production** (unrecorded in the
+`migrations` table, so applied via the SQL editor). The vote signal was flattened
+before it was ever measured. There are also **759 missing ids** in the sequence,
+consistent with the migration's `DELETE` — though `/tags-delete` can also produce gaps,
+so that alone isn't proof.
+
+**So the direct measurement cannot answer the question.** The instrument was destroyed
+before the reading was taken.
+
+### The ceiling analysis — which the constraint could not erase
+
+A tag on a restaurant can never have more votes than that restaurant has **distinct
+taggers**. That distribution survives independently:
+
+| Distinct taggers | Restaurants | Max possible votes |
+|---:|---:|---:|
+| 1 | **704 (86.0%)** | 1 |
+| 2 | 83 | 2 |
+| 3–8 | **32 (3.9%)** | 3–8 |
+
+**86% of tagged restaurants have exactly one tagger.** The median tagged restaurant
+therefore has a hard ceiling of **1 vote per tag** — it could not reach the ≥3 success
+threshold under any history. Only **3.9% of restaurants could ever have produced a
+3-vote tag.**
+
+*Caveat, stated honestly:* the tagger count is itself slightly deflated by the
+constraint — if a user's only tag on a restaurant was a duplicate, deleting it removed
+them from that restaurant entirely. So 86% is an upper bound and 3.9% a lower bound.
+For the verdict to flip, the true "≥3 taggers" figure would have to be >50% rather than
+3.9%. That is not plausible.
+
+**Verdict: A1 does not hold.** There is not enough tag consensus for vote-count ranking
+to mean anything on this dataset.
+
+### Supporting context
+
+| Year | Tags | Taggers |
+|---:|---:|---:|
+| 2021 | 3,068 | 67 |
+| 2022 | 949 | 41 |
+| 2023 | 90 | 10 |
+| 2024 | 79 | 11 |
+| 2025 | 44 | 6 |
+
+**Tagging fell 98.5% from its 2021 peak.** Median tagger covers 2 restaurants; one power
+user covers 189. And **100% of rows are `source: user`** — the AI seeding pipeline has
+never written a single row.
+
+### What we did about it
+
+1. **`PRD-003` (search & ranking) is built on a refuted assumption.** Ranking by vote
+   count cannot work when 86% of restaurants have a one-vote ceiling. It is **not** dead —
+   but its ordering changes: **supply first, ranking second.** Moved to blocked pending
+   a density strategy.
+2. **The AI seeding pipeline is promoted from "nice enrichment" to load-bearing** (RM-04).
+   It is the only realistic route to tag density at this activity level — a 98.5% decline
+   means human supply will not produce consensus.
+3. **RISK-001 / TASK-01 change character** — from *prevent* to *already happened*. See
+   `PRD-001` §9 and the risks register.
+4. The real headline is not tag density. It is **the 98.5% activity decline** — logged as
+   RISK-016.
 
 ---
 

@@ -77,7 +77,7 @@ These were never written down. The code bets on them regardless.
 
 | # | Assumption | Status |
 |---|---|---|
-| A1 | Enough users will tag the same restaurant for counts to mean anything. A tag with one vote is noise. | **[unknown]** — never validated; no data on tag density per restaurant. |
+| A1 | Enough users will tag the same restaurant for counts to mean anything. A tag with one vote is noise. | 🔴 **REFUTED 2026-07-24** (`EXP-001`). **86% of tagged restaurants have exactly one tagger**, so their tags have a hard ceiling of 1 vote. Only 3.9% could ever reach 3 votes. The foundational bet of this feature does not hold on the real dataset. |
 | A2 | Users will converge on similar words unprompted. | **[inferred]** — the code bets *against* this: `pre_define_tags` (May 2021) was added three months later to suggest tags, and the 2026 AI seeding pipeline exists to normalise them. Both are corrections to A1/A2 failing. |
 | A3 | Free-text tag creation won't fragment the vocabulary. | **[inferred]** — **this bet lost.** `Tag::firstOrCreate(['name' => $tag])` does no normalisation, so `Date Night`, `date night`, and `date-night` are three tags with one vote each instead of one tag with three. |
 | A4 | One vote per user per restaurant-tag is the right unit. | **[intended]** — enforced in code via a duplicate check before insert. |
@@ -105,10 +105,23 @@ or tag-driven navigation anywhere in the backend or iOS app.
 - PostHog exists but was added in 2026 and covers the **web** app only.
 - The counts in §5(a) are all *derivable by SQL* against `restaurant_tag` — nobody is
   running those queries, and no dashboard shows them.
-- Production database is currently **empty**; live data still sits on the legacy
-  Namecheap MySQL host. So even the SQL route needs the migration finished first.
+- ~~Production database is empty~~ **Corrected 2026-07-24: production holds the full
+  2021–2025 dataset** — 4,230 tag rows, 1,388 restaurants, 232 users, 108 taggers. The
+  SQL route was available all along.
 
-**No numbers are given here because there are none.** Anything quoted would be invented.
+**Measured 2026-07-24** (`EXP-001`) — the first real numbers this feature has ever had:
+
+| Metric | Value |
+|---|---|
+| Tag rows | 4,230 (100% `source: user` — zero AI-seeded) |
+| Tagged restaurants | 819 of 1,388 (59%) |
+| Distinct taggers | 108 |
+| Restaurants with **one** tagger | **704 (86%)** |
+| Median votes per tag | **1** (capped by the constraint — see §9) |
+| Tagging trend | **3,068 in 2021 → 44 in 2025 (−98.5%)** |
+
+**Still not instrumented:** no event fires on tag add, tag view, or tag-driven
+navigation. The numbers above are derived by SQL after the fact, not observed.
 
 ## 6. Technical notes — how it's actually built
 
@@ -213,11 +226,22 @@ TODO-006, but this is a distinct, concrete instance.
 **3. Never instrumented.** The central metric of the product — do tags actually change
 where people eat — has never been measurable. Five years of tag data with no analysis path.
 
-**4. 🔴 A pending migration would destroy the feature.** `2026_06_04_000001_add_unique_constraint_to_restaurant_tag.php`
-deletes duplicate `(restaurant_id, tag_id)` rows and adds `UNIQUE(restaurant_id, tag_id)`.
-Those "duplicates" **are the votes.** Applying it collapses every count to 1 and makes
-the second user to apply a popular tag hit a 500. It is committed and unapplied.
-See TODO-067. The correct constraint is `UNIQUE(restaurant_id, tag_id, user_id)`.
+**4. 🔴 The vote-destroying constraint is already live — this is damage, not risk.**
+`UNIQUE (restaurant_id, tag_id)` exists in production, confirmed 2026-07-24 via
+`pg_constraint`. It is **not recorded in the `migrations` table**, so it was applied
+directly via the Supabase SQL editor rather than by Laravel.
+
+Consequences, measured:
+- **Every vote count is capped at 1.** Max votes across all 4,230 pairs = 1.
+- **759 ids are missing** from the sequence, consistent with the migration's `DELETE`
+  (though `/tags-delete` can also cause gaps, so this isn't proof on its own).
+- **The second user to apply an existing tag gets an HTTP 500 right now** (RISK-017).
+
+The correct constraint is `UNIQUE (restaurant_id, tag_id, user_id)` — it still blocks a
+user double-voting while preserving one row per voter. → TASK-01.
+**Recovery of the original counts requires a pre-migration dump from the legacy host**
+→ TASK-18. The legacy DB was bound to `127.0.0.1`, so this needs cPanel access, and it
+must happen before that hosting is cancelled.
 
 **5. The duplicate check races.** SELECT-then-INSERT under concurrency lets two
 simultaneous requests both pass the check and both insert — self-double-voting.

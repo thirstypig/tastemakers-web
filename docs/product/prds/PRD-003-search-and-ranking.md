@@ -12,6 +12,23 @@ updated: 2026-07-23
 
 # Search & ranking
 
+> ## 🔴 Status change — 2026-07-24: blocked on supply, not on build
+>
+> `EXP-001` **refuted this PRD's core assumption.** 86% of tagged restaurants have exactly
+> one tagger, so vote counts have a ceiling of 1 and ranking by them would reorder almost
+> nothing. Requirement 2 ("500 votes should outrank 10") is correct as a *design goal* and
+> currently **unimplementable — there is no restaurant with 500 votes, or even 9.**
+>
+> **This PRD is not cancelled. Its ordering changed: supply first, ranking second.**
+>
+> - **Requirement 1 still ships as-is** — untagged restaurants appearing in search needs no
+>   vote density and fixes a real hole today. → TASK-11
+> - **Requirement 2 waits on density** — from the AI seeding pipeline (RM-04), now the only
+>   realistic source given a 98.5% decline in human tagging (RISK-016).
+>
+> Building vote-weighted ranking now would be building a sorting algorithm for a list that
+> is already sorted, and calling it progress.
+
 > **Forward-looking PRD**, written from two requirements James gave on 2026-07-23:
 >
 > 1. *"If a restaurant does not have any tags, it wouldn't get ranked, but it should
@@ -64,7 +81,7 @@ produced.
 
 | # | Assumption | Status |
 |---|---|---|
-| A1 | There is enough vote density for weighting to change the order meaningfully | **[unknown]** — this is `EXP-001`, still unrun. If most tags have 1 vote, weighting changes nothing. |
+| A1 | There is enough vote density for weighting to change the order meaningfully | 🔴 **REFUTED 2026-07-24** (`EXP-001`). 86% of tagged restaurants have a single tagger — a hard ceiling of 1 vote. **Weighting by vote count would change almost nothing today.** See the status note below. |
 | A2 | Users want consensus-ranked results rather than distance- or rating-ranked | **[decide]** — plausible but unvalidated |
 | A3 | Untagged restaurants appearing in results is desirable, not noise | **[intended]** — James stated it directly |
 | A4 | Machine-seeded tags should carry the same weight as human votes | **[intended]** — James confirmed 2026-07-23: *"Yeah, that's fine."* |
