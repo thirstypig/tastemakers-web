@@ -31,18 +31,18 @@ const ARCHITECTURE_DIAGRAM = `flowchart TB
         iOS["iOS App<br/><small>Swift · UIKit</small>"]
         Android["Android App<br/><small>Kotlin · Compose</small>"]
         Web["Web App<br/><small>Next.js 15 · TypeScript</small>"]
-        WP["Marketing Site<br/><small>WordPress</small>"]
+        WP["Marketing Site<br/><small>Static HTML · Caddy</small>"]
     end
 
     subgraph API["Laravel 8 API · Port 4050"]
         Passport["Laravel Passport<br/><small>OAuth2 Tokens</small>"]
-        Controllers["Controllers<br/><small>11 controllers · 50 routes</small>"]
+        Controllers["Controllers<br/><small>11 controllers · 43 API routes</small>"]
         Models["Eloquent Models<br/><small>9 models</small>"]
         Mail["Laravel Mail<br/><small>SMTP</small>"]
     end
 
     subgraph Data["Data Layer"]
-        PG["PostgreSQL<br/><small>Port 5446</small>"]
+        PG["PostgreSQL<br/><small>Supabase (prod) · :5446 local</small>"]
         Redis["Redis<br/><small>Port 6384</small>"]
         Storage["Local Storage<br/><small>Images / Uploads</small>"]
     end
@@ -441,17 +441,19 @@ function MermaidDiagram({
    ───────────────────────────────────────────── */
 
 const STATS: { value: string; label: string; icon: string; color: string }[] = [
-  { value: "~73K", label: "Lines of Code", icon: "📝", color: t.accent },
-  { value: "642", label: "Git Commits", icon: "📦", color: t.green },
-  { value: "50", label: "API Endpoints", icon: "🔌", color: t.purple },
-  { value: "22", label: "DB Tables", icon: "🗄️", color: t.yellow },
+  // Verified 2026-07-24 against the repos and the live Supabase schema.
+  // LOC excludes 429,667 lines of vendored assets (the committed Metronic admin theme).
+  { value: "~81K", label: "Lines of Code", icon: "📝", color: t.accent },
+  { value: "817", label: "Git Commits", icon: "📦", color: t.green },
+  { value: "43", label: "API Endpoints", icon: "🔌", color: t.purple },
+  { value: "31", label: "DB Tables", icon: "🗄️", color: t.yellow },
   { value: "9", label: "Eloquent Models", icon: "📊", color: t.orange },
   { value: "11", label: "Controllers", icon: "🎛️", color: t.red },
-  { value: "18", label: "Migrations", icon: "📋", color: t.accent },
+  { value: "23", label: "Migrations", icon: "📋", color: t.accent },
   { value: "25", label: "iOS Screens", icon: "📱", color: t.green },
   { value: "5", label: "Repositories", icon: "📁", color: t.purple },
-  { value: "50+", label: "Tracked Issues", icon: "🐛", color: t.yellow },
-  { value: "16", label: "Dependencies", icon: "📦", color: t.orange },
+  { value: "180", label: "Tracked Issues", icon: "🐛", color: t.yellow },
+  { value: "225", label: "Tests Passing", icon: "🧪", color: t.orange },
   { value: "4", label: "Client Platforms", icon: "🖥️", color: t.red },
 ];
 

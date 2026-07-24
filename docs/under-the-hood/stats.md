@@ -29,26 +29,27 @@ updated: 2026-07-24
 1. **TASK-02** (p1) — Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id
 
 ## Code
-**3,125 tracked files · 510,209 lines** across 5 repos.
-| Repo | Files | Lines |
-|---|---:|---:|
-| `tastemakers-backend` | 2,455 | 457,159 |
-| `tastemakers-web` | 154 | 30,286 |
-| `tastemakers-ios` | 482 | 20,560 |
-| `tastemakers-android` | 14 | 373 |
-| `tastemakers-marketing` | 20 | 1,831 |
+**2,567 source files · 80,839 lines of application code** across 5 repos.
+_Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
+| Repo | Source files | Lines | Vendored (excluded) |
+|---|---:|---:|---:|
+| `tastemakers-backend` | 1,899 | 27,978 | 429,181 |
+| `tastemakers-web` | 155 | 30,583 | 0 |
+| `tastemakers-ios` | 479 | 20,074 | 486 |
+| `tastemakers-android` | 14 | 373 | 0 |
+| `tastemakers-marketing` | 20 | 1,831 | 0 |
 ### By language
 | Language | Lines |
 |---|---:|
-| JavaScript | 307,160 |
-| CSS | 122,762 |
-| PHP | 19,937 |
+| PHP | 19,731 |
 | Swift | 17,920 |
-| TypeScript | 14,894 |
+| TypeScript | 14,916 |
 | JSON | 14,148 |
-| Markdown | 12,511 |
+| Markdown | 12,243 |
+| JavaScript | 936 |
 | HTML | 738 |
 | Kotlin | 139 |
+| CSS | 68 |
 ## Routes
 | Surface | Count |
 |---|---:|
@@ -95,4 +96,4 @@ updated: 2026-07-24
 | `done` | 5 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-07-24T08:11:39.427Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-07-24T15:58:16.948Z by scripts/refresh-docs.mjs -->

@@ -21,7 +21,7 @@ import { readFile, writeFile, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const MONOREPO = path.resolve(ROOT, "..");
@@ -68,6 +68,22 @@ const SERVICE_KEYS = [
   { section: "GitHub (admin docs)", service: "GitHub token", key: "GITHUB_TOKEN", where: "web" },
 ];
 
+/**
+ * Third-party assets committed into the repos — chiefly the Metronic admin theme under
+ * tastemakers-backend/public/assets (228 minified files). Counting these as project LOC
+ * inflated the figure ~10x (510k vs ~54k of real application source), so they are
+ * tallied separately rather than silently included.
+ */
+const VENDOR_PATTERNS = [
+  /(^|\/)assets\//, /(^|\/)vendor\//, /(^|\/)Pods\//, /(^|\/)node_modules\//,
+  /(^|\/)old_Laravel_Backup\//, /(^|\/)playwright-report\//, /\.min\.(js|css)$/,
+  /(^|\/)dist\//, /(^|\/)build\//,
+];
+
+export function isVendored(relPath) {
+  return VENDOR_PATTERNS.some((re) => re.test(relPath));
+}
+
 const usd = (n) => `$${n.toFixed(2)}`;
 const pct = (n) => `${(n * 100).toFixed(1)}%`;
 
@@ -112,17 +128,28 @@ async function collectRepoStats() {
     }
 
     let loc = 0;
+    let vendoredLoc = 0;
+    let vendoredFiles = 0;
     const langs = {};
     for (const rel of files) {
       const ext = path.extname(rel).toLowerCase();
       const lang = CODE_EXT[ext];
       if (!lang) continue;
       const n = await countLines(path.join(dir, rel));
+      if (isVendored(rel)) {
+        vendoredLoc += n;
+        vendoredFiles += 1;
+        continue;
+      }
       loc += n;
       langs[lang] = (langs[lang] ?? 0) + n;
       locByLang[lang] = (locByLang[lang] ?? 0) + n;
     }
-    repos.push({ name, available: true, fileCount: files.length, loc, langs });
+    repos.push({
+      name, available: true,
+      fileCount: files.length - vendoredFiles,
+      loc, langs, vendoredLoc, vendoredFiles,
+    });
   }
   return { repos, locByLang };
 }
@@ -180,7 +207,7 @@ async function collectRoutes() {
 // ── doc frontmatter ──────────────────────────────────────────────────────────
 
 /** Minimal parser for the flat `key: value` frontmatter this project uses. */
-function parseFrontmatter(raw) {
+export function parseFrontmatter(raw) {
   if (!raw.startsWith("---")) return null;
   const end = raw.indexOf("\n---", 3);
   if (end === -1) return null;
@@ -236,7 +263,7 @@ async function collectDocStats() {
 // ── roadmap / todo state ─────────────────────────────────────────────────────
 
 /** Pull `| **RM-01** | Item | ... | `status` |` rows out of the markdown tables. */
-async function collectRoadmapState() {
+export async function collectRoadmapState() {
   const read = async (f) => (existsSync(f) ? await readFile(f, "utf-8") : "");
   const roadmap = await read(path.join(DOCS, "product", "roadmap.md"));
   const todos = await read(path.join(DOCS, "product", "todos.md"));
@@ -278,6 +305,8 @@ async function writeStats({ repoStats, routes, docStats, road }, today, stamp) {
   const { repos, locByLang } = repoStats;
   const totalLoc = Object.values(locByLang).reduce((a, b) => a + b, 0);
   const totalFiles = repos.reduce((a, r) => a + (r.fileCount ?? 0), 0);
+  const vendoredLoc = repos.reduce((a, r) => a + (r.vendoredLoc ?? 0), 0);
+  const vendoredFiles = repos.reduce((a, r) => a + (r.vendoredFiles ?? 0), 0);
 
   const out = [
     fm("DOC-013", "stats", today),
@@ -305,14 +334,16 @@ async function writeStats({ repoStats, routes, docStats, road }, today, stamp) {
       : "",
     "## Code",
     "",
-    `**${totalFiles.toLocaleString()} tracked files · ${totalLoc.toLocaleString()} lines** across ${repos.filter((r) => r.available).length} repos.`,
+    `**${totalFiles.toLocaleString()} source files · ${totalLoc.toLocaleString()} lines of application code** across ${repos.filter((r) => r.available).length} repos.`,
     "",
-    "| Repo | Files | Lines |",
-    "|---|---:|---:|",
+    `_Excludes ${vendoredFiles.toLocaleString()} vendored files (${vendoredLoc.toLocaleString()} lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._`,
+    "",
+    "| Repo | Source files | Lines | Vendored (excluded) |",
+    "|---|---:|---:|---:|",
     ...repos.map((r) =>
       r.available
-        ? `| \`${r.name}\` | ${r.fileCount.toLocaleString()} | ${r.loc.toLocaleString()} |`
-        : `| \`${r.name}\` | _not available_ | — |`
+        ? `| \`${r.name}\` | ${r.fileCount.toLocaleString()} | ${r.loc.toLocaleString()} | ${(r.vendoredLoc ?? 0).toLocaleString()} |`
+        : `| \`${r.name}\` | _not available_ | — | — |`
     ),
     "",
     "### By language",
@@ -357,15 +388,15 @@ async function writeStats({ repoStats, routes, docStats, road }, today, stamp) {
   await writeFile(path.join(UTH, "stats.md"), out.filter((l) => l !== "").join("\n").replace(/\n{3,}/g, "\n\n"), "utf-8");
 }
 
-async function writeCosts(cfg, today, stamp) {
+/**
+ * Unit economics per tier. Pure — extracted from writeCosts so it can be tested.
+ * costs.md is the artifact shown to outside parties; silently wrong margins here
+ * would be worse than no table at all.
+ */
+export function computeCostRows(cfg) {
   const { assumptions: a, unitCosts: u, tiers } = cfg;
-  const verify = new Set(cfg._verify ?? []);
-  const mark = (k, v) => (verify.has(k) ? `${v} ⚠️ VERIFY` : v);
-  const noRevenue = !a.planPriceUsd;
-
-  const rows = tiers.map((users) => {
-    const unitsPerUser = a.unitsPerUserPerMonth;
-    const varPerUser = unitsPerUser * u.primaryVariablePerUnit + u.perUserMonthAuth + u.perUserMonthDb;
+  return tiers.map((users) => {
+    const varPerUser = a.unitsPerUserPerMonth * u.primaryVariablePerUnit + u.perUserMonthAuth + u.perUserMonthDb;
     const totalVar = varPerUser * users;
     const hostingPerUser = users > 0 ? u.hostingFlatMonth / users : 0;
     const revenue = users * a.planPriceUsd;
@@ -375,6 +406,14 @@ async function writeCosts(cfg, today, stamp) {
     return { users, varPerUser, totalVar, hostingPerUser, fees, revenue, cost, margin,
       marginPct: revenue > 0 ? margin / revenue : 0 };
   });
+}
+
+async function writeCosts(cfg, today, stamp) {
+  const { assumptions: a, unitCosts: u } = cfg;
+  const verify = new Set(cfg._verify ?? []);
+  const mark = (k, v) => (verify.has(k) ? `${v} ⚠️ VERIFY` : v);
+  const noRevenue = !a.planPriceUsd;
+  const rows = computeCostRows(cfg);
 
   const out = [
     fm("DOC-014", "costs", today),
@@ -506,7 +545,7 @@ async function writeSystemStatus(today, stamp) {
 const START = "<!-- DOCS:STATUS:START -->";
 const END = "<!-- DOCS:STATUS:END -->";
 
-function buildStatusBlock(road, today) {
+export function buildStatusBlock(road, today) {
   const lines = [
     START,
     "",
@@ -531,6 +570,19 @@ function buildStatusBlock(road, today) {
   return lines.join("\n");
 }
 
+/**
+ * Replace everything between the DOCS:STATUS markers. Pure, and MUST be idempotent —
+ * a bug here appends instead of replacing and corrupts CLAUDE.md a little on every run.
+ * Returns null when the markers are absent or malformed, so callers report rather than
+ * guess where the block belongs.
+ */
+export function replaceMarkerBlock(src, block) {
+  const s = src.indexOf(START);
+  const e = src.indexOf(END);
+  if (s === -1 || e === -1 || e < s) return null;
+  return src.slice(0, s) + block + src.slice(e + END.length);
+}
+
 async function updateMarkers(files, road, today) {
   const results = [];
   for (const file of files) {
@@ -540,13 +592,11 @@ async function updateMarkers(files, road, today) {
       continue;
     }
     const src = await readFile(full, "utf-8");
-    const s = src.indexOf(START);
-    const e = src.indexOf(END);
-    if (s === -1 || e === -1 || e < s) {
+    const next = replaceMarkerBlock(src, buildStatusBlock(road, today));
+    if (next === null) {
       results.push({ file, status: "no markers — add DOCS:STATUS:START/END to enable" });
       continue;
     }
-    const next = src.slice(0, s) + buildStatusBlock(road, today) + src.slice(e + END.length);
     if (next !== src) await writeFile(full, next, "utf-8");
     results.push({ file, status: next === src ? "unchanged" : "updated" });
   }
@@ -585,7 +635,11 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(`✗ refresh-docs failed: ${err.message}`);
-  process.exit(1);
-});
+// Only run when executed directly — lets tests import the pure helpers above
+// without the script writing files as a side effect of the import.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(`✗ refresh-docs failed: ${err.message}`);
+    process.exit(1);
+  });
+}

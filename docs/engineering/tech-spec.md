@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: [backend, web, infra]
 links: [ADR-001, DOC-008]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Tech spec — architecture overview
@@ -41,7 +41,7 @@ never a one-repo change.
                                  │
                     ┌────────────▼─────────────┐
                     │  Supabase PostgreSQL     │
-                    │  17 tables · pgvector    │
+                    │  31 tables · pgvector    │
                     └──────────────────────────┘
 
   app.tastemakersapp.com (Next.js) ALSO talks directly to Supabase
@@ -69,7 +69,8 @@ Full detail in `PRD-001` §6.
 
 | Layer | What's there |
 |---|---|
-| **Tables** | 17 via migrations. **Plus at least two created outside Laravel** — `testmaker_list` and a badges table are queried but have no migration. |
+| **Tables** | **31 in production** (verified 2026-07-24). Migrations account for 17; Passport supplies 6 more from its own package. That leaves **8 application tables created outside Laravel entirely**: `testmaker_list`, `testmaker_list_restaurant`, `bookmark_testmaker_list`, `restaurant_images`, `imagelike`, `badge_categories`, `api_logs`, `seed_logs`. → RISK-009, TASK-14 |
+| **Row counts** (2026-07-24) | `restaurant_tag` 4,230 · `restaurants` 1,388 · `tags` 893 · `users` 232 · `testmaker_list` **35** · `restaurant_images` **0** · `badge_categories` **0** · `api_logs` **0** · `seed_logs` **0** |
 | **Access** | Eloquent models *and* 179 raw `DB::table()` calls in controllers. No repository layer. |
 | **Vector** | `tags.embedding` — `vector(512)`, HNSW index, cosine. Used by the AI seeding pipeline for dedup at ≥ 0.85 similarity. |
 | **Migrations** | Out of sync with reality — a 2.5-year gap (Jan 2024 → May 2026) implies direct schema edits. Check the `migrations` table before running `artisan migrate`. |
