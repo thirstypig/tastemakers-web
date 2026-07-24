@@ -2,6 +2,24 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v9.0.0",
+    date: "2026-07-24",
+    title: "Docs knowledge base, auto-walking viewer, and the archaeology findings",
+    items: [
+      { type: "+", text: "docs/ knowledge base established: frontmatter convention (id/type/status/tags/links), 14-tag controlled vocabulary, ID scheme (PRD/ADR/DOC/RISK/EXP/SOL/TODO), 9 board sections organised by reader question — spec in docs/README-DOCS.md" },
+      { type: "~", text: "/admin/docs rebuilt AGAIN: the hand-maintained DOCS_REGISTRY whitelist is gone, replaced by an auto-walker over docs/ — frontmatter drives section, H1 drives title (with a code-fence + HTML-comment guard so a `# comment` inside a bash block can't become the title). Add a doc, it appears. 38 docs indexed." },
+      { type: "+", text: "Viewer UX: search over title/id/path/tag, per-section purpose blurbs, status badges including shipped-vs-planned on PRDs, wider sidebar with hover tooltips, generated-doc banner" },
+      { type: "+", text: "4 PRDs written — tagging + badges reconstructed retroactively from code with every claim tagged [intended]/[inferred]/[unknown]; account-deletion + search written forward-looking. Plus ADR-001 (feature module isolation, 7-module map), launch spec, intake gate, glossary, roadmap, to-dos, priority map" },
+      { type: "+", text: "Living docs: scripts/refresh-docs.mjs generates stats/costs/system-status and rewrites the status block in README + CLAUDE.md between markers; scripts/sync-inbox.mjs drives the comment-inbox loop. npm run docs:refresh / docs:inbox" },
+      { type: "-", text: "EXP-001 REFUTED: 86% of tagged restaurants have exactly one tagger, so tag votes have a hard ceiling of 1 — the consensus the product rests on does not exist in the data. Only 3.9% of restaurants could ever have reached 3 votes." },
+      { type: "-", text: "UNIQUE(restaurant_id, tag_id) found ALREADY APPLIED in production and absent from the migrations table — every vote count is capped at 1, 759 ids missing from the sequence, and the second user to apply an existing tag gets an HTTP 500 today" },
+      { type: "-", text: "Tagging activity down 98.5% from peak: 3,068 tags / 67 taggers in 2021 → 44 tags / 6 taggers in 2025. Logged as RISK-016; it outranks the technical backlog." },
+      { type: "-", text: "getallBadges hardcodes user_id = 43 in three queries — every user sees user 43's badges; 19 MySQL-only IFNULL/IF() calls throw on PostgreSQL; searchByTags has no ORDER BY at all" },
+      { type: "+", text: "Tests: 127 → 219 across 15 files. Added the docs registry/title-extraction suite (63), docs-generation script coverage (43), and a client/server boundary guard. vitest now includes scripts/**/*.test.mjs" },
+      { type: "~", text: "Stats LOC corrected: the generator was counting 429,667 lines of vendored assets (the committed Metronic admin theme) as project code — real application source is ~81K, not 510K" },
+    ],
+  },
+  {
     v: "v8.10.0",
     date: "2026-06-09",
     title: "Docs reorg + live dashboard",

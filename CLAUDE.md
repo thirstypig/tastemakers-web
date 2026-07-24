@@ -184,10 +184,14 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 127 tests across 13 files — all green
+- **Current suite:** 225 tests across 15 files — all green
+- **Scope:** `vitest.config.ts` includes `src/**/*.test.ts` **and** `scripts/**/*.test.mjs` — the docs-generation scripts are covered too
 
 | File | Tests | What it covers |
 |------|-------|----------------|
+| `src/lib/docs.test.ts` | 63 | Auto-walk registry, frontmatter parsing, H1 title extraction (code-fence + HTML-comment guard), section grouping, exclusions, search, status badges, **client/server boundary guard (SOL-004)** |
+| `scripts/refresh-docs.test.mjs` | 22 | `computeCostRows` unit economics (hand-checked), frontmatter, status-block build, **marker-replacement idempotency**, real roadmap/todo table parsing |
+| `scripts/sync-inbox.test.mjs` | 21 | Comment validation + skip warnings, newest-first sort, **change_request-first ordering**, resolved-section split, pluralisation, empty inbox |
 | `src/lib/auth.test.ts` | 22 | `parseAllowedEmails`, `isEmailAllowed`, `safeRedirectPath`, `resolveCallbackOrigin` (Railway port fix) |
 | `src/lib/validation.test.ts` | 17 | `validateEmail`, `validatePassword`, `validateRequired` |
 | `src/lib/api.test.ts` | 12 | `apiFetch` — response handling, headers, auth token |

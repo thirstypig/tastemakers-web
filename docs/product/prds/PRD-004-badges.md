@@ -7,7 +7,7 @@ phase: null
 owner: james
 tags: [social, backend, ios]
 links: [PRD-001, DOC-002, DOC-017, RM-02]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Badges
@@ -16,9 +16,14 @@ updated: 2026-07-23
 > Reconstructed from code on 2026-07-23.
 > **[intended]** deliberate · **[inferred]** read from code · **[unknown]** ask James.
 
-> ### 🔴 This feature is broken in production
-> `getallBadges` hardcodes `user_id = 43`. **Every user sees user 43's badges.**
-> It has been that way for an unknown length of time. See §9.
+> ### 🔴 This feature is broken *and* empty in production
+> `getallBadges` hardcodes `user_id = 43` — **every user sees user 43's badges.**
+>
+> **And `badge_categories` has 0 rows** (verified 2026-07-24). No category badge can
+> ever be awarded, because there are no categories. The only thing any user has ever
+> seen is the hardcoded "Tastemaker Badge" injected at index 0 of every response.
+>
+> So the `≥10 restaurants` rule in §6 has never fired, for anyone. See §9.
 
 ---
 

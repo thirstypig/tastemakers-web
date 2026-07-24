@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: [tagging, discovery, lists]
 links: [DOC-002, PRD-001, PRD-004, DOC-005]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Feature priority map
@@ -56,8 +56,8 @@ they have never been measured, never had a PRD, and were never asked for. See §
 
 | Feature | Impact | Effort spent | State |
 |---|---|---|---|
-| **Badges** | low today — **[inferred]** was meant to be the supply-side incentive for tagging | **324 lines across 3 implementations** | 🔴 Hardcoded to user 43 · 125 lines dead code · breaks on Postgres → `PRD-004` |
-| **Photos** | low | **227 lines** | Not briefed · no migration · storage location unknown |
+| **Badges** | **zero today** — `badge_categories` has **0 rows**, so no category badge can ever be awarded; only the hardcoded "Tastemaker Badge" appears | **324 lines across 3 implementations** | 🔴 Hardcoded to user 43 · 125 lines dead code · breaks on Postgres · **no data** → `PRD-004` |
+| **Photos** | **zero today** — `restaurant_images` has **0 rows**. Never used by anyone, ever. | **227 lines** | Not briefed · no migration · **no data** |
 | **Saving restaurants** | low-med | low | Day-one, but not briefed |
 | **Push notifications** | low | low | Not briefed |
 
@@ -76,11 +76,16 @@ they have never been measured, never had a PRD, and were never asked for. See §
 
 This is the clearest pattern the archaeology found, and the numbers are not close:
 
-| Feature | Role | Controller lines | Tests |
-|---|---|---:|---:|
-| **Badges** | periphery | **324** (3 implementations, 1 unrouted) | 0 |
-| **Photos** | periphery | **227** (3 endpoints) | 0 |
-| **Tagging** | **core** | **90** (write path) | **0** |
+| Feature | Role | Controller lines | Tests | Rows in prod |
+|---|---|---:|---:|---:|
+| **Badges** | periphery | **324** (3 implementations, 1 unrouted) | 0 | **0** |
+| **Photos** | periphery | **227** (3 endpoints) | 0 | **0** |
+| **Tagging** | **core** | **90** (write path) | **0** | 4,230 |
+
+**Updated 2026-07-24 with production row counts, and the picture is starker than the
+line counts alone suggested: 551 lines of controller code across badges and photos have
+produced zero rows between them.** Every byte of data this product holds came through
+the 90-line tagging path and the 35 tastemaker lists.
 
 **Periphery outweighs the core roughly 6:1.** And `review_count1` alone — 125 lines of
 unrouted, unreachable, would-fatal-if-called dead code — is **larger than the entire

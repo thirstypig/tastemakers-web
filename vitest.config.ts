@@ -7,6 +7,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts"],
+    // scripts/ are plain ESM build tooling — .mjs, not TypeScript — but they generate
+    // docs shown to outside parties, so they need coverage too.
+    include: ["src/**/*.test.ts", "scripts/**/*.test.mjs"],
   },
 });

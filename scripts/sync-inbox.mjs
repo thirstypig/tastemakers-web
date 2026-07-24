@@ -28,14 +28,14 @@
 
 import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SOURCE = path.join(ROOT, "docs", "_comments.json");
 const OUTPUT = path.join(ROOT, "docs", "INBOX.md");
 
 /** change_request first — that is the whole point of the ordering. */
-const KIND_ORDER = ["change_request", "question", "note"];
+export const KIND_ORDER = ["change_request", "question", "note"];
 
 const KIND_LABEL = {
   change_request: "Change requests",
@@ -83,7 +83,7 @@ async function loadComments() {
 }
 
 /** Drop malformed rows loudly rather than silently rendering nonsense. */
-function validate(comments) {
+export function validate(comments) {
   const kept = [];
   const warnings = [];
 
@@ -107,7 +107,7 @@ function validate(comments) {
 }
 
 /** Newest first. Undated rows sort last rather than throwing. */
-function byNewest(a, b) {
+export function byNewest(a, b) {
   const ta = Date.parse(a.created ?? "");
   const tb = Date.parse(b.created ?? "");
   if (Number.isNaN(ta) && Number.isNaN(tb)) return 0;
@@ -116,12 +116,12 @@ function byNewest(a, b) {
   return tb - ta;
 }
 
-function formatDate(iso) {
+export function formatDate(iso) {
   const t = Date.parse(iso ?? "");
   return Number.isNaN(t) ? "undated" : new Date(t).toISOString().slice(0, 10);
 }
 
-function renderComment(c) {
+export function renderComment(c) {
   const lines = [
     `#### ${c.id} · ${STATUS_BADGE[c.status]} · on \`${c.doc}\``,
     "",
@@ -141,7 +141,7 @@ function renderComment(c) {
   return lines.join("\n");
 }
 
-function render(comments, warnings, generatedAt) {
+export function render(comments, warnings, generatedAt) {
   const unresolved = comments.filter((c) => UNRESOLVED.has(c.status));
   const resolved = comments.filter((c) => c.status === "resolved").sort(byNewest);
 
@@ -223,7 +223,10 @@ async function main() {
   for (const w of warnings) console.warn(`  ⚠ ${w}`);
 }
 
-main().catch((err) => {
-  console.error(`✗ sync-inbox failed: ${err.message}`);
-  process.exit(1);
-});
+// Only run when executed directly — see refresh-docs.mjs for the rationale.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((err) => {
+    console.error(`✗ sync-inbox failed: ${err.message}`);
+    process.exit(1);
+  });
+}

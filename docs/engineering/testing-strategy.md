@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: [backend, web]
 links: [ADR-001, PRD-001]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Testing strategy
@@ -17,7 +17,9 @@ Stated plainly, because the shape of it is the strategy problem:
 
 | Area | Tests | State |
 |---|---|---|
-| Web (`tastemakers-web`) | **127** across 13 files | ✅ all green |
+| Web (`tastemakers-web`) | **225** across 15 files | ✅ all green |
+| ↳ of which: docs system + viewer | 63 | ✅ |
+| ↳ of which: docs-generation scripts | 49 | ✅ added 2026-07-24 |
 | Backend AI services (2026) | **55** across 4 files | ✅ all green |
 | Backend feature tests | **9** across 3 files | ⚠️ **1 passing, 8 failing** |
 | **Backend 2021 features** | **0** | ❌ tagging, lists, photos, social, discovery — nothing |
@@ -63,6 +65,13 @@ skipped or deleted to make the suite green.**
 5. **`ADR-001` precondition:** no module gets extracted without JSON snapshot tests of
    its endpoints first. Without API Resources, response shape is implicit — snapshots
    are the only safety net.
+6. **Verify a new guard by breaking the thing it guards.** A test that has never failed
+   is not known to work. When adding a test for a specific regression, reintroduce that
+   regression once, watch the test fail, then restore. This caught a real gap in the
+   SOL-004 boundary guard and confirmed the cost-math and marker-idempotency tests.
+7. **The pre-push gate is `type-check` → `test` → `build`, in that order.** Two failures
+   in this repo were invisible to the first two and caught only by the build (SOL-001,
+   SOL-004). "Tests pass" is not "it builds."
 
 ---
 

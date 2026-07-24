@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Comment inbox
@@ -78,4 +78,4 @@ The glossary entry for 'level' says it is a raw count, but the web client treats
 
 ---
 
-<!-- generated 2026-07-23T16:12:53.548Z by scripts/sync-inbox.mjs -->
+<!-- generated 2026-07-24T08:18:54.105Z by scripts/sync-inbox.mjs -->
