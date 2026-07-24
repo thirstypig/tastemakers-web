@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-07-23
+updated: 2026-07-24
 ---
 
 # Stats
@@ -21,32 +21,32 @@ updated: 2026-07-23
 - **In progress:** RM-13 — PostgreSQL compatibility sweep
 **Shipped (roadmap items done):** 0
 **Committed next:** 7
-**Open to-dos:** 17
+**Open to-dos:** 18
 ### Next up
 
-1. **TASK-01** (p1) — Change the pending `restaurant_tag` unique constraint from `(restaurant_id, tag_id)` to `(restaurant_id, tag_id, user_id)` — as written it deletes every vote and 500s on popular tags
+1. **TASK-01** (p1) — 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18.
+1. **TASK-18** (p1) — Attempt vote recovery: get a pre-migration dump of `restaurant_tag` from the legacy Namecheap MySQL host (cPanel → phpMyAdmin export, or any backup). The legacy DB was bound to `127.0.0.1` so it is unreachable remotely — this needs cPanel access. **Do it before the hosting is cancelled**, or the original vote counts are gone permanently.
 1. **TASK-02** (p1) — Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id
-1. **TASK-03** (p1) — Replace body `user_id` with `Auth::id()` in `tagsdelete` — the add path authenticates, the delete path doesn't
 
 ## Code
-**3,087 tracked files · 505,442 lines** across 5 repos.
+**3,125 tracked files · 510,186 lines** across 5 repos.
 | Repo | Files | Lines |
 |---|---:|---:|
 | `tastemakers-backend` | 2,455 | 457,159 |
-| `tastemakers-web` | 116 | 25,519 |
+| `tastemakers-web` | 154 | 30,263 |
 | `tastemakers-ios` | 482 | 20,560 |
 | `tastemakers-android` | 14 | 373 |
 | `tastemakers-marketing` | 20 | 1,831 |
 ### By language
 | Language | Lines |
 |---|---:|
-| JavaScript | 306,338 |
+| JavaScript | 307,160 |
 | CSS | 122,762 |
 | PHP | 19,937 |
 | Swift | 17,920 |
-| TypeScript | 14,692 |
-| JSON | 14,034 |
-| Markdown | 8,882 |
+| TypeScript | 14,871 |
+| JSON | 14,148 |
+| Markdown | 12,511 |
 | HTML | 738 |
 | Kotlin | 139 |
 ## Routes
@@ -95,4 +95,4 @@ updated: 2026-07-23
 | `done` | 4 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-07-23T18:53:28.873Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-07-24T08:03:25.133Z by scripts/refresh-docs.mjs -->

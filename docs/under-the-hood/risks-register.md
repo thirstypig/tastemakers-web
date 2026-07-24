@@ -34,7 +34,9 @@ comfort.
 
 | id | Risk | Impact | Likelihood | Owner | Notes |
 |---|---|---|---|---|---|
-| **RISK-001** | The pending `restaurant_tag` unique-constraint migration deletes every vote and 500s on popular tags | **high** | **high** | james | Committed and unapplied. Destroys the core ranking signal the moment it runs. → TASK-01 |
+| **RISK-001** | ~~Pending~~ **ALREADY APPLIED** — `UNIQUE (restaurant_id, tag_id)` is live in production | **high** | **occurred** | james | Confirmed 2026-07-24 via `pg_constraint`. Not in the `migrations` table → applied via the SQL editor. Every vote count is capped at 1; 759 ids missing from the sequence. **The risk has materialised** — this is now damage assessment, not prevention. → TASK-01, `EXP-001` |
+| **RISK-016** | **Tagging activity has fallen 98.5% from its 2021 peak** | **high** | **occurred** | james | 3,068 tags in 2021 → 44 in 2025; 67 taggers → 6. The product is effectively dormant. Every roadmap item assumes a user base that is no longer contributing. This outranks every technical item in this register. |
+| **RISK-017** | The API returns HTTP 500 when a second user applies an existing tag | med | **certain** | james | The unique constraint makes `attach()` throw. Live now. Impact is currently small *because* of RISK-016 — only 6 people tagged in 2025 — but it breaks the core loop for exactly the popular tags that matter. → TASK-01 |
 | **RISK-002** | Any authenticated user can delete any tastemaker list by guessing an integer id | **high** | med | james | No ownership check at all in `tastemaker_listdelete`. → TASK-02 |
 | **RISK-003** | Apple Sign-In accepts unverified JWTs | **high** | low | james | Signature is never checked — a forged token would authenticate. Low likelihood only because nobody is attacking it yet. |
 | **RISK-004** | iOS in the App Store still calls the legacy Namecheap host, which is being decommissioned | **high** | med | james | Turning off old hosting before the iOS update ships breaks every live user. Sequencing matters. → RM-01 |
