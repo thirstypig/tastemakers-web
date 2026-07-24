@@ -254,6 +254,29 @@ describe("slugFor", () => {
   });
 });
 
+// Guards the client/server boundary documented in SOL-004. `docs.ts` imports `fs`, so a
+// "use client" component importing from it breaks `next build` with
+// "Module not found: Can't resolve 'fs'" — a failure neither typecheck nor these tests
+// would otherwise catch.
+describe("client/server boundary (SOL-004)", () => {
+  const CLIENT_COMPONENTS = ["src/app/admin/docs/DocsBrowser.tsx"];
+
+  it("no client component imports the fs-using docs module", () => {
+    for (const rel of CLIENT_COMPONENTS) {
+      const src = fs.readFileSync(path.join(process.cwd(), rel), "utf-8");
+      expect(src, `${rel} must be marked "use client"`).toMatch(/^["']use client["']/);
+      expect(src, `${rel} imports @/lib/docs, which imports fs — use @/lib/docs-filter`)
+        .not.toMatch(/from\s+["']@\/lib\/docs["']/);
+    }
+  });
+
+  it("docs-filter stays free of node builtins so it is browser-safe", () => {
+    const src = fs.readFileSync(path.join(process.cwd(), "src/lib/docs-filter.ts"), "utf-8");
+    expect(src).not.toMatch(/from\s+["']node:/);
+    expect(src).not.toMatch(/^\s*import\s+\w+\s+from\s+["'](fs|path|child_process|os)["']/m);
+  });
+});
+
 describe("matchesQuery", () => {
   const doc = {
     title: "Restaurant tagging & voting",
