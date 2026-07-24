@@ -29,11 +29,11 @@ updated: 2026-07-24
 1. **TASK-02** (p1) — Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id
 
 ## Code
-**3,125 tracked files · 510,186 lines** across 5 repos.
+**3,125 tracked files · 510,209 lines** across 5 repos.
 | Repo | Files | Lines |
 |---|---:|---:|
 | `tastemakers-backend` | 2,455 | 457,159 |
-| `tastemakers-web` | 154 | 30,263 |
+| `tastemakers-web` | 154 | 30,286 |
 | `tastemakers-ios` | 482 | 20,560 |
 | `tastemakers-android` | 14 | 373 |
 | `tastemakers-marketing` | 20 | 1,831 |
@@ -44,7 +44,7 @@ updated: 2026-07-24
 | CSS | 122,762 |
 | PHP | 19,937 |
 | Swift | 17,920 |
-| TypeScript | 14,871 |
+| TypeScript | 14,894 |
 | JSON | 14,148 |
 | Markdown | 12,511 |
 | HTML | 738 |
@@ -58,14 +58,14 @@ updated: 2026-07-24
 | Web pages | 29 |
 | Web API handlers | 6 |
 ## Docs
-**31 markdown files** in `docs/` (templates excluded).
+**32 markdown files** in `docs/` (templates excluded).
 
 ✅ Every doc has frontmatter.
 
 | Type | Count |
 |---|---:|
 | `prd` | 4 |
-| `solution` | 3 |
+| `solution` | 4 |
 | `roadmap` | 2 |
 | `note` | 2 |
 | `inbox` | 1 |
@@ -92,7 +92,7 @@ updated: 2026-07-24
 |---|---:|
 | `active` | 18 |
 | `draft` | 7 |
-| `done` | 4 |
+| `done` | 5 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-07-24T08:03:25.133Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-07-24T08:11:39.427Z by scripts/refresh-docs.mjs -->
