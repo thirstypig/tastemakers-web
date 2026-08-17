@@ -1,0 +1,25 @@
+/* ── Search ────────────────────────────────────────────────────────── */
+.tm-segments {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tm-segment {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--tm-radius-tag);
+  background: var(--tm-card);
+  border: 1px solid var(--tm-border);
+  color: #6F6A80;
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tm-segment[aria-current="true"] {
+  background: var(--tm-purple);
+  border-color: var(--tm-purple);
+  color: #fff;
+  font-weight: 700;
+}

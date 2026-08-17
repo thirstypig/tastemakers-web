@@ -1,0 +1,100 @@
+/* ── Home (screens 5 & 6) ──────────────────────────────────────────── */
+.tm-pitch {
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.tm-pitch-title {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+.tm-pitch-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6F6A80;
+}
+.tm-pitch-demo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  padding: 2px 0 4px;
+}
+.tm-pitch-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* How a tag review works — three cards. */
+.tm-steps {
+  display: grid;
+  gap: 10px;
+}
+.tm-step {
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.tm-step-n {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--tm-tag-mine-fg);
+}
+.tm-step-title {
+  font-size: 19px;
+  font-weight: 800;
+}
+.tm-step-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #6F6A80;
+}
+.tm-pitch-actions .tm-btn {
+  flex: 1;
+  min-width: 150px;
+}
+
+.tm-sechead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+.tm-sectitle {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+@media (min-width: 1024px) {
+  .tm-pitch {
+    padding: 24px;
+  }
+  .tm-pitch-title {
+    font-size: 32px;
+  }
+  .tm-pitch-body {
+    font-size: 16px;
+    max-width: 620px;
+  }
+  .tm-pitch-actions .tm-btn {
+    flex: none;
+  }
+  .tm-steps {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .tm-step {
+    padding: 20px;
+  }
+  .tm-sectitle {
+    font-size: 24px;
+  }
+}

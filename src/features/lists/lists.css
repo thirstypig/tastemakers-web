@@ -1,0 +1,79 @@
+/* ── List detail (screen 7) ────────────────────────────────────────── */
+.tm-listhead {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tm-listhead-back {
+  color: var(--tm-crimson);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+}
+.tm-listhead-back:hover span {
+  text-decoration: underline;
+}
+.tm-listhead-title {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+}
+.tm-listhead-meta {
+  margin: 0;
+  font-size: 14px;
+  color: var(--tm-muted);
+}
+
+/* Desktop gets the photo header with a purple scrim. */
+.tm-listhero {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .tm-listhero {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    height: 220px;
+    border-radius: var(--tm-radius-card);
+    overflow: hidden;
+    background: #D6D2DE;
+  }
+  .tm-listhero-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(42, 26, 94, 0.92) 0%,
+      rgba(42, 26, 94, 0.55) 45%,
+      rgba(42, 26, 94, 0.15) 100%
+    );
+  }
+  .tm-listhero-body {
+    position: relative;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tm-listhero-title {
+    font-size: 32px;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.15;
+  }
+  .tm-listhero-meta {
+    margin: 0;
+    font-size: 15px;
+    color: #CFC4EC;
+  }
+  /* The stacked header is the mobile presentation only. */
+  .tm-listhead-title,
+  .tm-listhead-meta {
+    display: none;
+  }
+}

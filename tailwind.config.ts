@@ -28,10 +28,35 @@ export default {
         "pub-pink":     "#DB1657",
         "pub-pink-dark":"#B8124A",
         "pub-border":   "#3D2E6E",
+        // App palette (v2) — pixel-matched to the iOS app. Literal hex, not
+        // var(), because these are scoped to .tm-app in globals.css and
+        // Tailwind utilities are also used outside that wrapper.
+        "app-purple":       "#2A1A5E",
+        "app-tag":          "#3D2A75",
+        "app-tag-light":    "#7C67B8",
+        "app-tag-mine-bg":  "#EDEAF5",
+        "app-tag-mine-fg":  "#8E88A0",
+        "app-crimson":      "#C7255B",
+        "app-crimson-dark": "#A31A49",
+        "app-canvas":       "#F1F1F3",
+        "app-card":         "#FFFFFF",
+        "app-strip":        "#F7F6F9",
+        "app-border":       "#E2DEEA",
+        "app-hairline":     "#EDEBF1",
+        "app-ink":          "#1D1730",
+        "app-muted":        "#98939F",
+        "app-faint":        "#B4AFBD",
       },
       fontFamily: {
         mono: ["var(--font-jetbrains-mono)", "monospace"],
         sans: ["var(--font-roboto)", "system-ui", "sans-serif"],
+        display: ["var(--font-playfair)", "Georgia", "serif"],
+      },
+      borderRadius: {
+        tag: "4px",
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(29, 23, 48, 0.06)",
       },
     },
   },

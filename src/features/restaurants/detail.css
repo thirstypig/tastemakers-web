@@ -1,0 +1,67 @@
+/* ── Restaurant detail ──────────────────────────────────────────────── */
+.tm-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tm-detail-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.tm-detail-rail {
+  display: none;
+}
+.tm-hairline {
+  height: 1px;
+  background: var(--tm-hairline);
+}
+.tm-detail-name {
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+.tm-tagcloud {
+  padding: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+@media (min-width: 1024px) {
+  .tm-detail-name {
+    font-size: 34px;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  .tm-tagcloud {
+    padding: 20px;
+    gap: 8px;
+  }
+}
+.tm-rail-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tm-tag-mine-fg);
+  letter-spacing: 0.09em;
+}
+
+
+@media (min-width: 1024px) {
+  .tm-detail {
+    flex-direction: row;
+    gap: 22px;
+    align-items: flex-start;
+  }
+  .tm-detail-main {
+    flex: 1;
+  }
+  .tm-detail-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 290px;
+    flex: none;
+  }
+}

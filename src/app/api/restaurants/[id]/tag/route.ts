@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { isUniqueViolation } from "@/lib/pg-errors";
 
 async function getSessionUser() {
   const cookieStore = await cookies();
@@ -72,14 +73,44 @@ export async function POST(
 
   if (!tagId) return NextResponse.json({ error: "tag_id or tag_name required" }, { status: 400 });
 
-  // Upsert — ignore if user already voted for this tag on this restaurant
   const { error } = await db()
     .from("restaurant_tag")
     .insert({ restaurant_id: restaurantId, tag_id: tagId, user_id: appUserId })
     .select();
 
-  if (error && !error.message.includes("duplicate")) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    if (!isUniqueViolation(error.message)) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // A unique violation here has two very different meanings, because
+    // production carries UNIQUE (restaurant_id, tag_id) — WITHOUT user_id
+    // (todo 067 / TASK-01). Either:
+    //   a) this user already voted → genuinely idempotent, report success; or
+    //   b) someone ELSE holds the only allowed row → this vote was DROPPED.
+    // Treating both as success (the previous behaviour) told the client the
+    // tag saved when it had not, so the UI had nothing to roll back on.
+    const { data: mine } = await db()
+      .from("restaurant_tag")
+      .select("tag_id")
+      .eq("restaurant_id", restaurantId)
+      .eq("tag_id", tagId)
+      .eq("user_id", appUserId)
+      .maybeSingle();
+
+    if (!mine) {
+      return NextResponse.json(
+        {
+          error:
+            "Someone already tagged this place with that tag, and the database currently allows only one vote per tag per restaurant.",
+          code: "vote_blocked",
+          tag_id: tagId,
+        },
+        { status: 409 },
+      );
+    }
+
+    return NextResponse.json({ ok: true, tag_id: tagId, alreadyVoted: true });
   }
 
   return NextResponse.json({ ok: true, tag_id: tagId });

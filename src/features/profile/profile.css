@@ -1,0 +1,93 @@
+/* ── Profile & bookmarks (screen 9) ────────────────────────────────── */
+.tm-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+}
+.tm-profile-avatar {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--tm-crimson);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 900;
+}
+.tm-profile-name {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+.tm-profile-stats {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: var(--tm-muted);
+}
+
+/* Badges: 3-up on mobile, 6-up on desktop. */
+.tm-badges {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.tm-badge {
+  padding: 14px 8px;
+  border-radius: var(--tm-radius-card);
+  border: 1px solid var(--tm-border);
+  background: var(--tm-card);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+.tm-badge[data-state="earned"] {
+  background: var(--tm-purple);
+  border-color: var(--tm-purple);
+}
+.tm-badge-dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--tm-border);
+}
+.tm-badge[data-state="earned"] .tm-badge-dot {
+  background: var(--tm-crimson);
+}
+.tm-badge-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--tm-faint);
+}
+.tm-badge[data-state="earned"] .tm-badge-name {
+  color: #fff;
+}
+
+.tm-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tm-section-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tm-tag-mine-fg);
+  letter-spacing: 0.09em;
+}
+
+@media (min-width: 1024px) {
+  .tm-badges {
+    grid-template-columns: repeat(6, 1fr);
+  }
+  .tm-profile-head {
+    padding: 22px;
+  }
+  .tm-profile-name {
+    font-size: 28px;
+  }
+}

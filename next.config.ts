@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "*.foursquare.com" },
       { protocol: "https", hostname: "fastly.4sqi.net" },
+      // User-uploaded restaurant photos, served from Laravel's public dir.
+      { protocol: "https", hostname: "api.tastemakersapp.com", pathname: "/storage/**" },
     ],
   },
   async redirects() {
