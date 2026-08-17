@@ -1,0 +1,71 @@
+/* ── Email signup ──────────────────────────────────────────────────── */
+.tm-signup {
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tm-signup-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.tm-signup-heading {
+  font-size: 19px;
+  font-weight: 800;
+}
+.tm-signup-body {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6F6A80;
+}
+.tm-signup-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.tm-signup-input {
+  flex: 1;
+  min-width: 200px;
+  min-height: 46px;
+  border: 1px solid var(--tm-border);
+  border-radius: var(--tm-radius-control);
+  padding: 0 12px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--tm-ink);
+  background: #fff;
+}
+.tm-signup-input::placeholder {
+  color: var(--tm-faint);
+}
+.tm-signup-input:focus {
+  border-color: var(--tm-tag-light);
+}
+.tm-signup-input[aria-invalid="true"] {
+  border-color: var(--tm-crimson);
+}
+.tm-signup-done {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--tm-purple);
+}
+.tm-signup-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--tm-crimson);
+}
+
+@media (min-width: 1024px) {
+  .tm-signup {
+    padding: 22px;
+  }
+  .tm-signup-body {
+    max-width: 480px;
+  }
+  .tm-signup-form {
+    max-width: 480px;
+  }
+}

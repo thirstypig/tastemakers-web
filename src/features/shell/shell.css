@@ -1,0 +1,368 @@
+/* ── App shell ────────────────────────────────────────────────────────
+   Under 768: slim purple top bar + bottom tab bar.
+   768 and up: one purple top bar that also carries the nav. No sidebar —
+   four destinations don't warrant a 240px column, and one nav per breakpoint
+   is far less to keep correct than a drawer, an icon rail and a sidebar. */
+.tm-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.tm-topbar {
+  background: var(--tm-purple);
+  flex: none;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.tm-topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+}
+
+/* Nav in the bar is desktop-only; under 768 the tab bar owns it. */
+.tm-topnav {
+  display: none;
+}
+
+.tm-topbar-search {
+  order: 1;
+  flex-basis: 100%;
+}
+.tm-topbar-input {
+  width: 100%;
+  height: 40px;
+  border-radius: var(--tm-radius-control);
+  background: #fff;
+  border: 0;
+  padding: 0 12px;
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--tm-ink);
+}
+.tm-topbar-input::placeholder {
+  color: var(--tm-faint);
+}
+
+.tm-topbar-city {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-left: auto;
+}
+.tm-topbar-city select {
+  background: none;
+  border: 0;
+  color: #C7B9EE;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 4px 2px;
+  max-width: 130px;
+}
+.tm-topbar-city select option {
+  color: var(--tm-ink);
+  background: #fff;
+}
+
+/* Identity sits in the bar from 768; below that it is the last tab. */
+.tm-topbar-identity {
+  display: none;
+}
+
+.tm-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 6px;
+  border-radius: var(--tm-radius-control);
+  color: #fff;
+  text-decoration: none;
+  max-width: 200px;
+}
+.tm-identity:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.tm-identity-avatar {
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--tm-crimson);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+}
+.tm-identity-name {
+  font-size: 13px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tm-identity-signin {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--tm-radius-control);
+  background: var(--tm-crimson);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.tm-identity-signin:hover {
+  background: #A31A49;
+}
+
+.tm-content {
+  flex: 1;
+  width: 100%;
+  margin: 0 auto;
+  padding: 14px;
+}
+
+/* ── Bottom tab bar (under 768) ───────────────────────────────────── */
+.tm-tabbar {
+  position: sticky;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  background: var(--tm-purple);
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  /* Clear of the iOS home indicator and Safari's own bottom chrome. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tm-tab {
+  flex: 1;
+  min-width: 0;
+  min-height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 6px 2px;
+  text-decoration: none;
+  color: #B9AEDA;
+}
+.tm-tab-dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.3);
+}
+.tm-tab[aria-current="page"] {
+  color: #fff;
+}
+.tm-tab[aria-current="page"] .tm-tab-dot {
+  background: var(--tm-crimson);
+}
+.tm-tab-label {
+  font-size: 11px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+/* The identity tab wraps a link that brings its own sizing. */
+.tm-tab-identity {
+  padding: 4px 2px;
+}
+.tm-tab-identity .tm-identity,
+.tm-tab-identity .tm-identity-signin {
+  min-height: 0;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+@media (min-width: 768px) {
+  .tm-tabbar {
+    display: none;
+  }
+  .tm-topbar-inner {
+    flex-wrap: nowrap;
+    height: 64px;
+    padding: 0 20px;
+    gap: 16px;
+  }
+  .tm-topnav {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex: none;
+  }
+  .tm-topnav-item {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: var(--tm-radius-control);
+    color: #B9AEDA;
+    font-size: 14px;
+    font-weight: 400;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+  .tm-topnav-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+  }
+  .tm-topnav-item[aria-current="page"] {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-weight: 700;
+  }
+  .tm-topbar-search {
+    order: 0;
+    flex: 1;
+    flex-basis: auto;
+    min-width: 0;
+    max-width: 420px;
+    margin-left: auto;
+  }
+  .tm-topbar-input {
+    height: 38px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    font-size: 14px;
+  }
+  .tm-topbar-input::placeholder {
+    color: #B9AEDA;
+  }
+  .tm-topbar-city {
+    margin-left: 0;
+  }
+  .tm-topbar-city select {
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .tm-topbar-identity {
+    display: inline-flex;
+    flex: none;
+  }
+  .tm-content {
+    padding: 22px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .tm-topbar-inner {
+    padding: 0 28px;
+  }
+  .tm-content {
+    max-width: 960px;
+    padding: 26px 28px;
+  }
+}
+
+/* ── Photo carousel ─────────────────────────────────────────────────── */
+.tm-carousel {
+  position: relative;
+  border-radius: var(--tm-radius-card);
+  overflow: hidden;
+  background: #CFCBD8;
+}
+.tm-carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.tm-carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.tm-carousel-slide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 250px;
+  scroll-snap-align: start;
+}
+.tm-carousel-grid {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--tm-radius-control);
+  background: rgba(30, 25, 50, 0.55);
+  display: grid;
+  grid-template-columns: repeat(3, 4px);
+  grid-template-rows: repeat(3, 4px);
+  gap: 2px;
+  align-content: center;
+  justify-content: center;
+}
+.tm-carousel-grid span {
+  width: 4px;
+  height: 4px;
+  background: #fff;
+}
+.tm-carousel-dots {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.tm-carousel-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+}
+.tm-carousel-dots span[data-active] {
+  background: #fff;
+}
+
+@media (min-width: 1024px) {
+  .tm-carousel-slide {
+    height: 300px;
+  }
+}
+
+/* "Your tags" stacks on mobile, goes side-by-side on desktop. */
+.tm-yourtags {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tm-yourtags-cta {
+  min-height: 48px;
+  text-decoration: none;
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .tm-yourtags {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 22px;
+  }
+  .tm-yourtags-cta {
+    width: auto;
+    padding: 0 26px;
+    white-space: nowrap;
+    flex: none;
+  }
+}

@@ -1,0 +1,104 @@
+/* ── Result card (screen 3) ────────────────────────────────────────── */
+.tm-result {
+  background: var(--tm-card);
+  border-radius: var(--tm-radius-card);
+  box-shadow: var(--tm-card-shadow);
+  overflow: hidden;
+  display: flex;
+}
+.tm-result-photo {
+  display: none;
+}
+.tm-result-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tm-result-head {
+  padding: 14px 14px 12px;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+.tm-result-name {
+  font-family: var(--font-playfair), Georgia, serif;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--tm-purple);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.tm-result-name:hover {
+  text-decoration: underline;
+}
+.tm-result-addr {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--tm-faint);
+}
+.tm-result-heart {
+  background: none;
+  border: 0;
+  color: var(--tm-faint);
+  font-size: 16px;
+  cursor: pointer;
+  align-self: flex-start;
+  min-width: 44px;
+  min-height: 44px;
+  margin: -12px -8px 0 0;
+}
+.tm-result-heart:hover {
+  color: var(--tm-crimson);
+}
+.tm-result-strip {
+  background: var(--tm-strip);
+  padding: 10px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: auto;
+}
+
+@media (min-width: 1024px) {
+  .tm-result-photo {
+    display: block;
+    position: relative;
+    width: 150px;
+    flex: none;
+    background: #D6D2DE;
+  }
+  .tm-result-head {
+    padding: 16px 18px 12px;
+  }
+  .tm-result-name {
+    font-size: 21px;
+  }
+  .tm-result-addr {
+    font-size: 14px;
+  }
+  .tm-result-strip {
+    padding: 11px 18px;
+    gap: 7px;
+  }
+}
+
+/* Stack of result cards. Lives here, not in search, because home,
+   list detail and bookmarks all render this list too. */
+.tm-results {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Overflow pill on a result card: everything below the top two levels. */
+.tm-result-more {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--tm-radius-tag);
+  border: 1px solid var(--tm-border);
+  color: #6F6A80;
+  font-size: 11.5px;
+}

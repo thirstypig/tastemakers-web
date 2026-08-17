@@ -37,11 +37,16 @@ function Header() {
         style={{
           maxWidth: 1200,
           margin: "0 auto",
-          padding: "0 24px",
-          height: 64,
+          padding: "10px 16px",
+          // minHeight + wrap, not a fixed 64px row: at 375px the four nav
+          // items overflowed the viewport by 155px. /privacy is linked from
+          // the iOS and Android apps, so it has to survive a phone.
+          minHeight: 64,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 12,
         }}
       >
         <Link
@@ -66,7 +71,7 @@ function Header() {
           </span>
         </Link>
 
-        <div style={{ display: "flex", gap: 32, alignItems: "center" }}>
+        <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
           <NavLink href="/tastemakers">Tastemakers</NavLink>
           <NavLink href="/lists">Lists</NavLink>
           <NavLink href="/restaurants">Restaurants</NavLink>

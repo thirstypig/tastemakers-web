@@ -1,7 +1,14 @@
 import type { Tag } from "@/lib/api/types";
 
-// Vote-count thresholds that determine visual prominence.
-// Mirrors the level system in iOS ColorExtension.swift — level 1 is darkest/most prominent.
+/**
+ * @deprecated Diverges from iOS. These absolute thresholds were never what the
+ * app does: `Utils.calcucateTagLevels` levels each tag by its gap from that
+ * restaurant's *leading* tag, so the same restaurant ranked differently in each
+ * product. Use `assignTagLevels` / `levelFor` from `@/features/tags/levels`.
+ *
+ * Kept only because the legacy dark `TagChip`/`TagCloud` still import
+ * `TAG_LEVEL_STYLES` from this file; delete with them.
+ */
 export function voteCountToLevel(count: number): Tag["level"] {
   if (count >= 10) return 1;
   if (count >= 5) return 2;

@@ -1,0 +1,104 @@
+/* ── Ranked tag cloud ──────────────────────────────────────────────── */
+.tm-cloud {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tm-cloud-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tm-cloud-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tm-tag-mine-fg);
+  letter-spacing: 0.09em;
+}
+.tm-cloud-toggle {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--tm-crimson);
+  cursor: pointer;
+  min-height: 44px;
+}
+.tm-cloud-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--tm-muted);
+}
+.tm-cloud-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.tm-cloud-foot {
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+  padding-top: 10px;
+  border-top: 1px solid var(--tm-hairline);
+}
+.tm-cloud-signin {
+  font-size: 12px;
+}
+
+/* Vote feedback. Suppressed under prefers-reduced-motion by the global rule
+   in tokens.css, which zeroes animation-duration inside .tm-app. */
+@keyframes tm-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+@media (min-width: 1024px) {
+  .tm-cloud {
+    padding: 20px;
+    gap: 12px;
+  }
+}
+
+/* ── First-visit explainer ─────────────────────────────────────────── */
+.tm-firstvisit {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--tm-radius-card);
+  background: var(--tm-tag-mine-bg);
+  border: 1px solid var(--tm-border);
+}
+.tm-firstvisit-copy {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #4A3F73;
+}
+.tm-firstvisit-copy strong {
+  color: var(--tm-purple);
+}
+.tm-firstvisit-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+.tm-firstvisit-dismiss {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--tm-purple);
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 4px;
+}

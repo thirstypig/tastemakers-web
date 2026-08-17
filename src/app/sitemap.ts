@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
-import { listLists, listRestaurants } from "@/lib/api/index";
+import { listLists } from "@/features/lists/api";
+import { listRestaurants } from "@/features/restaurants/api";
 
 const SITE_URL = "https://app.tastemakersapp.com";
 

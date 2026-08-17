@@ -1,0 +1,87 @@
+/* ── Tag editor (screen 2) ─────────────────────────────────────────── */
+.tm-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tm-editor-card {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tm-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tm-editor-close {
+  background: none;
+  border: 0;
+  color: var(--tm-crimson);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0 4px;
+}
+.tm-editor-hint {
+  font-family: var(--font-roboto), system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--tm-muted);
+}
+.tm-editor-input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  border: 1px solid var(--tm-border);
+  border-radius: var(--tm-radius-control);
+  padding: 0 12px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--tm-ink);
+  background: #fff;
+}
+.tm-editor-input::placeholder {
+  color: #C0BBC9;
+}
+.tm-editor-input:focus {
+  border-color: var(--tm-tag-light);
+}
+.tm-editor-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+/* A full-column text input reads as a textarea at desktop widths — cap it
+   at the same 520px the top-bar search uses. */
+.tm-editor-newrow,
+.tm-editor-card .tm-editor-meta {
+  max-width: 560px;
+}
+/* Sticky SAVE TAG — stays reachable while the pools scroll. */
+.tm-editor-save {
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0 2px;
+  background: linear-gradient(to top, var(--tm-canvas) 72%, transparent);
+}
+.tm-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.tm-skel {
+  display: inline-block;
+  border-radius: var(--tm-radius-tag);
+  background: var(--tm-tag-mine-bg);
+  animation: tm-skel-pulse 1.4s ease-in-out infinite;
+}
+@keyframes tm-skel-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}

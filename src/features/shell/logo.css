@@ -1,0 +1,5 @@
+/* The wordmark image. Declared here because Logo owns the class; the sidebar
+   hides it in the 768–1023 icon rail via a rule in shell.css. */
+.tm-wordmark {
+  display: block;
+}

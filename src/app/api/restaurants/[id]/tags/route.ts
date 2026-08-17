@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase-server";
-import { voteCountToLevel } from "@/components/tags/tag-utils";
+import { levelFor } from "@/features/tags/levels";
 
 export async function GET(
   _req: Request,
@@ -38,13 +38,15 @@ export async function GET(
 
   const tagById = new Map((tagData ?? []).map((t) => [t.id, t.name]));
 
-  const tags = [...voteMap.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .flatMap(([tagId, count]) => {
-      const name = tagById.get(tagId);
-      if (!name) return [];
-      return [{ id: String(tagId), name, level: voteCountToLevel(count), count }];
-    });
+  // Level relative to this restaurant's leading tag, matching iOS.
+  const ranked = [...voteMap.entries()].sort((a, b) => b[1] - a[1]);
+  const highest = ranked.length > 0 ? ranked[0]![1] : 0;
+
+  const tags = ranked.flatMap(([tagId, count]) => {
+    const name = tagById.get(tagId);
+    if (!name) return [];
+    return [{ id: String(tagId), name, level: levelFor(count, highest), count }];
+  });
 
   return NextResponse.json({ tags });
 }
