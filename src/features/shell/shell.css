@@ -366,3 +366,68 @@
     flex: none;
   }
 }
+
+/* ── Site footer ───────────────────────────────────────────────────────────
+   Sits above .tm-tabbar, which is position:sticky and therefore still in
+   flow — no overlap, no bottom padding hack needed. Server-rendered and
+   never auth-gated: it is the only persistent route to the iOS app for a
+   signed-in user. */
+.tm-footer {
+  border-top: 1px solid var(--tm-hairline);
+  background: var(--tm-card);
+  margin-top: 32px;
+}
+
+.tm-footer-inner {
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px 14px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tm-footer-pitch {
+  margin: 0;
+  font-size: 14px;
+  color: var(--tm-muted);
+}
+
+.tm-footer-cta {
+  color: var(--tm-crimson);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tm-footer-cta:hover,
+.tm-footer-cta:focus-visible {
+  text-decoration: underline;
+}
+
+.tm-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 13px;
+}
+
+.tm-footer-links a {
+  color: var(--tm-muted);
+  text-decoration: none;
+}
+
+.tm-footer-links a:hover,
+.tm-footer-links a:focus-visible {
+  color: var(--tm-ink);
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .tm-footer-inner {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 22px;
+  }
+}

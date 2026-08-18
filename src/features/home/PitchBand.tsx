@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useAuth } from "@/components/providers/AuthProvider";
 import RankedTagChip from "@/features/tags/RankedTagChip";
 import type { TagLevel } from "@/features/tags/levels";
+import { APP_STORE_URL } from "@/features/shell/links";
 
-const APP_STORE = "https://apps.apple.com/app/id1573533249";
 
 /** A worked example of the mechanic — the strongest tags are the most-agreed. */
 const DEMO: Array<{ label: string; level: TagLevel }> = [
@@ -57,7 +57,7 @@ export default function PitchBand() {
             Create account
           </Link>
           <a
-            href={APP_STORE}
+            href={APP_STORE_URL}
             className="tm-btn tm-btn-secondary"
             target="_blank"
             rel="noopener noreferrer"
