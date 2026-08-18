@@ -10,8 +10,8 @@ All three services deploy via **Railway GitHub auto-deploy** on push to `main`
 | Service | Repo | Runtime | Domain |
 |---------|------|---------|--------|
 | API | tastemakers-backend | PHP **8.1 (pinned — Laravel 8 breaks on 8.4)** | api.tastemakersapp.com |
-| Web | tastemakers-web | Node / Next.js 15, internal PORT=8080 | app.tastemakersapp.com |
-| Marketing | tastemakers-marketing | Caddy static | www.tastemakersapp.com |
+| Web | tastemakers-web | Node / Next.js 15, internal PORT=8080 | www.tastemakersapp.com |
+| Marketing | tastemakers-marketing | Caddy static | **retired 2026-08-18** — folded into tastemakers-web |
 
 **Gotchas (learned the hard way):**
 - `releaseCommand` in `railway.json` reports SUCCESS even when migrations fail.
@@ -40,7 +40,7 @@ out of sync with reality; check `SELECT * FROM migrations ORDER BY batch DESC LI
 **Known failure modes:**
 - `/api/restaurants` 500 → `FOURSQUARE_API_KEY` missing
 - Admin login loop, no error param → `ADMIN_EMAILS` typo (must exactly match Google email)
-- Marketing 502 → Caddy container crashed or PORT mismatch
+- Marketing 502 → service retired 2026-08-18; if you see this, DNS still points at the old service
 - OAuth redirect to localhost:8080 → someone used `request.url` origin (see Deploy gotchas)
 
 ## Environment inventory (names only)

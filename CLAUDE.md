@@ -223,14 +223,31 @@ against the API host.
 
 ## Deployment
 - **Platform:** Railway (Node.js, using default Next.js build output)
-- **Prod domains (planned):** `www.tastemakersapp.com` (marketing + blog), `app.tastemakersapp.com` (web app)
+- **Prod domains (live):** `www.tastemakersapp.com` and `tastemakersapp.com` (apex) both serve this app.
+  `api.tastemakersapp.com` is the Laravel API. `app.tastemakersapp.com` was **retired 2026-08-18** —
+  do not reintroduce it; Railway's Hobby plan caps custom domains at 2 per service.
 - **Required env var:** `NEXT_PUBLIC_API_URL=https://api.tastemakersapp.com/api` (points to Railway-hosted Laravel backend)
+- **The two site-URL variables — do NOT merge them.** They answer different questions:
+
+  | Variable | Question | Local dev | Consumer |
+  |---|---|---|---|
+  | `NEXT_PUBLIC_SITE_URL` | "where is *this instance* reachable?" | `http://localhost:3050` | `resolveCallbackOrigin` (`src/lib/auth.ts`) — OAuth must return to the machine that sent the user away |
+  | `NEXT_PUBLIC_CANONICAL_ORIGIN` | "what is the *public home* of this content?" | unset → production default | `CANONICAL_ORIGIN` / `canonical()` (`src/lib/site.ts`) — every `rel=canonical`, `og:url`, JSON-LD `url`, sitemap, robots |
+
+  If canonicals ever derive from `NEXT_PUBLIC_SITE_URL`, a local `next build` publishes
+  localhost canonicals and a localhost sitemap. `src/lib/site.test.ts` fails if anyone tries.
+  Both are `NEXT_PUBLIC_*`, so they are **inlined at build time** — changing either on Railway
+  requires a redeploy. Moving domains is one variable plus a redeploy; do not hardcode hosts.
 - **Admin auth env vars (server-only, no NEXT_PUBLIC_ prefix):**
   - `SUPABASE_URL` — Supabase project URL (used in Edge middleware)
   - `SUPABASE_ANON_KEY` — Supabase anon key (used in Edge middleware)
   - `ADMIN_EMAILS` — comma-separated allowlist (e.g. `user@example.com,other@example.com`). If empty/unset, all authenticated Supabase users can access admin.
   - Client-side components also need `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` for the login page OAuth flow.
-  - Supabase redirect URLs must include `http://localhost:3050/auth/callback` (dev) and `https://app.tastemakersapp.com/auth/callback` (prod) — set in Supabase Dashboard → Auth → URL Configuration.
+  - Supabase redirect URLs must include `http://localhost:3050/auth/callback` (dev),
+    `https://www.tastemakersapp.com/auth/callback` and `https://tastemakersapp.com/auth/callback` (prod)
+    — Supabase Dashboard → Authentication → URL Configuration. `redirectTo` is built from
+    `window.location.origin`, so any host the app answers on must be allowlisted or Supabase
+    silently falls back to the Site URL.
 - **Railway project:** Use same project as backend (shared infrastructure), separate services for backend (Laravel) and frontend (Next.js)
 - **Note:** Build script (`npm run build`) generates `.next/` directory. Railway will serve static files + run server functions via Node.js.
 

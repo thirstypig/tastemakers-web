@@ -18,8 +18,8 @@
 | Domain | Service | Notes |
 |--------|---------|-------|
 | api.tastemakersapp.com | Laravel 8, Railway | Bearer-token API for all clients |
-| app.tastemakersapp.com | Next.js 15, Railway | Public SEO pages + /admin |
-| www.tastemakersapp.com | Static HTML + Caddy, Railway | Marketing / email capture |
+| www.tastemakersapp.com | Next.js 15, Railway | Public SEO pages + /admin |
+| _(retired 2026-08-18)_ | Static HTML + Caddy, Railway | Old marketing site — `www` now serves the Next.js app |
 
 DNS: domain registered at Namecheap, **Squarespace nameservers are the authority**,
 CNAMEs → Railway. Legacy: `tastemakersapp.com/v2/api/` (Namecheap shared hosting)

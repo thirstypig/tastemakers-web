@@ -18,6 +18,16 @@ const nextConfig: NextConfig = {
       { source: "/roadmap",   destination: "/admin/roadmap",   permanent: true },
       { source: "/changelog", destination: "/admin/changelog", permanent: true },
       { source: "/analytics", destination: "/admin/analytics", permanent: true },
+
+      // Legacy URLs burned into the SHIPPED iOS build (Constant.swift) and the
+      // old Namecheap marketing site. These are not ours to change — the App
+      // Store binary asks for them literally, and old versions stay installed
+      // for months. /privacy-policy in particular is the privacy link Apple
+      // requires to resolve, so a 404 there is a compliance problem, not a
+      // cosmetic one.
+      { source: "/privacy-policy", destination: "/privacy", permanent: true },
+      { source: "/review-tag",     destination: "/review",  permanent: true },
+      { source: "/about-us",       destination: "/",        permanent: true },
     ];
   },
   // Proxy to Laravel, but only as fallback — Next.js route handlers take precedence.
