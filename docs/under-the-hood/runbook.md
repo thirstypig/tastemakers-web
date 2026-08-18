@@ -25,8 +25,8 @@ deploy command.
 | Service | Repo | Branch | Domain |
 |---|---|---|---|
 | Laravel API | `tastemakers-backend` | `main` | `api.tastemakersapp.com` |
-| Web app | `tastemakers-web` | `main` | `app.tastemakersapp.com` |
-| Marketing | `tastemakers-marketing` | `main` | `www.tastemakersapp.com` |
+| Web app | `tastemakers-web` | `main` | `www.tastemakersapp.com` |
+| Marketing | `tastemakers-marketing` | `main` | **retired 2026-08-18** — `www` now serves `tastemakers-web` |
 
 ### Before you push
 1. `npm run docs:refresh` (web) — keeps the board honest

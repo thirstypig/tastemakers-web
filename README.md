@@ -1,7 +1,7 @@
 # Tastemakers Web
 
 Next.js 15 + TypeScript frontend for Tastemakers — public discovery pages and the
-internal admin/docs board. Deployed on Railway at `app.tastemakersapp.com`.
+internal admin/docs board. Deployed on Railway at `www.tastemakersapp.com`.
 
 ```bash
 npm install

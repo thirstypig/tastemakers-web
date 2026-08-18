@@ -22,6 +22,6 @@
 
 - ✅ Laravel API live on Railway (`api.tastemakersapp.com`)
 - ✅ Supabase live, 22 tables
-- ✅ Web app + admin live (`app.tastemakersapp.com`), Google OAuth working
+- ✅ Web app + admin live (`www.tastemakersapp.com`), Google OAuth working
 - ✅ DNS: Squarespace nameservers, api/app/www CNAMEs configured
 - ✅ Debug routes removed from production (`/debug-schema`, `/run-schema-fix`, `/debug-signup`)
