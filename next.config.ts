@@ -30,19 +30,15 @@ const nextConfig: NextConfig = {
       { source: "/about-us",       destination: "/",        permanent: true },
     ];
   },
-  // Proxy to Laravel, but only as fallback — Next.js route handlers take precedence.
-  // This lets /api/restaurants/[id]/tags etc. be served by Next.js while
-  // /api/login, /api/restaurant-detail, etc. still proxy to Laravel.
-  async rewrites() {
-    return {
-      fallback: [
-        {
-          source: "/api/:path*",
-          destination: "http://localhost:4050/api/:path*",
-        },
-      ],
-    };
-  },
+  // NO /api proxy. This app does not call the Laravel API — every data path
+  // goes to Supabase directly (see TODO-089), and every /api/* route it fetches
+  // is a Next.js route handler in src/app/api. There was previously a fallback
+  // rewrite to http://localhost:4050, which does not exist in production: any
+  // unmatched /api/* path returned 500 Internal Server Error instead of an
+  // honest 404. Do not reinstate it. Pointing it at api.tastemakersapp.com
+  // would be worse — it would expose the whole Laravel surface through this
+  // domain, with the auth-header and CORS questions that implies.
+  // api-routes.test.ts fails if a fetch is added for a path with no handler.
 };
 
 export default nextConfig;
