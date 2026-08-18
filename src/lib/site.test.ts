@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { CANONICAL_ORIGIN, canonical } from "./site";
+import { CANONICAL_ORIGIN, RETIRED_ORIGINS, canonical } from "./site";
 
 /**
  * `CANONICAL_ORIGIN` is computed once at module load, so exercising the env var
@@ -19,21 +19,21 @@ afterEach(() => {
 
 describe("canonical", () => {
   it("keeps the trailing slash on the root, matching what is already indexed", () => {
-    expect(canonical("/")).toBe("https://app.tastemakersapp.com/");
-    expect(canonical()).toBe("https://app.tastemakersapp.com/");
+    expect(canonical("/")).toBe("https://www.tastemakersapp.com/");
+    expect(canonical()).toBe("https://www.tastemakersapp.com/");
   });
 
   it("builds absolute URLs for ordinary paths", () => {
-    expect(canonical("/lists")).toBe("https://app.tastemakersapp.com/lists");
+    expect(canonical("/lists")).toBe("https://www.tastemakersapp.com/lists");
     expect(canonical("/restaurants/langer-s-159")).toBe(
-      "https://app.tastemakersapp.com/restaurants/langer-s-159",
+      "https://www.tastemakersapp.com/restaurants/langer-s-159",
     );
   });
 
   it("tolerates a missing leading slash rather than emitting a broken URL", () => {
     // Guards against `canonical(`restaurants/${slug}`)` silently producing
-    // "https://app.tastemakersapp.comrestaurants/x".
-    expect(canonical("restaurants/x-1")).toBe("https://app.tastemakersapp.com/restaurants/x-1");
+    // "https://www.tastemakersapp.comrestaurants/x".
+    expect(canonical("restaurants/x-1")).toBe("https://www.tastemakersapp.com/restaurants/x-1");
   });
 
   it("strips a trailing slash so /lists and /lists/ cannot both claim canonical", () => {
@@ -50,29 +50,29 @@ describe("canonical", () => {
 describe("CANONICAL_ORIGIN", () => {
   it("defaults to the production domain when nothing is configured", async () => {
     const m = await importWithEnv({ NEXT_PUBLIC_CANONICAL_ORIGIN: "" });
-    expect(m.CANONICAL_ORIGIN).toBe("https://app.tastemakersapp.com");
+    expect(m.CANONICAL_ORIGIN).toBe("https://www.tastemakersapp.com");
   });
 
   it("moves the whole site to a new domain from one variable", async () => {
-    // The domain merge this exists for: www becomes canonical, app. redirects.
+    // Must differ from DEFAULT_ORIGIN, or this passes even if the env var is ignored.
     const m = await importWithEnv({
-      NEXT_PUBLIC_CANONICAL_ORIGIN: "https://www.tastemakersapp.com",
+      NEXT_PUBLIC_CANONICAL_ORIGIN: "https://tastemakers.example",
     });
-    expect(m.CANONICAL_ORIGIN).toBe("https://www.tastemakersapp.com");
-    expect(m.canonical("/restaurants")).toBe("https://www.tastemakersapp.com/restaurants");
-    expect(m.canonical("/")).toBe("https://www.tastemakersapp.com/");
+    expect(m.CANONICAL_ORIGIN).toBe("https://tastemakers.example");
+    expect(m.canonical("/restaurants")).toBe("https://tastemakers.example/restaurants");
+    expect(m.canonical("/")).toBe("https://tastemakers.example/");
   });
 
   it("strips trailing slashes off the configured value", async () => {
     const m = await importWithEnv({
-      NEXT_PUBLIC_CANONICAL_ORIGIN: "https://www.tastemakersapp.com///",
+      NEXT_PUBLIC_CANONICAL_ORIGIN: "https://tastemakers.example///",
     });
-    expect(m.canonical("/lists")).toBe("https://www.tastemakersapp.com/lists");
+    expect(m.canonical("/lists")).toBe("https://tastemakers.example/lists");
   });
 
   it("ignores a whitespace-only value instead of producing an empty origin", async () => {
     const m = await importWithEnv({ NEXT_PUBLIC_CANONICAL_ORIGIN: "   " });
-    expect(m.CANONICAL_ORIGIN).toBe("https://app.tastemakersapp.com");
+    expect(m.CANONICAL_ORIGIN).toBe("https://www.tastemakersapp.com");
   });
 
   it("does NOT read NEXT_PUBLIC_SITE_URL", async () => {
@@ -84,7 +84,28 @@ describe("CANONICAL_ORIGIN", () => {
       NEXT_PUBLIC_SITE_URL: "http://localhost:3050",
       NEXT_PUBLIC_CANONICAL_ORIGIN: "",
     });
-    expect(m.CANONICAL_ORIGIN).toBe("https://app.tastemakersapp.com");
+    expect(m.CANONICAL_ORIGIN).toBe("https://www.tastemakersapp.com");
     expect(m.canonical("/lists")).not.toContain("localhost");
+  });
+});
+
+describe("the fallback origin", () => {
+  it("never falls back to a retired domain", async () => {
+    // The regression: DEFAULT_ORIGIN read "https://app.tastemakersapp.com"
+    // until 2026-08-18. That was correct when written, then wrong the instant
+    // the subdomain was retired — and invisible, because a fallback only
+    // surfaces on a build where NEXT_PUBLIC_CANONICAL_ORIGIN is unset. Such a
+    // build would publish canonicals and a sitemap on a host that NXDOMAINs.
+    const m = await importWithEnv({ NEXT_PUBLIC_CANONICAL_ORIGIN: "" });
+    expect(
+      RETIRED_ORIGINS,
+      `Fallback origin ${m.CANONICAL_ORIGIN} is a retired host. Any build without ` +
+        `NEXT_PUBLIC_CANONICAL_ORIGIN set would emit unresolvable canonicals.`,
+    ).not.toContain(m.CANONICAL_ORIGIN);
+  });
+
+  it("is an absolute https origin with no path or trailing slash", async () => {
+    const m = await importWithEnv({ NEXT_PUBLIC_CANONICAL_ORIGIN: "" });
+    expect(m.CANONICAL_ORIGIN).toMatch(/^https:\/\/[a-z0-9.-]+$/);
   });
 });
