@@ -15,7 +15,7 @@
 
 1. Fix blockers 1–2 above
 2. Update iOS `Constant.swift` base URL → `api.tastemakersapp.com` → TestFlight → App Store review
-3. Keep legacy `tastemakersapp.com/v2/api/` responding until iOS adoption > 90% (assume months)
+3. Keep legacy `tastemakersapp.com/v2/api/` responding until iOS adoption > 90% (assume months). Now served by the rewrite in `next.config.ts`; removal is TASK-24, which needs usage instrumented before the 90% gate can be evaluated
 4. Cancel Namecheap hosting (keep domain registration)
 
 ## Done

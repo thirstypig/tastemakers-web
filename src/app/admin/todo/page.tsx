@@ -109,11 +109,11 @@ const TODO_ITEMS: TodoItem[] = [
   {
     id: "ios-api-url",
     platform: "ios",
-    title: "Update Constant.swift API base URL",
+    title: "Update NetworkManager.swift API base URL",
     phase: "P1",
     status: "open",
-    detail: "Change BASE_URL from https://tastemakersapp.com/v2/api/ to https://api.tastemakersapp.com/api/. Requires App Store submission after change — coordinate with backend deploy confirmation first.",
-    file: "tastemakers-ios/Tastemakers/Utils/Constant.swift",
+    detail: "Change baseUrl from https://tastemakersapp.com/v2/api/ to https://api.tastemakersapp.com/api/. Requires App Store submission after change — coordinate with backend deploy confirmation first. Not urgent for connectivity any more: the /v2/api shim in tastemakers-web/next.config.ts forwards the legacy prefix. Shipping this build is the PREREQUISITE for retiring that shim (TASK-24), not a fix for an outage.",
+    file: "tastemakers-ios/TasteMaker/NetworkManager/NetworkManager.swift",
     date: "",
   },
   // ── iOS P2 ──────────────────────────────────────

@@ -33,6 +33,28 @@ completes. Newest first.
 
 ---
 
+## 2026-08-18 — Hardening the /v2/api iOS shim
+
+**Closes:** todos 108, 109, 111, 113, 114, 116, 117 · **Repos:** web
+
+- Uploads >10 MB through the shim returned a plain-text 500 after 37s (Next truncates a
+  proxied body past its 10 MB default while forwarding the original Content-Length).
+  Raised `middlewareClientMaxBodySize`, set `proxyTimeout` to 45s.
+- The two tests guarding the shim passed while it was broken — verified by mutation.
+  They now execute `next.config.ts` rather than pattern-matching its source.
+- Middleware no longer runs on `/v2/api`: it stripped nothing and leaked Supabase auth
+  cookies to the Laravel host while discarding rotated ones. Now strips `Cookie` and
+  client-supplied `x-forwarded-*`, and forces `Accept: application/json` so an expired
+  iOS token returns 401 instead of a 302 to an ATS-blocked `http://` URL.
+- New tripwire: no redirect may capture `/v2/api`. Redirects run before rewrites, so an
+  apex→www canonicalisation would silently downgrade every legacy POST to GET.
+- `robots.txt` disallows `/v2/api`; ADR-002 and TASK-24 record the decision and its exit.
+- Docs that contradicted the shipped state corrected (`root-claude.md`, `architecture.md`,
+  `CLAUDE.md`, RISK-004 re-scoped).
+
+**Not fixed:** the Laravel rate limiter never decrements — no brute-force protection on
+login/signup/password-reset. Needs the Railway `CACHE_DRIVER` value. Todo 110.
+
 ## 2026-08-18 — domain merge, and reconnecting the iOS app
 
 **The web app moved to the brand domain.** `www.tastemakersapp.com` and the
