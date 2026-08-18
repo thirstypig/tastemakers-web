@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import Logo from "./Logo";
 import CityPicker from "./CityPicker";
 import { NAV_ITEMS, isNavItemActive } from "./nav-items";
@@ -55,13 +56,46 @@ function IdentityLink({ compact = false }: { compact?: boolean }) {
  * per breakpoint is far less to keep correct than a drawer, an icon rail and a
  * sidebar all at once.
  */
-export function TopBar() {
-  const pathname = usePathname();
+/**
+ * The search field, isolated because useSearchParams makes Next bail its
+ * closest Suspense boundary out of server rendering. Keeping it in its own
+ * boundary means only this input is client-rendered — the nav, the logo and
+ * every page below still reach crawlers as HTML.
+ */
+function SearchField() {
   const searchParams = useSearchParams();
-
   // Keyed on the query so the field reflects the search you're looking at,
   // while staying uncontrolled between navigations.
   const currentQuery = searchParams.get("q") ?? "";
+
+  return (
+    <input
+      key={currentQuery}
+      className="tm-topbar-input"
+      name="q"
+      type="search"
+      defaultValue={currentQuery}
+      placeholder="Search restaurants, lists, or tags"
+      aria-label="Search restaurants, lists, or tags"
+    />
+  );
+}
+
+/** Same box, no query — the server-rendered placeholder while the real one loads. */
+function SearchFieldFallback() {
+  return (
+    <input
+      className="tm-topbar-input"
+      name="q"
+      type="search"
+      placeholder="Search restaurants, lists, or tags"
+      aria-label="Search restaurants, lists, or tags"
+    />
+  );
+}
+
+export function TopBar() {
+  const pathname = usePathname();
 
   return (
     <header className="tm-topbar">
@@ -82,18 +116,14 @@ export function TopBar() {
         </nav>
 
         <form className="tm-topbar-search" action="/search" role="search">
-          <input
-            key={currentQuery}
-            className="tm-topbar-input"
-            name="q"
-            type="search"
-            defaultValue={currentQuery}
-            placeholder="Search restaurants, lists, or tags"
-            aria-label="Search restaurants, lists, or tags"
-          />
+          <Suspense fallback={<SearchFieldFallback />}>
+            <SearchField />
+          </Suspense>
         </form>
 
-        <CityPicker />
+        <Suspense fallback={null}>
+          <CityPicker />
+        </Suspense>
 
         <span className="tm-topbar-identity">
           <IdentityLink />

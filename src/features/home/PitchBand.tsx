@@ -28,8 +28,13 @@ const STEPS = [
  * this — so the page stays thin for people who already know the product.
  */
 export default function PitchBand() {
-  const { user, loading } = useAuth();
-  if (loading || user) return null;
+  const { user } = useAuth();
+
+  // Renders while auth is still resolving, on purpose. Hiding during `loading`
+  // meant the server emitted nothing, so the homepage reached crawlers with no
+  // <h1> and no value proposition. A signed-in visitor sees it for one frame;
+  // an unauthenticated crawler seeing an empty homepage is the worse trade.
+  if (user) return null;
 
   return (
     <>

@@ -3,7 +3,7 @@
 import posthog from 'posthog-js'
 import { PostHogProvider as PHProvider, usePostHog } from 'posthog-js/react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { Suspense, useEffect } from 'react'
 
 function PostHogPageView() {
   const pathname = usePathname()
@@ -35,7 +35,15 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <PHProvider client={posthog}>
-      <PostHogPageView />
+      {/* PostHogPageView calls useSearchParams, which makes Next bail its
+          closest Suspense boundary out of server rendering on statically
+          generated pages. It MUST have its own boundary — when it shared one
+          with {children} the entire app rendered client-side, so restaurant
+          and list pages reached crawlers with no <h1>, no tags and no content.
+          Do not hoist this Suspense to wrap children. */}
+      <Suspense fallback={null}>
+        <PostHogPageView />
+      </Suspense>
       {children}
     </PHProvider>
   )
