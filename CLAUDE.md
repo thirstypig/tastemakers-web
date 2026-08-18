@@ -32,7 +32,13 @@ Web frontend for the Tastemakers restaurant discovery platform. Built with Next.
 - **Language:** TypeScript (strict mode)
 - **Styling:** Tailwind CSS v3 (installed, `tailwind.config.ts`)
 - **State:** React Server Components + client hooks
-- **API:** Proxied to Laravel backend at `localhost:4050`
+- **API:** None. This app does **not** call Laravel — every data path goes to
+  Supabase directly (see "Data layer" below, TODO-089). A fallback rewrite to
+  `http://localhost:4050` was removed 2026-08-18: that host does not exist in
+  production, so unmatched `/api/*` returned **500**, not 404. Every `/api/*`
+  path the client fetches is a route handler in `src/app/api`;
+  `src/lib/api-routes.test.ts` fails if one is added without a handler, or if
+  the proxy is reinstated.
 - **Dev Server Port:** 3050
 
 ## Setup
@@ -93,7 +99,7 @@ tastemakers-web/
 │   │   │   ├── stubs.ts           Hardcoded mock data (3 tastemakers, 8 restaurants, 6 lists)
 │   │   │   ├── client.ts          apiFetch() wrapper for api.tastemakersapp.com
 │   │   │   └── index.ts           Exported fns: getTastemaker, getList, getRestaurant, etc.
-│   │   │                          ↑ Swap stub→real here when Laravel endpoints come online
+│   │   │                          ↑ Reads Supabase directly — NOT a stub, NOT Laravel (TODO-089)
 │   │   ├── admin-filters.ts   filterTodos() + summarizeRoadmap() — shared by admin roadmap + todo pages
 │   │   ├── api.ts             Admin API client (apiFetch<T>() with auth headers) — NOT the same as lib/api/
 │   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
@@ -109,7 +115,7 @@ tastemakers-web/
 │   └── types/
 │       └── index.ts           TypeScript interfaces matching API models
 ├── public/                    Static assets
-├── next.config.ts             API proxy rewrites + devIndicators: false
+├── next.config.ts             redirects (legacy iOS paths) + images + devIndicators. NO api proxy.
 ├── vitest.config.ts           Vitest config — @/ alias, node environment
 ├── tsconfig.json              TypeScript config (strict, path aliases)
 ├── tailwind.config.ts         Tailwind CSS config
@@ -252,7 +258,11 @@ against the API host.
 - **Note:** Build script (`npm run build`) generates `.next/` directory. Railway will serve static files + run server functions via Node.js.
 
 ## API Integration
-- **Dev:** Requests to `/api/*` are proxied to `http://localhost:4050/api/*` via `next.config.ts` rewrites
+- **Dev:** No proxy. `/api/*` is served by this app's own route handlers in
+  `src/app/api` in every environment. `NEXT_PUBLIC_API_URL` is still set in
+  `.env.local`, but is effectively decorative — its only remaining consumer is
+  `restaurantImageUrl()`, which builds an image host string, not an API call.
+  `src/lib/api.ts` (the would-be Laravel client) is imported by nothing.
 - **Prod:** Set `NEXT_PUBLIC_API_URL` to `https://api.tastemakersapp.com/api` (Railway-hosted Laravel backend)
 - **Auth:** Bearer token stored in localStorage (upgrade to httpOnly cookies later)
 - **Client:** `src/lib/api.ts` provides `apiFetch<T>()` helper with auto-auth headers
