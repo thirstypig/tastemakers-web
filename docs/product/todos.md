@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-005, PRD-001]
-updated: 2026-07-23
+updated: 2026-08-18
 ---
 
 # To-dos (micro)
@@ -37,6 +37,7 @@ keeping done items in place means you can see what actually happened this month.
 | id | Task | Serves | Priority | Status |
 |---|---|---|---|---|
 | **TASK-01** | 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18. | `PRD-001`, `EXP-001` | p1 | `open` |
+| **TASK-24** | Retire the `/v2/api` iOS shim (`tastemakers-web/next.config.ts`). **Blocked on two things:** the iOS build that moves `NetworkManager.swift:14` off the legacy prefix must ship AND drain, and shim usage must be instrumented — the stated gate ("iOS adoption > 90%") currently has no instrument behind it, since PostHog is browser-only and never sees a `URLSession` call. Removal condition: `/v2/api/*` under 10 requests/day for 30 consecutive days. | RM-01, RISK-004 | p2 | `open` |
 | **TASK-19** | Old numeric URLs (`/restaurants/159`) do not 301 to the canonical slug. `permanentRedirect` never fires — streaming commits a 200 before the page resolves. Needs middleware. | SEO | p2 | `open` |
 | **TASK-20** | Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.** | Photos | p1 | `open` |
 | **TASK-21** | Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. | Discovery | p1 | `open` |

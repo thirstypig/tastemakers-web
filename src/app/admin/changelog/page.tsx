@@ -2,6 +2,21 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.1.0",
+    date: "2026-08-18",
+    title: "Hardening the iOS shim after review",
+    items: [
+      { type: "-", text: "Uploads over 10 MB through /v2/api returned a plain-text 500 after 37 seconds. Next truncates a proxied body past its 10 MB default while still forwarding the original Content-Length, so Laravel blocked waiting for bytes that never arrived until the 30s proxy timeout fired. Measured: 11 MB gave 500 in 37s through the shim versus a parseable 413 in 10s direct. Four 12 MP photos clears the limit." },
+      { type: "-", text: "Both guard tests protecting the shim passed while it was broken. Commenting out the rewrite, reintroducing the /api catch-all with backticks and 127.0.0.1, and disabling it in production only — all three shipped green. A cosmetic quote change was the only thing that failed them. They now execute the config instead of regexing its text; all four mutations behave correctly." },
+      { type: "-", text: "Middleware ran on every legacy iOS call, forwarding the browser's Supabase access and refresh tokens to the Laravel host and burning rotated session cookies that an external rewrite discards. It now short-circuits the prefix, strips Cookie and client-supplied x-forwarded-*, and forces Accept: application/json — which also converts the iOS expired-token path from a 302 to a plaintext http:// URL that App Transport Security blocks into a 401 the app can handle, with no App Store release." },
+      { type: "+", text: "Tripwire test: no redirect may capture /v2/api. Redirects evaluate before rewrites, so a routine apex-to-www SEO redirect would downgrade every legacy POST to GET — breaking login and every write from the installed base while still looking like a healthy 3xx in logs." },
+      { type: "+", text: "robots.txt now disallows /v2/api. The whole Laravel GET surface was crawlable under the primary SEO domain; \"/api\" does not cover it, since robots paths match from the root." },
+      { type: "~", text: "The shim destination is hardcoded for every build and overridable only in development, so npm run dev no longer proxies writes into the production database — and an unset or stale env var cannot silently break the installed base, which is the SOL-006 failure mode." },
+      { type: "+", text: "ADR-002 records the decision and its consequences; TASK-24 gates removal on a measurable condition. The stated gate — iOS adoption above 90% — still has no instrument behind it, because PostHog is browser-only and never sees a URLSession call." },
+      { type: "~", text: "Found but NOT fixed here: the Laravel rate limiter never decrements, so there is no brute-force protection on login, signup or password reset. Verified twice — x-ratelimit-remaining stays at 4 across every request. Needs the Railway CACHE_DRIVER value, which this connection cannot read. Todo 110." },
+    ],
+  },
+  {
     v: "v11.0.0",
     date: "2026-08-18",
     title: "Domain merge, and reconnecting the shipped iOS app",

@@ -22,7 +22,7 @@
 | _(retired 2026-08-18)_ | Static HTML + Caddy, Railway | Old marketing site — `www` now serves the Next.js app |
 
 DNS: domain registered at Namecheap, **Squarespace nameservers are the authority**,
-CNAMEs → Railway. Legacy: `tastemakersapp.com/v2/api/` (Namecheap shared hosting)
+CNAMEs → Railway. Legacy `tastemakersapp.com/v2/api/` is no longer Namecheap — it is a rewrite in `tastemakers-web/next.config.ts` forwarding to `api.tastemakersapp.com/api/` for shipped iOS builds
 still serves old iOS builds until App Store migration completes.
 
 ## Auth — two separate systems

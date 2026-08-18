@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
+import nextConfig from "../../next.config";
 
 /**
  * This app has NO /api proxy. It does not call the Laravel API — every data
@@ -65,6 +66,46 @@ function isServed(path: string, routes: string[]): boolean {
   });
 }
 
+/**
+ * The legacy iOS compatibility contract.
+ *
+ * Same class of object as EXTERNALLY_REFERENCED in redirects.test.ts: a URL
+ * this codebase does not control, burned into a SHIPPED App Store binary that
+ * old versions keep asking for long after a new build ships. Changing either
+ * half breaks clients that cannot be patched. Removal is gated on TASK-24.
+ */
+const LEGACY_IOS_SHIM = {
+  source: "/v2/api/:path*",
+  destination: "https://api.tastemakersapp.com/api/:path*",
+} as const;
+
+type Rule = { source: string; destination: string };
+
+/** Rewrites as the config actually returns them, in either supported shape. */
+async function rewriteRules(): Promise<Rule[]> {
+  const r = await nextConfig.rewrites!();
+  return Array.isArray(r)
+    ? r
+    : [...(r.beforeFiles ?? []), ...(r.afterFiles ?? []), ...(r.fallback ?? [])];
+}
+
+async function redirectRules(): Promise<Rule[]> {
+  return (await nextConfig.redirects!()) as Rule[];
+}
+
+/** Does a Next path pattern match this concrete URL? */
+function captures(pattern: string, url: string): boolean {
+  const re = new RegExp(
+    "^" +
+      pattern
+        .replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+        .replace(/:\w+\*/g, ".*")
+        .replace(/:\w+/g, "[^/]+") +
+      "$",
+  );
+  return re.test(url);
+}
+
 describe("/api routes", () => {
   it("finds the route handlers and the fetch call sites", () => {
     // Guards the guard: if the scanners silently return nothing, every
@@ -83,41 +124,75 @@ describe("/api routes", () => {
     ).toEqual([]);
   });
 
-  it("never proxies this app's own /api namespace", () => {
+  it("parses the rewrite and redirect tables", async () => {
+    // Guards the guard. Every assertion below filters a list; if the list comes
+    // back empty because the config stopped exporting these, they all pass
+    // vacuously. redirects.test.ts uses the same pattern.
+    expect((await rewriteRules()).length).toBeGreaterThan(0);
+    expect((await redirectRules()).length).toBeGreaterThan(0);
+  });
+
+  it("never proxies this app's own /api namespace", async () => {
     // The original bug was a fallback rewrite of /api/:path* to
     // http://localhost:4050 — the dev port, shipped to production, where it
-    // returned 500 rather than 404 for every unmatched path.
+    // returned 500 rather than 404 for every unmatched path (SOL-006).
     //
-    // This asserts the BUG is absent, not that rewrites are. A narrow rewrite
-    // of a dead legacy prefix (/v2/api/*, the path burned into the shipped iOS
-    // binary) is deliberate and must stay allowed; a catch-all over /api must
-    // not come back.
-    const cfg = readFileSync(join(ROOT, "next.config.ts"), "utf8");
-    const code = cfg.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    // This asserts the BUG is absent, not that rewrites are. The narrow rewrite
+    // of the dead legacy prefix below is deliberate and must stay allowed; a
+    // catch-all over /api must not come back.
+    const rules = await rewriteRules();
 
-    expect(code, "localhost must never appear in a production rewrite").not.toContain(
-      "localhost:4050",
-    );
-
-    const sources = [...code.matchAll(/source:\s*"([^"]+)"/g)].map((m) => m[1]!);
-    const proxiesOwnApi = sources.filter(
-      (src) => /^\/api(\/|$)/.test(src),
-    );
+    const proxiesOwnApi = rules
+      .map((r) => r.source)
+      .filter((src) => /^\/api(\/|$)/.test(src));
     expect(
       proxiesOwnApi,
       `next.config rewrites ${proxiesOwnApi.join(", ")}. This app's /api/* routes are ` +
         `served by src/app/api and must not be proxied — a fallback there turns an ` +
         `unmatched path into a 500 instead of a 404.`,
     ).toEqual([]);
+
+    // Any dev host, not just the one that shipped: 127.0.0.1 and 0.0.0.0 are
+    // the same bug wearing a different spelling, and port 3050 is as wrong as
+    // 4050. Only builds are checked — `npm run dev` deliberately points the
+    // shim at a local Laravel so it cannot write to the production database.
+    const devHosts = rules
+      .filter((r) => /localhost|127\.0\.0\.1|0\.0\.0\.0/.test(r.destination))
+      .map((r) => `${r.source} -> ${r.destination}`);
+    expect(
+      devHosts,
+      `next.config points ${devHosts.join(", ")} at a dev host. In production that ` +
+        `returns 500, not 404, so it reads as a server fault rather than a missing route.`,
+    ).toEqual([]);
   });
 
-  it("keeps the legacy /v2/api shim the shipped iOS build depends on", () => {
+  it("keeps the legacy /v2/api shim the shipped iOS build depends on", async () => {
     // NetworkManager.swift:14 builds every request from
     // https://tastemakersapp.com/v2/api/ — the old Namecheap layout. Removing
     // this rewrite re-breaks every API call from App Store versions already
     // installed, which cannot be fixed by shipping a new build.
-    const cfg = readFileSync(join(ROOT, "next.config.ts"), "utf8");
-    expect(cfg).toContain('source: "/v2/api/:path*"');
-    expect(cfg).toContain("https://api.tastemakersapp.com/api/:path*");
+    //
+    // Asserted against the EXECUTED config, not the file text: a commented-out
+    // block, a template-literal source or an env-conditional `return []` all
+    // leave the right characters in the file while shipping nothing.
+    const shim = (await rewriteRules()).find((r) => r.source === LEGACY_IOS_SHIM.source);
+    expect(shim, `no rewrite for ${LEGACY_IOS_SHIM.source} — the shipped iOS build 404s`).toBeDefined();
+    expect(shim!.destination).toBe(LEGACY_IOS_SHIM.destination);
+  });
+
+  it("lets no redirect capture the legacy shim prefix", async () => {
+    // Redirects run BEFORE rewrites, so one matching /v2/api wins over the
+    // shim. URLSession downgrades a 301 on a POST to GET, so login, signup and
+    // every write from the installed base would break while the redirect still
+    // looked like a healthy 3xx in logs — and the shim guard above would still
+    // pass. The likely candidate is an apex -> www canonicalisation.
+    const capturing = (await redirectRules())
+      .filter((r) => captures(r.source, "/v2/api/login"))
+      .map((r) => `${r.source} -> ${r.destination}`);
+    expect(
+      capturing,
+      `next.config redirects ${capturing.join(", ")}, which swallows the legacy iOS ` +
+        `shim prefix. Exempt /v2/api explicitly before adding a redirect this broad.`,
+    ).toEqual([]);
   });
 });

@@ -115,7 +115,7 @@ tastemakers-web/
 │   └── types/
 │       └── index.ts           TypeScript interfaces matching API models
 ├── public/                    Static assets
-├── next.config.ts             redirects (legacy iOS paths) + images + devIndicators. NO api proxy.
+├── next.config.ts             redirects (legacy iOS paths) + /v2/api iOS shim rewrite + images. NO /api proxy.
 ├── vitest.config.ts           Vitest config — @/ alias, node environment
 ├── tsconfig.json              TypeScript config (strict, path aliases)
 ├── tailwind.config.ts         Tailwind CSS config
