@@ -35,7 +35,17 @@
  * `process.env.NEXT_PUBLIC_CANONICAL_ORIGIN`, so destructuring or dynamic
  * indexing would silently yield `undefined` in the browser bundle.
  */
-const DEFAULT_ORIGIN = "https://app.tastemakersapp.com";
+// The live canonical host. This is a FALLBACK, so it must always name a
+// domain that actually resolves: any build without
+// NEXT_PUBLIC_CANONICAL_ORIGIN set emits canonicals, JSON-LD and a sitemap
+// from this value. It read "https://app.tastemakersapp.com" until 2026-08-18
+// — correct when this module was written, then silently wrong the moment that
+// subdomain was retired, because a fallback is invisible while the env var is
+// set. If the canonical host moves again, change this line in the same commit.
+const DEFAULT_ORIGIN = "https://www.tastemakersapp.com";
+
+/** Hosts this site no longer answers on. A fallback must never name one. */
+export const RETIRED_ORIGINS = ["https://app.tastemakersapp.com"];
 
 function normaliseOrigin(raw: string | undefined): string | null {
   const trimmed = raw?.trim().replace(/\/+$/, "");
@@ -48,10 +58,10 @@ export const CANONICAL_ORIGIN: string =
 /**
  * Builds an absolute canonical URL for a site-relative path.
  *
- *   canonical()                    → https://app.tastemakersapp.com/
- *   canonical("/lists")            → https://app.tastemakersapp.com/lists
- *   canonical("restaurants/x-1")   → https://app.tastemakersapp.com/restaurants/x-1
- *   canonical("/lists/")           → https://app.tastemakersapp.com/lists
+ *   canonical()                    → https://www.tastemakersapp.com/
+ *   canonical("/lists")            → https://www.tastemakersapp.com/lists
+ *   canonical("restaurants/x-1")   → https://www.tastemakersapp.com/restaurants/x-1
+ *   canonical("/lists/")           → https://www.tastemakersapp.com/lists
  *
  * The root keeps its trailing slash because that is what the pages already
  * emit and what Google has indexed; every other path is normalised without

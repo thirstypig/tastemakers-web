@@ -35,9 +35,9 @@ See `tastemakers-backend/MASTER-PORTS.md` for the full system-wide port registry
 
 | Component | Current (legacy) | Target | Status |
 |-----------|-----------------|--------|--------|
-| Laravel API | Namecheap shared hosting (`tastemakersapp.com/v2/api/`) | Railway (`api.tastemakersapp.com`) | Railway project created, .env configured, needs PORT + custom domain |
-| Marketing site | WordPress on Namecheap | Railway / static HTML (`www.tastemakersapp.com`) | ⏳ **In Progress** — Service deployed, DNS configured, testing propagation |
-| Web app dashboard | Not deployed | Railway / Next.js (`app.tastemakersapp.com`) | Built, pushed to GitHub, ready for Railway deployment |
+| Laravel API | Namecheap shared hosting (`tastemakersapp.com/v2/api/`) | Railway (`api.tastemakersapp.com`) | 🟢 LIVE and responding. **The legacy `/v2/api/` path is gone** — the shipped iOS build still calls it, so its API requests 404 |
+| Marketing site | WordPress on Namecheap | **Retired 2026-08-18** — folded into `tastemakers-web` | `www` + apex now serve the Next.js app; the static service is gone |
+| Web app dashboard | 🟢 LIVE | Railway / Next.js (`www.tastemakersapp.com` + apex) | Deployed 2026-08-18 on the merged domain; `app.` retired |
 | iOS app | App Store (ID: 1573533249) | No change | API URL update needed post-migration (requires App Store submission) |
 | DNS registrar | Namecheap | Squarespace (active) | **Configured** — Squarespace nameservers, Railway DNS records added |
 
