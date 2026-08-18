@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [ADR-001]
-updated: 2026-07-23
+updated: 2026-08-18
 ---
 
 # Decision log
@@ -21,6 +21,13 @@ The value isn't the decision, it's the **why**. Six months on, the decision is v
 in the code; the reason is not. Skip the why and this file is worthless.
 
 <!-- Newest at the top. Keep each entry to one line. If it needs a paragraph, it's an ADR. -->
+- **2026-08-18** · `www` + apex serve the app; `app.` retired · Railway Hobby caps custom domains at 2 per service, and apex+www consume both — keeping `app.` would have forced a Pro upgrade to gain nothing. The brand domain was serving a dead page while all the content sat on a subdomain.
+- **2026-08-18** · Canonical origin gets its own env var, not `NEXT_PUBLIC_SITE_URL` · They answer different questions. `SITE_URL` is "where is this instance reachable" and is correctly `localhost:3050` in dev; canonicals must always name the public home, or a local build publishes localhost canonicals and sitemap.
+- **2026-08-18** · Fallbacks assert against a *retired* list, not a current literal · `DEFAULT_ORIGIN` was correct when written and silently wrong once `app.` was retired — a fallback never runs while the env var is set, so nothing notices. `RETIRED_ORIGINS` encodes the invariant instead of the value.
+- **2026-08-18** · Deleted the `/api/*` proxy rather than repointing it at Laravel · Repointing would expose the whole Laravel surface through the web domain with the auth-header and CORS questions that implies. Deleting turns confusing 500s into honest 404s.
+- **2026-08-18** · Added a narrow `/v2/api/*` forward for the shipped iOS build · Not a reversal of the above: it forwards one dead legacy prefix that old App Store binaries ask for literally, and cannot be fixed by shipping a new build. The guard test now forbids proxying `/api/*` specifically rather than forbidding rewrites at all.
+- **2026-08-18** · Left three backend AuthTest failures red · The API returns 200 with `{"status": false}` where the tests want 4xx. The shipped iOS client only errors on `statusCode >= 500` and reads the body, so the current convention is what the installed base depends on. Changing it needs a coordinated client release; editing the assertions to match the code would have hidden a real contract question.
+- **2026-08-18** · Backend test suite unified on `DatabaseTransactions` · Introducing `RefreshDatabase` ran `migrate:fresh` mid-suite, so earlier tests saw a populated database and later ones saw a bare one — order-dependent results, and `--filter` runs disagreeing with full runs.
 
 ---
 

@@ -44,7 +44,7 @@ never a one-repo change.
                     │  31 tables · pgvector    │
                     └──────────────────────────┘
 
-  app.tastemakersapp.com (Next.js) ALSO talks directly to Supabase
+  www.tastemakersapp.com + apex (Next.js) ALSO talk directly to Supabase
   for admin auth — a second, separate auth system. See "Two auth systems" below.
 ```
 

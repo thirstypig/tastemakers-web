@@ -33,6 +33,41 @@ completes. Newest first.
 
 ---
 
+## 2026-08-18 — domain merge, and reconnecting the iOS app
+
+**The web app moved to the brand domain.** `www.tastemakersapp.com` and the
+apex both serve this app; `app.tastemakersapp.com` is retired. Until today the
+brand domain served a 15 KB static page with **zero `<h1>`** from a different
+Railway service, while the entire v2 redesign lived on a subdomain nobody links
+to.
+
+- `CANONICAL_ORIGIN` / `canonical()` replaced 15 hardcoded origins. Moving the
+  site is now one environment variable plus a redeploy. Deliberately a *new*
+  variable rather than reusing `NEXT_PUBLIC_SITE_URL`, which is
+  `localhost:3050` in dev by design — canonicals must never derive from it.
+- Removed a fallback rewrite sending unmatched `/api/*` to
+  `http://localhost:4050`, the dev port, shipped to production. It returned
+  **500** rather than 404 for every unmatched path.
+- Redirects for three URLs hardcoded in the shipped App Store binary:
+  `/privacy-policy`, `/review-tag`, `/about-us`.
+- **`/v2/api/*` now forwards to the Laravel host.** Every request the live iOS
+  app makes was 404ing — that path was the old Namecheap layout and has not
+  existed since the Railway move. Old App Store versions stay installed for
+  months, so this could not have been fixed by shipping a new build.
+- A persistent App Store link in the app shell. The link existed in three
+  places, all unreachable: signed-out only, first-visit only, or on two v1
+  pages.
+
+**Caught by adversarially re-checking claims already shipped:** the canonical
+fallback still named the retired `app.` domain, so any build without the
+environment variable set would have published unresolvable canonicals and
+sitemap. Nine tests asserted the dead value.
+
+**Not fixed, deliberately:** profile images still 404 — they lived on the
+Namecheap disk and were never migrated to object storage (TASK-20). And
+`/v2/api/restaurants` still fails server-side; connectivity is restored, not
+every endpoint behind it.
+
 ## 2026-08-17 — v2 web rebuild, tag ranking, and an SSR fix
 
 **Closes:** TODO-090, TODO-091 · PRD-001, PRD-003
