@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-07-24
+updated: 2026-08-18
 ---
 
 # Stats
@@ -21,7 +21,7 @@ updated: 2026-07-24
 - **In progress:** RM-13 — PostgreSQL compatibility sweep
 **Shipped (roadmap items done):** 0
 **Committed next:** 7
-**Open to-dos:** 18
+**Open to-dos:** 20
 ### Next up
 
 1. **TASK-01** (p1) — 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18.
@@ -29,44 +29,44 @@ updated: 2026-07-24
 1. **TASK-02** (p1) — Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id
 
 ## Code
-**2,567 source files · 80,839 lines of application code** across 5 repos.
+**2,646 source files · 87,984 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,899 | 27,978 | 429,181 |
-| `tastemakers-web` | 155 | 30,583 | 0 |
-| `tastemakers-ios` | 479 | 20,074 | 486 |
-| `tastemakers-android` | 14 | 373 | 0 |
-| `tastemakers-marketing` | 20 | 1,831 | 0 |
+| `tastemakers-backend` | 1,899 | 27,985 | 429,181 |
+| `tastemakers-web` | 234 | 37,592 | 0 |
+| `tastemakers-ios` | 479 | 20,117 | 486 |
+| `tastemakers-android` | 14 | 416 | 0 |
+| `tastemakers-marketing` | 20 | 1,874 | 0 |
 ### By language
 | Language | Lines |
 |---|---:|
 | PHP | 19,731 |
+| TypeScript | 19,431 |
 | Swift | 17,920 |
-| TypeScript | 14,916 |
-| JSON | 14,148 |
-| Markdown | 12,243 |
-| JavaScript | 936 |
+| JSON | 14,183 |
+| Markdown | 12,726 |
+| CSS | 1,688 |
+| JavaScript | 1,428 |
 | HTML | 738 |
 | Kotlin | 139 |
-| CSS | 68 |
 ## Routes
 | Surface | Count |
 |---|---:|
 | Backend API — authenticated | 25 |
 | Backend API — public | 18 |
 | Backend admin (Blade) | 50 |
-| Web pages | 29 |
-| Web API handlers | 6 |
+| Web pages | 36 |
+| Web API handlers | 8 |
 ## Docs
-**32 markdown files** in `docs/` (templates excluded).
+**33 markdown files** in `docs/` (templates excluded).
 
 ✅ Every doc has frontmatter.
 
 | Type | Count |
 |---|---:|
+| `solution` | 5 |
 | `prd` | 4 |
-| `solution` | 4 |
 | `roadmap` | 2 |
 | `note` | 2 |
 | `inbox` | 1 |
@@ -93,7 +93,7 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 |---|---:|
 | `active` | 18 |
 | `draft` | 7 |
-| `done` | 5 |
+| `done` | 6 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-07-24T15:58:16.948Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-18T02:49:25.758Z by scripts/refresh-docs.mjs -->

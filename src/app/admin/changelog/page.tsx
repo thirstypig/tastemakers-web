@@ -2,6 +2,25 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v10.0.0",
+    date: "2026-08-17",
+    title: "v2 web rebuild, iOS-matched tag ranking, and the SSR fix",
+    items: [
+      { type: "+", text: "Public app rebuilt on the v2 light design system in a new (app) route group — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, sign-in. Tokens scoped to .tm-app so the admin Paper/Gruvbox toggle still works." },
+      { type: "~", text: "Nav is a bottom tab bar under 768px and a top bar at 768+. The sidebar, hamburger drawer and 768–1023 icon rail are all gone — four destinations justify none of them, and the rail had caused two layout bugs." },
+      { type: "+", text: "Code reorganised into src/features/* modules; each owns its queries, components and stylesheet. css-wiring.test.ts fails the build on a tm-* class used but never defined, or a stylesheet that nothing imports." },
+      { type: "~", text: "Tag levels now match iOS exactly: a tag's level is its gap from that restaurant's leading tag, not an absolute threshold. Web's 10/5/3/2 thresholds had ranked the same restaurant differently from the app." },
+      { type: "+", text: "Five-level ramp re-derived for a light canvas. The source design's ramp was drawn for #1A1038 where its strongest fill reads 15:1; on #F1F1F3 it measures 1.06:1 and inverts. Fills now spaced ~15 L* apart with size and weight as a second, non-colour channel." },
+      { type: "~", text: "Restaurant and list URLs are name-plus-id (langers-delicatessen-159). Name alone isn't unique — 68 shared slugs, 14 In-N-Out Burgers, 34 non-Latin names. Old numeric URLs still resolve; rel=canonical points at the slug." },
+      { type: "-", text: "CRITICAL, now fixed: every page was reaching crawlers empty. useSearchParams in PostHogProvider shared the root Suspense boundary with the whole app, so static pages shipped a shell with no <h1>, no tags, no content — while build, typecheck, 333 tests and every screenshot stayed green. Restaurant page went 26,589 → 41,102 bytes. Documented as SOL-005." },
+      { type: "-", text: "A second user's vote was silently dropped: POST /api/restaurants/[id]/tag returned 200 on a unique-constraint violation. Now distinguishes 'already voted' from 'the constraint blocked this' (409)." },
+      { type: "-", text: "The restaurants index ranked from 1000 of 4230 tag rows — PostgREST caps responses regardless of .limit(5000), so the second most-tagged restaurant never appeared. fetchAllPages walks ranges." },
+      { type: "-", text: "getRestaurantDetail filtered testmaker_list on a deleted_at column that doesn't exist, so the 'on these lists' rail silently vanished. Photo URLs resolved a bare filename as a relative path." },
+      { type: "+", text: "beehiiv newsletter signup behind /api/subscribe, key server-side only. First-visit explainer on restaurant pages. City-scoped search — the header said 'Los Angeles' while results came from Pasadena and Taipei." },
+      { type: "+", text: "Tests: 127 → 363 across 28 files. Component testing is now possible at all — the repo had @testing-library/react installed with no JSX transform, so no component test had ever run. Added @vitejs/plugin-react and the .tsx glob." },
+    ],
+  },
+  {
     v: "v9.0.0",
     date: "2026-07-24",
     title: "Docs knowledge base, auto-walking viewer, and the archaeology findings",

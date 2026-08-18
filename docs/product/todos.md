@@ -60,6 +60,8 @@ keeping done items in place means you can see what actually happened this month.
 | id | Task | Serves | Completed |
 |---|---|---|---|
 | **TASK-00** | Add frontmatter to the 5 legacy docs (3 `solutions/`, 2 `superpowers/`) so the board indexes them — additive, every original field preserved | DOC-001 | 2026-07-23 |
+| **TASK-19** | Old numeric URLs (`/restaurants/159`) do not 301 to the canonical slug. `permanentRedirect` never fires — the root layout streams a 200 before the page resolves, so redirects and `notFound()` can only act inside the stream. `rel=canonical` covers duplicate content; a hard 301 needs middleware. | `PRD-003`, SOL-005 | p3 | `open` |
+| **TASK-20** | Photo upload is off. The only upload path (`restaurant-image-save`) writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so an accepted upload is lost on the next deploy while its DB row survives. Needs object storage before the UI can be enabled. Fix alongside todo 031 (no MIME validation), which is the same four lines. | RM-02 | p2 | `open` |
 
 ---
 

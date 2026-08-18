@@ -52,6 +52,12 @@ reconstruction, not a record. Correct any that are wrong.
 
 | Date | Decision | Why (inferred) |
 |---|---|---|
+| 2026-08-17 | `tastemakers-web` restructured into `src/features/*` modules | Applies ADR-001's principle to the web app. Each feature owns its queries, components and stylesheet; shared helpers in `lib/api/shared.ts`. **ADR-001 itself is backend-scoped and remains unimplemented.** |
+| 2026-08-17 | A component owns its stylesheet; `css-wiring.test.ts` enforces it | Splitting one `globals.css` into feature stylesheets dropped rules five separate times. A missing CSS import renders unstyled rather than erroring, so nothing catches it — the test now fails on a used-but-undefined class or an unimported stylesheet |
+| 2026-08-17 | Bottom tab bar under 768px, top bar above; no sidebar | Nav fell to four items once Search (already in the top bar) and Profile (meaningless signed-out) were removed. Four items justify neither a 240px column nor a hamburger, and one nav per breakpoint replaced three mechanisms |
+| 2026-08-17 | Restaurant and list URLs are name-plus-id | Name alone is not unique — 68 slugs shared, 14 In-N-Out Burgers, 34 non-Latin names. Trailing id parses back out, so old numeric URLs still resolve |
+| 2026-08-17 | Tag levels use the iOS gap-from-leader rule, not absolute thresholds | Web's 10/5/3/2 thresholds ranked the same restaurant differently from the app. `assignTagLevels` ports `Utils.calcucateTagLevels` exactly |
+| 2026-08-17 | Component tests are now possible — `@vitejs/plugin-react` added | Supersedes the 2026-05 entry below in part: logic still belongs in `src/lib/`, but a component's own behaviour (optimistic vote rollback) can now be tested in jsdom. The repo had `@testing-library/react` installed with no JSX transform, so no component test had ever run |
 | 2026-06 | Vercel dropped; `tastemakers-web` deploys via Railway only | Consolidate on one platform — backend was already there |
 | 2026-06 | Marked v13+ custom renderer overrides banned in `tastemakers-web` | The token API broke them, producing `[object Object]` in tables; `renderMarkdown()` is the only sanctioned path |
 | 2026-05 | Passport RSA keys stored as env vars, written to disk at boot | Railway's filesystem is ephemeral — keys written any other way vanish on restart |

@@ -3,14 +3,14 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers — public SEO pages (tastemakers, lists, restaurants) + admin panel with Supabase Google OAuth. Public pages use iOS-matched purple/pink brand palette with Roboto font. Data served from typed stub layer in `src/lib/api/` until Laravel endpoints come online. 127 unit tests green. Deployed live at `app.tastemakersapp.com` on Railway.
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 363 tests green. Deployed live at `app.tastemakersapp.com` on Railway.
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
 
 ## Current focus
 
-_Generated 2026-07-24 by `npm run docs:refresh` — do not edit between these markers._
+_Generated 2026-08-18 by `npm run docs:refresh` — do not edit between these markers._
 
 **Now:** RM-01 Finish the hosting migration · RM-02 Fix the P1 security backlog · RM-13 PostgreSQL compatibility sweep
 
@@ -41,7 +41,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 127 unit tests (13 test files)
+npx vitest run     # run 363 tests (28 test files)
 ```
 
 ## Project Structure
@@ -118,48 +118,108 @@ tastemakers-web/
 └── CLAUDE.md                  This file
 ```
 
-## Public Design System (iOS-matched)
+## Design System — v2 (light)
 
-The `(public)` route group uses a brand palette ported from the iOS app:
+The `(app)` route group uses the v2 system. Tokens are scoped to `.tm-app` in
+`src/styles/tokens.css`, **not** `:root` — `--tm-ink` and `--tm-muted` also belong to the
+admin Paper/Gruvbox themes, and redefining them globally breaks the admin light/dark toggle.
 
 | Token | Hex | Usage |
 |-------|-----|-------|
-| `pub-bg` | `#1A1038` | Page background |
-| `pub-surface` | `#2A1A60` | Cards, header, footer |
-| `pub-surface2` | `#3D296E` | Section backgrounds, tag level-1 |
-| `pub-purple` | `#594094` | Tag level-2 |
-| `pub-purple-md` | `#876DC4` | Tag level-3/4, muted elements |
-| `pub-purple-lt` | `#B7ADCF` | Secondary text, nav links |
-| `pub-muted` | `#8b81a3` | Tertiary text |
-| `pub-pink` | `#DB1657` | Primary CTA, borders, badges |
+| `--tm-purple` | `#2A1A5E` | Top bar, tab bar, headings |
+| `--tm-tag` | `#3D2A75` | Tag chip fill |
+| `--tm-tag-light` | `#7C67B8` | A tag you added |
+| `--tm-crimson` | `#C7255B` | Every primary action |
+| `--tm-canvas` | `#F1F1F3` | Page background |
+| `--tm-card` | `#FFFFFF` | Cards |
+| `--tm-ink` / `--tm-muted` / `--tm-faint` | `#1D1730` / `#98939F` / `#B4AFBD` | Text scale |
 
-- **Font:** Roboto (loaded via `next/font/google`, CSS var `--font-roboto`)
-- **Hover effects:** CSS-only via `.pub-card` and `.pub-nav-link` in `globals.css` — no JS event handlers (required for Server Components)
-- **Image domains:** `images.unsplash.com` (stubs), `*.foursquare.com`, `fastly.4sqi.net` (production)
-- **Import note:** `src/lib/api.ts` (admin) and `src/lib/api/index.ts` (public) both exist. Use `@/lib/api/index` explicitly to import public data functions — `@/lib/api` resolves to the admin client file.
+- **Type:** Playfair Display (700/800/900) for headings, Roboto (400/500/700) for everything
+  else. Buttons are uppercase Roboto 700, `letter-spacing: .09em`.
+- **Shape:** tags 4px radius (**not pills**), cards 8px, controls 6px.
+- **Tags show no numbers.** Strength is the fill, the size and the order — deliberate, per
+  the design spec. Do not "improve" it by adding counts.
+- **Nav:** bottom tab bar under 768px, top bar at 768+. No sidebar, no drawer, no icon rail.
+- **Image domains:** `images.unsplash.com` (placeholders), `*.foursquare.com`,
+  `fastly.4sqi.net`, and `api.tastemakersapp.com/storage/**` (user photos).
+- **Import note:** `src/lib/api.ts` (admin) and `src/lib/api/index.ts` both exist. Import
+  feature data from `@/features/<name>/api` — `@/lib/api` resolves to the admin client file.
+
+### Tag levels — match iOS exactly
+
+`assignTagLevels` in `src/features/tags/levels.ts` ports `Utils.calcucateTagLevels` from
+`tastemakers-ios/TasteMaker/Miscellaneous/Utils.swift:334`. A tag's level is its **gap from
+that restaurant's leading tag** (0 → L1 … 4+ → L5), not an absolute vote threshold. The old
+`voteCountToLevel` thresholds (10/5/3/2) are deprecated and ranked the same restaurant
+differently from the app.
+
+**Production caveat:** `UNIQUE (restaurant_id, tag_id)` caps every vote count at 1, so every
+tag currently ties for the lead and renders L1. The ramp is correct; the data has no spread.
+See TASK-01 and TASK-18.
+
+## Feature modules
+
+Each feature under `src/features/` owns its own queries (`api.ts`), components and
+stylesheet. Shared helpers live in `src/lib/api/shared.ts` — **no feature imports another
+feature's data layer.**
+
+```
+src/features/
+  shell/       AppShell · AppNav · CityPicker · Logo · nav-items · shell.css
+  tags/        TagChip · RankedTagChip · RankedTagCloud · TagEditor · levels · ramp · vocabulary
+  restaurants/ api · ResultCard · PhotoCarousel · PhotoGrid · RestaurantDetailView
+  search/      api · query
+  home/        api · PitchBand
+  lists/       api · ListCard
+  cuisines/    api
+  profile/     useMe · SignedOutPrompt
+  email/       subscribe · EmailSignup
+  auth/        auth.css
+```
+
+A component owns its stylesheet — `ResultCard.tsx` imports `result-card.css`. A hand-written
+CSS import in each consumer is forgettable, and a forgotten one renders unstyled rather than
+erroring. `src/styles/css-wiring.test.ts` fails the build when a `tm-*` class is used but
+never defined, or a stylesheet exists but is never imported.
+
+## URLs
+
+Restaurant and list slugs are **name-plus-id** (`langers-delicatessen-159`). Name alone is not
+unique: 68 slugs are shared across the 1,388 restaurants (14 are In-N-Out Burger) and 34 names
+are non-Latin. Old numeric URLs still resolve and `rel=canonical` points at the slug form.
+
+## Server rendering — do not regress this
+
+**Never wrap `{children}` in a Suspense boundary that also contains a `useSearchParams`
+consumer.** That hook makes Next bail its closest boundary out of server rendering on
+statically generated pages; when the boundary held the whole app, every page reached crawlers
+with no `<h1>`, no tags and no content — while build, typecheck, tests and screenshots all
+stayed green. See `docs/solutions/rendering-issues/` (SOL-005).
+
+Verify with `curl "$URL" | grep -c '<h1'`, not with a screenshot. `scripts/audit-screens.mjs`
+asserts this across every route.
 
 ## Auth Architecture
 
-- **Public pages** (`(public)/`): No auth. Server components fetch data directly.
+- **Public pages** (`(app)/`): No auth. Server components fetch data directly. `(public)/` now holds only `/privacy` and `/tastemakers`.
 - **Admin pages** (`/admin/*`): Gated by Supabase session via `src/middleware.ts`. Redirect to `/admin/login` if unauthenticated.
 - **Public users**: Do not exist yet — read-only discovery only in this phase.
 - **Supabase env vars:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (client + server), `SUPABASE_SERVICE_ROLE_KEY` (server-only).
 
-## Stub → Real Data Layer Swap
+## Data layer — reads Supabase directly
 
-When a Laravel endpoint comes online, open `src/lib/api/index.ts` and replace the stub call:
-```ts
-// Before (stub):
-export async function getTastemaker(slug: string) {
-  return STUB_TASTEMAKERS.find((t) => t.slug === slug) ?? null;
-}
+Each feature's `api.ts` calls `createServerClient()` and queries Supabase **directly**. The
+Laravel API is not in the path: `apiFetch()` exists in `src/lib/api.ts` and
+`src/lib/api/client.ts` but is called by nothing except its own test.
 
-// After (real):
-export async function getTastemaker(slug: string) {
-  return apiFetch<Tastemaker>(`/api/tastemakers/${slug}`);
-}
-```
-The rest of the app (`(public)` pages) doesn't change — they call `getTastemaker()` and don't know if it's stub or real.
+This is **TODO-089**, a known architectural divergence, not an oversight to "fix" casually:
+- The web app and the iOS/Android clients read the same database through entirely different
+  code, so a schema change breaks web without touching the API contract mobile depends on.
+- The tag-ranking rule now exists in four places.
+- Upside: the Laravel API being down does not take the website down.
+
+The only live use of `NEXT_PUBLIC_API_URL` is `restaurantImageUrl()`, which builds photo URLs
+against the API host.
 
 ## Deployment
 - **Platform:** Railway (Node.js, using default Next.js build output)
@@ -184,11 +244,23 @@ The rest of the app (`(public)` pages) doesn't change — they call `getTastemak
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 225 tests across 15 files — all green
-- **Scope:** `vitest.config.ts` includes `src/**/*.test.ts` **and** `scripts/**/*.test.mjs` — the docs-generation scripts are covered too
+- **Current suite:** 363 tests across 28 files — all green
+- **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
+- **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
 | File | Tests | What it covers |
 |------|-------|----------------|
+| `src/lib/api/shared.test.ts` | 19 | `buildTagsByRestaurant` per-restaurant levelling, `cityFromAddress` against real production address shapes, `toRestaurant` slugs |
+| `src/features/tags/RankedTagCloud.test.tsx` | 11 | Vote flow: optimistic add, **rollback on 409 `vote_blocked`** and on network failure, re-levelling, signed-out gating |
+| `src/features/tags/levels.test.ts` | 11 | iOS `calcucateTagLevels` parity — gap-from-leader, all-equal degenerate case |
+| `src/lib/slug.test.ts` | 15 | Slugify, chain collisions, accents, non-Latin fallback, id parsing |
+| `src/features/email/subscribe.test.ts` | 14 | beehiiv request shaping and error mapping; never leaks a credential failure |
+| `src/features/search/query.test.ts` | 13 | PostgREST filter sanitising — a query cannot widen its own filter |
+| `src/lib/api/paging.test.ts` | 8 | `fetchAllPages` — the 1000-row PostgREST cap, exact-multiple boundary, runaway guard |
+| `src/features/tags/ramp.test.ts` | 7 | Ramp contrast ≥4.5:1, monotonic prominence, even L* spacing, non-colour channel |
+| `src/lib/api/image-url.test.ts` | 7 | Photo URLs resolve against the API host, not a relative path |
+| `src/lib/pg-errors.test.ts` | 5 | Unique-violation matching, both directions |
+| `src/styles/css-wiring.test.ts` | 3 | Every `tm-*` class is defined; every stylesheet is imported |
 | `src/lib/docs.test.ts` | 63 | Auto-walk registry, frontmatter parsing, H1 title extraction (code-fence + HTML-comment guard), section grouping, exclusions, search, status badges, **client/server boundary guard (SOL-004)** |
 | `scripts/refresh-docs.test.mjs` | 22 | `computeCostRows` unit economics (hand-checked), frontmatter, status-block build, **marker-replacement idempotency**, real roadmap/todo table parsing |
 | `scripts/sync-inbox.test.mjs` | 21 | Comment validation + skip warnings, newest-first sort, **change_request-first ordering**, resolved-section split, pluralisation, empty inbox |
