@@ -4,6 +4,18 @@
 //  - console errors
 import { chromium } from 'playwright';
 
+// Routes whose server-rendered HTML must carry real content. A CSR bailout
+// (see SOL-005) leaves these as an empty shell that looks perfect in a browser
+// and identical in a screenshot, so this is checked against raw HTML with no
+// JavaScript run at all.
+const SSR_REQUIRED = {
+  '/': { minBytes: 20000 },
+  '/restaurants': { minBytes: 20000 },
+  '/cuisines': { minBytes: 20000 },
+  '/lists': { minBytes: 15000 },
+  '/restaurants/langer-s-delicatessen-restaurant-159': { minBytes: 20000 },
+};
+
 const ROUTES = [
   '/', '/?city=Austin', '/restaurants', '/restaurants/159',
   '/restaurants/159/photos', '/search?q=chicken', '/search?q=chicken&in=tags',
@@ -36,8 +48,35 @@ const AUDIT = () => {
   };
 };
 
-const browser = await chromium.launch();
+// ── Server-rendered content (no browser, no JS) ──────────────────────────
 let problems = 0;
+console.log('checking server-rendered HTML…');
+for (const [route, { minBytes }] of Object.entries(SSR_REQUIRED)) {
+  let html;
+  try {
+    const res = await fetch('http://localhost:3050' + route);
+    html = await res.text();
+  } catch {
+    console.log(`SSR  ${route.padEnd(52)} FETCH FAILED`);
+    problems++;
+    continue;
+  }
+  const h1 = (html.match(/<h1[\s>]/g) || []).length;
+  const bytes = html.length;
+  const bad = h1 === 0 || bytes < minBytes;
+  if (bad) {
+    console.log(
+      `SSR  ${route.padEnd(52)} h1:${h1} bytes:${bytes}` +
+      (h1 === 0 ? '  ← NO <h1>: page is client-rendered' : '') +
+      (bytes < minBytes ? `  ← under ${minBytes}b floor` : ''),
+    );
+    problems++;
+  } else {
+    console.log(`SSR  ${route.padEnd(52)} h1:${h1} bytes:${bytes}  ok`);
+  }
+}
+
+const browser = await chromium.launch();
 for (const w of WIDTHS) {
   const ctx = await browser.newContext({ viewport: { width: w, height: 900 } });
   const page = await ctx.newPage();
@@ -49,6 +88,8 @@ for (const w of WIDTHS) {
     // correctly 401s while signed out.
     if (/status of (401|403)/.test(t)) return;
     if (/doubleclick|adsbygoogle|googleads/i.test(t)) return;
+    // Report-only CSP violation raised inside Google's own ad frame.
+    if (/violates the following report-only Content Security Policy/i.test(t)) return;
     errors.push(t.slice(0, 90));
   });
   for (const route of ROUTES) {
