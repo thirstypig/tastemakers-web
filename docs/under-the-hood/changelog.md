@@ -33,6 +33,40 @@ completes. Newest first.
 
 ---
 
+## 2026-08-17 — v2 web rebuild, tag ranking, and an SSR fix
+
+**Closes:** TODO-090, TODO-091 · PRD-001, PRD-003
+**Repos:** web
+
+- The public app moved to the **v2 light design system** in a new `(app)` route group —
+  home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile and sign-in.
+  Nav is a bottom tab bar under 768px and a top bar above it; the sidebar, drawer and icon
+  rail are gone.
+- Code reorganised into **feature modules** under `src/features/`, each owning its queries,
+  components and stylesheet.
+- **Tag levels now match iOS.** A tag's level is its gap from that restaurant's leading tag,
+  not an absolute vote threshold — the two products previously ranked the same restaurant
+  differently. The five-level ramp was re-derived for a light canvas; the source design's
+  ramp was drawn for a dark page, where its strongest fill reads at 15:1 but measures 1.06:1
+  on ours, inverting the hierarchy.
+- **Restaurant and list URLs are now name-plus-id.** Old numeric URLs still resolve and
+  `rel=canonical` points at the slug form.
+- **Every page was reaching crawlers empty.** `useSearchParams` in `PostHogProvider` shared
+  the root Suspense boundary with the whole app, so statically generated pages shipped a
+  shell with no `<h1>`, no tags and no content — while build, typecheck, tests and
+  screenshots all stayed green. Documented as SOL-005.
+- **A vote could be silently dropped.** `POST /api/restaurants/[id]/tag` returned 200 on a
+  unique-constraint violation, so a second user's vote vanished while the API reported
+  success. It now distinguishes "already voted" from "the constraint blocked this" (409).
+- **The restaurants index ranked from a quarter of the data.** PostgREST caps responses at
+  1000 rows regardless of `.limit(5000)`, so the second most-tagged restaurant in the
+  database never appeared. `fetchAllPages` walks ranges instead.
+- Newsletter signup wired to beehiiv behind `/api/subscribe`, with the key server-side only.
+- Tests: 127 → **363**, and component testing is now possible at all — the repo had
+  `@testing-library/react` installed with no JSX transform.
+
+---
+
 ## 2026-07-23 — Docs system established
 
 **Closes:** —
