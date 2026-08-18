@@ -37,6 +37,11 @@ keeping done items in place means you can see what actually happened this month.
 | id | Task | Serves | Priority | Status |
 |---|---|---|---|---|
 | **TASK-01** | 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18. | `PRD-001`, `EXP-001` | p1 | `open` |
+| **TASK-19** | Old numeric URLs (`/restaurants/159`) do not 301 to the canonical slug. `permanentRedirect` never fires — streaming commits a 200 before the page resolves. Needs middleware. | SEO | p2 | `open` |
+| **TASK-20** | Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.** | Photos | p1 | `open` |
+| **TASK-21** | Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. | Discovery | p1 | `open` |
+| **TASK-22** | Row Level Security is disabled on all 31 production Supabase tables, including `users`, `oauth_access_tokens`, `password_resets`. Enabling without policies blocks all access, so this needs a deliberate policy pass. | Security | p1 | `open` |
+| **TASK-23** | ~75 PostgreSQL `GROUP BY` violations in the backend; `HomeController` is effectively 100% broken. Surfaced by the MySQL→PostgreSQL sweep. | Discovery | p2 | `open` |
 | **TASK-18** | Attempt vote recovery: get a pre-migration dump of `restaurant_tag` from the legacy Namecheap MySQL host (cPanel → phpMyAdmin export, or any backup). The legacy DB was bound to `127.0.0.1` so it is unreachable remotely — this needs cPanel access. **Do it before the hosting is cancelled**, or the original vote counts are gone permanently. | `EXP-001`, RISK-001 | p1 | `open` |
 | **TASK-02** | Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id | RM-02 | p1 | `open` |
 | **TASK-03** | Replace body `user_id` with `Auth::id()` in `tagsdelete` — the add path authenticates, the delete path doesn't | `PRD-001` §9, RM-02 | p1 | `open` |
@@ -60,8 +65,6 @@ keeping done items in place means you can see what actually happened this month.
 | id | Task | Serves | Completed |
 |---|---|---|---|
 | **TASK-00** | Add frontmatter to the 5 legacy docs (3 `solutions/`, 2 `superpowers/`) so the board indexes them — additive, every original field preserved | DOC-001 | 2026-07-23 |
-| **TASK-19** | Old numeric URLs (`/restaurants/159`) do not 301 to the canonical slug. `permanentRedirect` never fires — the root layout streams a 200 before the page resolves, so redirects and `notFound()` can only act inside the stream. `rel=canonical` covers duplicate content; a hard 301 needs middleware. | `PRD-003`, SOL-005 | p3 | `open` |
-| **TASK-20** | Photo upload is off. The only upload path (`restaurant-image-save`) writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so an accepted upload is lost on the next deploy while its DB row survives. Needs object storage before the UI can be enabled. Fix alongside todo 031 (no MIME validation), which is the same four lines. | RM-02 | p2 | `open` |
 
 ---
 

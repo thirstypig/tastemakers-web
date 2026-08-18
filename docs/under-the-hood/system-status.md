@@ -67,4 +67,4 @@ Platform: **Railway**, project `c6fd4935-ffeb-4cd9-9185-81a941bcb6c7`, GitHub au
        - src/lib/api-probe.ts already has runCheck() with tests - reuse it
 -->
 
-<!-- generated 2026-08-18T02:49:25.758Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-18T16:24:33.091Z by scripts/refresh-docs.mjs -->

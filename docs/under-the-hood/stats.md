@@ -21,32 +21,32 @@ updated: 2026-08-18
 - **In progress:** RM-13 — PostgreSQL compatibility sweep
 **Shipped (roadmap items done):** 0
 **Committed next:** 7
-**Open to-dos:** 20
+**Open to-dos:** 23
 ### Next up
 
 1. **TASK-01** (p1) — 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18.
-1. **TASK-18** (p1) — Attempt vote recovery: get a pre-migration dump of `restaurant_tag` from the legacy Namecheap MySQL host (cPanel → phpMyAdmin export, or any backup). The legacy DB was bound to `127.0.0.1` so it is unreachable remotely — this needs cPanel access. **Do it before the hosting is cancelled**, or the original vote counts are gone permanently.
-1. **TASK-02** (p1) — Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id
+1. **TASK-19** (p2) — Old numeric URLs (`/restaurants/159`) do not 301 to the canonical slug. `permanentRedirect` never fires — streaming commits a 200 before the page resolves. Needs middleware.
+1. **TASK-20** (p1) — Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.**
 
 ## Code
-**2,646 source files · 87,984 lines of application code** across 5 repos.
+**2,667 source files · 90,416 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,899 | 27,985 | 429,181 |
-| `tastemakers-web` | 234 | 37,592 | 0 |
+| `tastemakers-backend` | 1,912 | 29,465 | 429,181 |
+| `tastemakers-web` | 242 | 38,544 | 0 |
 | `tastemakers-ios` | 479 | 20,117 | 486 |
 | `tastemakers-android` | 14 | 416 | 0 |
 | `tastemakers-marketing` | 20 | 1,874 | 0 |
 ### By language
 | Language | Lines |
 |---|---:|
-| PHP | 19,731 |
-| TypeScript | 19,431 |
+| PHP | 20,381 |
+| TypeScript | 20,082 |
 | Swift | 17,920 |
 | JSON | 14,183 |
-| Markdown | 12,726 |
-| CSS | 1,688 |
+| Markdown | 13,792 |
+| CSS | 1,753 |
 | JavaScript | 1,428 |
 | HTML | 738 |
 | Kotlin | 139 |
@@ -59,13 +59,13 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | Web pages | 36 |
 | Web API handlers | 8 |
 ## Docs
-**33 markdown files** in `docs/` (templates excluded).
+**34 markdown files** in `docs/` (templates excluded).
 
 ✅ Every doc has frontmatter.
 
 | Type | Count |
 |---|---:|
-| `solution` | 5 |
+| `solution` | 6 |
 | `prd` | 4 |
 | `roadmap` | 2 |
 | `note` | 2 |
@@ -93,7 +93,7 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 |---|---:|
 | `active` | 18 |
 | `draft` | 7 |
-| `done` | 6 |
+| `done` | 7 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-08-18T02:49:25.758Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-18T16:24:33.091Z by scripts/refresh-docs.mjs -->

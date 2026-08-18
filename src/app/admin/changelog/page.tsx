@@ -2,6 +2,22 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.0.0",
+    date: "2026-08-18",
+    title: "Domain merge, and reconnecting the shipped iOS app",
+    items: [
+      { type: "+", text: "www.tastemakersapp.com and the apex now serve this app; app.tastemakersapp.com is retired. Until today the brand domain served a 15 KB static page with zero <h1> from a different Railway service, while the whole v2 redesign sat on a subdomain nobody links to. Railway Hobby caps custom domains at 2 per service, so keeping app. would have forced a Pro upgrade for nothing." },
+      { type: "+", text: "CANONICAL_ORIGIN and canonical() replaced 15 hardcoded origins — moving the site is now one environment variable plus a redeploy. Deliberately a NEW variable rather than reusing NEXT_PUBLIC_SITE_URL, which is localhost:3050 in dev by design; canonicals derived from it would make any local build publish localhost canonicals and sitemap." },
+      { type: "-", text: "The canonical fallback still named the retired app. domain. A fallback never runs while the env var is set, so nothing noticed — and nine tests asserted the dead value, so the suite was protecting it. Found by asking a subagent to adversarially refute claims already shipped. It now asserts against a RETIRED_ORIGINS list rather than a literal, so the guard survives the next domain move." },
+      { type: "-", text: "Unmatched /api/* returned 500, not 404, in production: next.config carried a fallback rewrite to http://localhost:4050, the dev port, shipped. Deleted rather than repointed at Laravel, which would have exposed the whole API surface through the web domain." },
+      { type: "-", text: "Every request the live iOS app makes was 404ing. The App Store binary builds every call from tastemakersapp.com/v2/api/ — the old Namecheap layout, gone since the Railway move. That prefix now forwards to the Laravel host. Old versions stay installed for months, so this could not be fixed by shipping a new build." },
+      { type: "+", text: "Persistent App Store link in the app shell. The link existed in three places and was unreachable from all of them: signed-out only, first-visit-then-dismissed-forever, or on the two remaining v1 pages. Now server-rendered on every page." },
+      { type: "~", text: "Redirects for /privacy-policy, /review-tag and /about-us, all hardcoded in the shipped iOS build. /terms deliberately left 404 — the marketing repo claims the apps link to it, but no such reference exists in either client." },
+      { type: "+", text: "Tests: 363 to 390 across 32 files. New guards cover the redirect table (destinations must resolve to real pages; no redirect may shadow a route), the /api namespace (no proxy), and the canonical fallback (never a retired host). Each verified by reintroducing the exact bug it describes." },
+      { type: "~", text: "Known and unfixed: profile images still 404 — they lived on the Namecheap disk and were never migrated to object storage. /v2/api/restaurants still fails server-side on missing Foursquare credentials. Connectivity is restored; not every endpoint behind it works." },
+    ],
+  },
+  {
     v: "v10.0.0",
     date: "2026-08-17",
     title: "v2 web rebuild, iOS-matched tag ranking, and the SSR fix",
