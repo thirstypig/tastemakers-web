@@ -7,12 +7,13 @@ import ResultCard from "@/features/restaurants/ResultCard";
 import ListCard from "@/features/lists/ListCard";
 import EmailSignup from "@/features/email/EmailSignup";
 import "@/features/home/home.css";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Tastemakers — reviews in words, not stars",
   description:
     "Restaurant reviews as tags: loud room, worth the wait, cash only. Browse what people actually tagged.",
-  alternates: { canonical: "https://app.tastemakersapp.com/" },
+  alternates: { canonical: canonical("/") },
 };
 
 export default async function HomePage({

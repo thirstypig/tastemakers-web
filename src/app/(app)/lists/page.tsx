@@ -3,11 +3,12 @@ import { listLists } from "@/features/lists/api";
 import ListCard from "@/features/lists/ListCard";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Lists — Tastemakers",
   description: "Curated restaurant lists from the people who tagged them.",
-  alternates: { canonical: "https://app.tastemakersapp.com/lists" },
+  alternates: { canonical: canonical("/lists") },
 };
 
 export default async function ListsPage() {

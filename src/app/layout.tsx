@@ -55,7 +55,11 @@ export default function RootLayout({
       <head>
         {/* GA4 + AdSense + Consent Mode v2 */}
         <Analytics />
-        {/* Plausible */}
+        {/* Plausible. `data-domain` is the SITE IDENTIFIER registered in the
+            Plausible dashboard, not a URL — it must NOT be swapped for
+            CANONICAL_ORIGIN during a domain move, or the stats start over
+            under a new site and the existing history is orphaned. Change it
+            only alongside renaming the site in Plausible itself. */}
         <Script
           defer
           data-domain="app.tastemakersapp.com"

@@ -7,8 +7,7 @@ import type { CuratedList } from "@/lib/api/types";
 import TagCloud from "@/components/tags/TagCloud";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
-
-const SITE_URL = "https://app.tastemakersapp.com";
+import { canonical } from "@/lib/site";
 
 const LEVEL_LABEL: Record<number, string> = {
   1: "Explorer",
@@ -44,7 +43,7 @@ export async function generateMetadata({
   const t = await getTastemaker(slug);
   if (!t) return { title: "Not Found" };
 
-  const url = `${SITE_URL}/tastemakers/${t.slug}`;
+  const url = canonical(`/tastemakers/${t.slug}`);
   const description = t.bio || `${t.name} has curated ${t.listCount} restaurant lists on Tastemakers.`;
 
   return {

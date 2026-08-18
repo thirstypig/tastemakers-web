@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Explore — Tastemakers",
   description:
     "Browse curated lists, restaurants, and the tastemakers behind them.",
-  alternates: { canonical: "https://app.tastemakersapp.com/explore" },
+  alternates: { canonical: canonical("/explore") },
 };
 
 const DESTINATIONS = [

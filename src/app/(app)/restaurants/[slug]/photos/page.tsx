@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { parseIdFromSlug } from "@/lib/slug";
+import { canonical } from "@/lib/site";
 import Link from "next/link";
 import { getRestaurantDetail, getRestaurantPhotos } from "@/features/restaurants/api";
 import PhotoGrid from "@/features/restaurants/PhotoGrid";
@@ -17,7 +18,7 @@ export async function generateMetadata({
   return {
     title: `${r.name} photos — Tastemakers`,
     description: `Photos of ${r.name}, ${r.address}.`,
-    alternates: { canonical: `https://app.tastemakersapp.com/restaurants/${r.slug}/photos` },
+    alternates: { canonical: canonical(`/restaurants/${r.slug}/photos`) },
   };
 }
 
