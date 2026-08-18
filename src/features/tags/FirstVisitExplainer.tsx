@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { APP_STORE_URL } from "@/features/shell/links";
 
 const STORAGE_KEY = "tm-seen-tag-explainer";
-const APP_STORE = "https://apps.apple.com/app/id1573533249";
 
 /**
  * One-time explainer under the tag cloud.
@@ -47,7 +47,7 @@ export default function FirstVisitExplainer() {
         agree on show up strongest.
       </p>
       <div className="tm-firstvisit-actions">
-        <a href={APP_STORE} className="tm-link" target="_blank" rel="noopener noreferrer">
+        <a href={APP_STORE_URL} className="tm-link" target="_blank" rel="noopener noreferrer">
           Get the app
         </a>
         <button type="button" className="tm-firstvisit-dismiss" onClick={dismiss}>

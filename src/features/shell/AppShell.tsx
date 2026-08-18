@@ -1,6 +1,7 @@
 import "./shell.css";
 import type { ReactNode } from "react";
 import { TabBar, TopBar } from "./AppNav";
+import SiteFooter from "./SiteFooter";
 
 /**
  * The app shell.
@@ -17,6 +18,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <div className="tm-shell">
         <TopBar />
         <main className="tm-content">{children}</main>
+        <SiteFooter />
         <TabBar />
       </div>
     </div>
