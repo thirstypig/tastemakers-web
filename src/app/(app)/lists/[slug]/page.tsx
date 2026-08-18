@@ -8,8 +8,7 @@ import ResultCard from "@/features/restaurants/ResultCard";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
 import "@/features/lists/lists.css";
-
-const SITE_URL = "https://app.tastemakersapp.com";
+import { canonical } from "@/lib/site";
 
 export async function generateStaticParams() {
   const lists = await listLists();
@@ -36,11 +35,11 @@ export async function generateMetadata({
     openGraph: {
       title: list.title,
       description,
-      url: `${SITE_URL}/lists/${list.slug}`,
+      url: canonical(`/lists/${list.slug}`),
       type: "article",
       images: [{ url: list.coverImageUrl, width: 800, height: 600, alt: list.title }],
     },
-    alternates: { canonical: `${SITE_URL}/lists/${list.slug}` },
+    alternates: { canonical: canonical(`/lists/${list.slug}`) },
   };
 }
 

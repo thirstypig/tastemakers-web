@@ -5,8 +5,7 @@ import { getRestaurantDetail, listRestaurants } from "@/features/restaurants/api
 import type { RestaurantDetail } from "@/lib/api/types";
 import RestaurantDetailView from "@/features/restaurants/RestaurantDetailView";
 import { isCanonicalSlug, parseIdFromSlug } from "@/lib/slug";
-
-const SITE_URL = "https://app.tastemakersapp.com";
+import { canonical } from "@/lib/site";
 
 // ── Static params ─────────────────────────────────────────────────────────────
 
@@ -27,7 +26,7 @@ export async function generateMetadata({
   const r = id ? await getRestaurantDetail(id) : null;
   if (!r) return { title: "Not Found" };
 
-  const url = `${SITE_URL}/restaurants/${r.slug}`;
+  const url = canonical(`/restaurants/${r.slug}`);
   const description = `${r.cuisine} in ${r.city}. See what people tagged at ${r.name}.`;
 
   return {
@@ -59,7 +58,7 @@ function buildRestaurantSchema(r: RestaurantDetail): string {
     name: r.name,
     servesCuisine: r.cuisine,
     image: r.imageUrl,
-    url: `${SITE_URL}/restaurants/${r.slug}`,
+    url: canonical(`/restaurants/${r.slug}`),
     address: {
       "@type": "PostalAddress",
       streetAddress: r.address,

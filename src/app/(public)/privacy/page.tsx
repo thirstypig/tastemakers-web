@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — Tastemakers",
   description:
     "What Tastemakers collects, your consent choices, and your rights under GDPR and CCPA.",
-  alternates: { canonical: "https://app.tastemakersapp.com/privacy" },
+  alternates: { canonical: canonical("/privacy") },
 };
 
 const PINK = "#DB1657";

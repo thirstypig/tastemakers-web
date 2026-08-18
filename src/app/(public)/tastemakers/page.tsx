@@ -5,12 +5,13 @@ import { listTastemakers } from "@/lib/api/index";
 import type { Tastemaker, CuratedList } from "@/lib/api/types";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Tastemakers — Tastemakers",
   description:
     "Meet the curators behind every list. People who eat seriously and share what they find.",
-  alternates: { canonical: "https://app.tastemakersapp.com/tastemakers" },
+  alternates: { canonical: canonical("/tastemakers") },
 };
 
 const LEVEL_LABEL: Record<number, string> = {

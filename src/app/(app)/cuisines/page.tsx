@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { listCuisines } from "@/features/cuisines/api";
 import ListCard from "@/features/lists/ListCard";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Cuisines — Tastemakers",
   description: "Browse restaurants by cuisine.",
-  alternates: { canonical: "https://app.tastemakersapp.com/cuisines" },
+  alternates: { canonical: canonical("/cuisines") },
 };
 
 export default async function CuisinesPage() {

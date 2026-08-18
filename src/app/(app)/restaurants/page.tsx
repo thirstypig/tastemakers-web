@@ -3,12 +3,13 @@ import { listRestaurants } from "@/features/restaurants/api";
 import ResultCard from "@/features/restaurants/ResultCard";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
+import { canonical } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Restaurants — Tastemakers",
   description:
     "Restaurants tagged by the people who ate there. Reviews in words, not stars.",
-  alternates: { canonical: "https://app.tastemakersapp.com/restaurants" },
+  alternates: { canonical: canonical("/restaurants") },
 };
 
 export default async function RestaurantsPage() {

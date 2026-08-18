@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { canonical } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -9,6 +10,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/api"],
       },
     ],
-    sitemap: "https://app.tastemakersapp.com/sitemap.xml",
+    sitemap: canonical("/sitemap.xml"),
   };
 }
