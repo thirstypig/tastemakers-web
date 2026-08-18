@@ -83,11 +83,41 @@ describe("/api routes", () => {
     ).toEqual([]);
   });
 
-  it("declares no proxy rewrite in next.config", () => {
+  it("never proxies this app's own /api namespace", () => {
+    // The original bug was a fallback rewrite of /api/:path* to
+    // http://localhost:4050 — the dev port, shipped to production, where it
+    // returned 500 rather than 404 for every unmatched path.
+    //
+    // This asserts the BUG is absent, not that rewrites are. A narrow rewrite
+    // of a dead legacy prefix (/v2/api/*, the path burned into the shipped iOS
+    // binary) is deliberate and must stay allowed; a catch-all over /api must
+    // not come back.
     const cfg = readFileSync(join(ROOT, "next.config.ts"), "utf8");
-    // Strip comments — the config explains the removed proxy in prose.
     const code = cfg.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
-    expect(code).not.toMatch(/async\s+rewrites\s*\(/);
-    expect(code).not.toContain("localhost:4050");
+
+    expect(code, "localhost must never appear in a production rewrite").not.toContain(
+      "localhost:4050",
+    );
+
+    const sources = [...code.matchAll(/source:\s*"([^"]+)"/g)].map((m) => m[1]!);
+    const proxiesOwnApi = sources.filter(
+      (src) => /^\/api(\/|$)/.test(src),
+    );
+    expect(
+      proxiesOwnApi,
+      `next.config rewrites ${proxiesOwnApi.join(", ")}. This app's /api/* routes are ` +
+        `served by src/app/api and must not be proxied — a fallback there turns an ` +
+        `unmatched path into a 500 instead of a 404.`,
+    ).toEqual([]);
+  });
+
+  it("keeps the legacy /v2/api shim the shipped iOS build depends on", () => {
+    // NetworkManager.swift:14 builds every request from
+    // https://tastemakersapp.com/v2/api/ — the old Namecheap layout. Removing
+    // this rewrite re-breaks every API call from App Store versions already
+    // installed, which cannot be fixed by shipping a new build.
+    const cfg = readFileSync(join(ROOT, "next.config.ts"), "utf8");
+    expect(cfg).toContain('source: "/v2/api/:path*"');
+    expect(cfg).toContain("https://api.tastemakersapp.com/api/:path*");
   });
 });
