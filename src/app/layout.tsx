@@ -64,11 +64,12 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Suspense fallback={null}>
-          <PostHogProvider>
-            <AuthProvider>{children}</AuthProvider>
-          </PostHogProvider>
-        </Suspense>
+        {/* No Suspense around children: it would put the app's whole subtree
+            in the same boundary as PostHog's useSearchParams and bail static
+            pages out of server rendering. PostHogProvider scopes its own. */}
+        <PostHogProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </PostHogProvider>
       </body>
     </html>
   );
