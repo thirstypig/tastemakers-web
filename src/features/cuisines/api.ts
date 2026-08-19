@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase-server";
-import { coverImage } from "@/lib/api/shared";
+import { coverImage, fetchAllPages } from "@/lib/api/shared";
 
 export interface Cuisine {
   id: string;
@@ -12,9 +12,27 @@ export interface Cuisine {
 export async function listCuisines(limit = 40): Promise<Cuisine[]> {
   const sb = createServerClient();
 
-  const [{ data: categories }, { data: links }] = await Promise.all([
-    sb.from("categories").select("id, title"),
-    sb.from("category_restaurant").select("category_id, restaurant_id"),
+  // Both reads are paged. PostgREST caps a response at 1,000 rows and reports no
+  // error, so an unranged read of `category_restaurant` (1,572 rows in
+  // production) dropped 36% of the join table — and `placeCount` below is not
+  // just displayed, it is the sort key, so the ordering was wrong too. Nothing
+  // surfaced it: the page rendered normally with plausible numbers (todo 090).
+  //
+  // `categories` is only 374 rows today, comfortably under the cap. It is paged
+  // anyway because "under the cap right now" is not a property the code states
+  // or enforces, and this is the second table to cross that line unnoticed.
+  const [categories, links] = await Promise.all([
+    fetchAllPages<{ id: number; title: string | null }>(async (from, to) => {
+      const { data } = await sb.from("categories").select("id, title").range(from, to);
+      return data;
+    }),
+    fetchAllPages<{ category_id: number; restaurant_id: number }>(async (from, to) => {
+      const { data } = await sb
+        .from("category_restaurant")
+        .select("category_id, restaurant_id")
+        .range(from, to);
+      return data;
+    }),
   ]);
 
   // Distinct restaurants per category — the join table has duplicates.
