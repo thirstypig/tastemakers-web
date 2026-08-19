@@ -504,7 +504,7 @@ const COST_COMPARISON: {
 ];
 
 const COST_SCOPE: string[] = [
-  "Laravel 8 API with OAuth2 auth, 50 endpoints, 9 models, RBAC admin",
+  "Laravel 8 API with OAuth2 auth, 41 endpoints, 9 models, RBAC admin",
   "iOS app — 25 screens, Google/Apple social login, geolocation, image uploads",
   "Android app — Kotlin/Compose scaffold (early stage)",
   "Next.js 15 web frontend with TypeScript strict mode",
@@ -665,6 +665,13 @@ const BUILD_JOURNAL: {
   details: string;
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
+  {
+    date: "2026-08-19",
+    title: "Repairing the 2021 backend after the shim reconnected it",
+    details:
+      "The /v2/api shim reconnected the App Store build on 08-18; this session fixed what it could then reach. Tag voting: UNIQUE (restaurant_id, tag_id) made agreement unrepresentable — the second voter got a 500 and every count was pinned at 1 — replaced with the (restaurant_id, tag_id, user_id) triple and proven on live data. Apple Sign-In verified no signature at all, so a forged JWT naming any email returned a working access token; it is now checked against Apple's JWKS and fails closed. Three endpoints authenticated the caller then trusted a user_id from the request body. Removed the last MySQL-only SQL (36 IFNULL, 2 nested IF(), radians on a varchar column at 48 sites, HAVING on a SELECT alias at 14). Deleted 578 lines of dead controller code plus a route that returned 500 because its method was commented out. The structural find: railway.json declared deploy.releaseCommand, which is not a Railway config key, so artisan migrate had NEVER run on any deploy while every deploy reported SUCCESS — one typo explaining the migrations table being 6 short, the vote-destroying constraint that was never recorded, and 8 untracked production tables (SOL-007). Backend tests 5 to 106, each fix verified by reverting it and watching its own test fail.",
+    type: "fix",
+  },
   {
     date: "2026-06-09",
     title: "Docs reorg + live dashboard",

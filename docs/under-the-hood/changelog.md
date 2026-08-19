@@ -33,6 +33,41 @@ completes. Newest first.
 
 ---
 
+## 2026-08-19 — The backend the App Store build talks to, repaired
+
+**Closes:** TASK-01/02/03/09/10/13/15/16/19 · todos 021, 051, 057, 058, 067, 068, 119, 120 · **Repos:** backend, web
+
+A day of repair on the 2021 Laravel code, after the shim reconnected the installed base and
+revealed what it had been unable to reach.
+
+- **Tag voting works again.** `UNIQUE (restaurant_id, tag_id)` meant a second person applying
+  an existing tag got HTTP 500, and every vote count was pinned at 1. Replaced with
+  `(restaurant_id, tag_id, user_id)` — unlimited voters, one vote each. Proven on live data:
+  one tag went 1 → 3 votes in a rolled-back transaction. **Does not recover the ~941 votes
+  the original migration deleted** (TASK-18).
+- **Apple Sign-In accepted forged tokens.** The identity token's signature was never checked,
+  and the account was then looked up by the token's `email` claim — so any forged JWT naming a
+  victim returned a working access token. Now verified against Apple's JWKS, failing closed.
+  Two further bugs found while testing meant *new* Apple signups had never been possible at all.
+- **Authorization.** Three endpoints authenticated the caller then acted on an id from the
+  request body: any user could delete any list, delete anyone's tags, or read any profile
+  (which returned `email`, `device_token` and `fcm_token` publicly).
+- **PostgreSQL dialect.** Removed the last MySQL-only SQL: 36 `IFNULL` → `COALESCE`, 2 `IF()` →
+  `CASE WHEN` (the tag-level thresholds), `radians(varchar)` cast at 48 sites, and `HAVING` on a
+  SELECT alias replaced at 14. Distance queries run again.
+- **Deploys apply migrations.** `railway.json` used `deploy.releaseCommand`, which is not a
+  Railway key — so `artisan migrate` had **never run**, on any deploy, while every deploy
+  reported SUCCESS. See **SOL-007**.
+- **Dead code.** `RestaurantController` 3059 → 2480 lines; `GET /api/restaurants1` was
+  registered against a commented-out method and returned 500 on every call.
+
+Backend tests 5 → 106 (3 deliberately red). Web 392.
+
+**Not fixed:** discovery still returns `status:false` (Foursquare unkeyed, TASK-21); the tag
+`level` can only ever compute 5 (todo 121); RLS is off on all 31 tables (TASK-22).
+
+---
+
 ## 2026-08-18 — Hardening the /v2/api iOS shim
 
 **Closes:** todos 108, 109, 111, 113, 114, 116, 117 · **Repos:** web

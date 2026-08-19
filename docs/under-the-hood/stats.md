@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-08-18
+updated: 2026-08-19
 ---
 
 # Stats
@@ -21,31 +21,31 @@ updated: 2026-08-18
 - **In progress:** RM-13 — PostgreSQL compatibility sweep
 **Shipped (roadmap items done):** 0
 **Committed next:** 7
-**Open to-dos:** 23
+**Open to-dos:** 13
 ### Next up
 
-1. **TASK-01** (p1) — 🔴 **REVISED 2026-07-24 — already applied, not pending.** `UNIQUE (restaurant_id, tag_id)` is **live in production**. Drop it and replace with `UNIQUE (restaurant_id, tag_id, user_id)`. This stops the HTTP 500 on the second tagger (RISK-017) but **does not recover the deleted votes** — see TASK-18.
-1. **TASK-19** (p2) — Old numeric URLs (`/restaurants/159`) do not 301 to the canonical slug. `permanentRedirect` never fires — streaming commits a 200 before the page resolves. Needs middleware.
+1. **TASK-24** (p2) — Retire the `/v2/api` iOS shim (`tastemakers-web/next.config.ts`). **Blocked on two things:** the iOS build that moves `NetworkManager.swift:14` off the legacy prefix must ship AND drain, and shim usage must be instrumented — the stated gate ("iOS adoption > 90%") currently has no instrument behind it, since PostHog is browser-only and never sees a `URLSession` call. Removal condition: `/v2/api/*` under 10 requests/day for 30 consecutive days.
 1. **TASK-20** (p1) — Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.**
+1. **TASK-21** (p1) — Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. **CONFIRMED 2026-08-19:** 12 live `api.foursquare.com` call sites remain in RestaurantController, keys still unset.
 
 ## Code
-**2,667 source files · 90,416 lines of application code** across 5 repos.
+**2,681 source files · 91,876 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,912 | 29,465 | 429,181 |
-| `tastemakers-web` | 242 | 38,544 | 0 |
-| `tastemakers-ios` | 479 | 20,117 | 486 |
+| `tastemakers-backend` | 1,924 | 30,329 | 429,181 |
+| `tastemakers-web` | 244 | 39,120 | 0 |
+| `tastemakers-ios` | 479 | 20,137 | 486 |
 | `tastemakers-android` | 14 | 416 | 0 |
 | `tastemakers-marketing` | 20 | 1,874 | 0 |
 ### By language
 | Language | Lines |
 |---|---:|
-| PHP | 20,381 |
-| TypeScript | 20,082 |
-| Swift | 17,920 |
-| JSON | 14,183 |
-| Markdown | 13,792 |
+| PHP | 21,235 |
+| TypeScript | 20,263 |
+| Swift | 17,940 |
+| Markdown | 14,195 |
+| JSON | 14,185 |
 | CSS | 1,753 |
 | JavaScript | 1,428 |
 | HTML | 738 |
@@ -53,25 +53,25 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 ## Routes
 | Surface | Count |
 |---|---:|
-| Backend API — authenticated | 25 |
-| Backend API — public | 18 |
+| Backend API — authenticated | 26 |
+| Backend API — public | 15 |
 | Backend admin (Blade) | 50 |
 | Web pages | 36 |
 | Web API handlers | 8 |
 ## Docs
-**34 markdown files** in `docs/` (templates excluded).
+**36 markdown files** in `docs/` (templates excluded).
 
 ✅ Every doc has frontmatter.
 
 | Type | Count |
 |---|---:|
-| `solution` | 6 |
+| `solution` | 7 |
 | `prd` | 4 |
+| `adr` | 2 |
 | `roadmap` | 2 |
 | `note` | 2 |
 | `inbox` | 1 |
 | `guide` | 1 |
-| `adr` | 1 |
 | `api-docs` | 1 |
 | `component-lib` | 1 |
 | `decision-log` | 1 |
@@ -91,9 +91,9 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | `status` | 1 |
 | Status | Count |
 |---|---:|
-| `active` | 18 |
+| `active` | 19 |
+| `done` | 8 |
 | `draft` | 7 |
-| `done` | 7 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-08-18T16:24:33.091Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-19T04:21:29.997Z by scripts/refresh-docs.mjs -->

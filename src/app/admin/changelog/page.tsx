@@ -2,6 +2,22 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.2.0",
+    date: "2026-08-19",
+    title: "Repairing the backend the App Store build talks to",
+    items: [
+      { type: "-", text: "Tag voting works again. UNIQUE (restaurant_id, tag_id) meant the second person to apply an existing tag got HTTP 500, and every vote count was pinned at 1 — the product ranks tags by how many people agree, so agreement was literally unrepresentable. Replaced with (restaurant_id, tag_id, user_id). Proven on live data: one tag went 1 to 3 votes in a rolled-back transaction. It does NOT recover the ~941 votes the original migration deleted." },
+      { type: "-", text: "Apple Sign-In accepted forged tokens. The identity token's signature was never verified, and the account was then looked up by the token's own email claim — so anyone could mint a JWT naming a victim and receive a working access token, with no credentials. Now verified against Apple's published keys, failing closed. Google login was never affected; it already verified." },
+      { type: "-", text: "Two more Apple bugs found while testing meant NEW Apple signups had never worked at all: the raw ~800-character token was stored in a varchar(255) password column, and the name fields were read unguarded although Apple only sends them on first authorisation." },
+      { type: "-", text: "Three endpoints authenticated the caller and then acted on an id from the request body: any logged-in user could delete any list, delete anyone else's tags, or read any profile — which returned email, device_token and fcm_token publicly for any user id." },
+      { type: "-", text: "Deploys had never applied a migration. railway.json used deploy.releaseCommand, which is not a key Railway has, so artisan migrate never ran on any deploy while every deploy reported SUCCESS. That one typo explains the 24-vs-30 migrations table, the vote-destroying constraint that was never recorded, and 8 production tables with no migration." },
+      { type: "~", text: "Removed the last MySQL-only SQL: 36 IFNULL to COALESCE, 2 nested IF() to CASE WHEN (the tag-level thresholds), radians(varchar) cast at 48 sites, and HAVING on a SELECT alias replaced at 14. Location queries execute again." },
+      { type: "~", text: "RestaurantController 3059 to 2480 lines. GET /api/restaurants1 was registered against a commented-out method and returned 500 on every call; it 404s now." },
+      { type: "+", text: "Backend tests 5 to 106 (3 deliberately red: the controller returns 200 with status:false on bad credentials, and changing that is an API change the shipped binary would feel). Every fix verified by reverting it and watching its test fail." },
+      { type: "~", text: "Still broken and tracked: discovery returns status:false because Foursquare is unkeyed; the tag level can only ever compute 5; RLS is off on all 31 Supabase tables." },
+    ],
+  },
+  {
     v: "v11.1.0",
     date: "2026-08-18",
     title: "Hardening the iOS shim after review",
