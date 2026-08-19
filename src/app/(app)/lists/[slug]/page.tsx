@@ -10,6 +10,18 @@ import { AD_SLOTS } from "@/lib/ads";
 import "@/features/lists/lists.css";
 import { canonical } from "@/lib/site";
 
+
+/**
+ * Regenerate at most once a minute rather than querying Supabase per request.
+ *
+ * This is a read-only catalogue view over data that changes rarely — production
+ * tagging is down 98.5% and the newest tag is from 2025 — so a 60s window is
+ * invisible to a visitor and removes almost all of the database load behind the
+ * SEO-indexed surface. Every public page previously had NO revalidate at all
+ * (TODO-094).
+ */
+export const revalidate = 60;
+
 export async function generateStaticParams() {
   const lists = await listLists();
   return lists.map((l) => ({ slug: l.slug }));
