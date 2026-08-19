@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { parseAllowedEmails, isEmailAllowed } from "@/lib/auth";
+import { parseAllowedEmails } from "@/lib/auth";
+import { adminGateDecision } from "@/lib/admin-gate";
 import { updateSession } from "@/lib/supabase/middleware";
 
 export async function middleware(request: NextRequest) {
@@ -42,19 +43,31 @@ export async function middleware(request: NextRequest) {
   // Refresh the Supabase session on every request and read the current user.
   const { response, user } = await updateSession(request);
 
-  // If Supabase isn't configured (e.g. local dev), don't gate anything.
   const configured =
     !!process.env.SUPABASE_URL && !!process.env.SUPABASE_ANON_KEY;
 
-  // Admin: allowlist-gated (the login page itself stays open).
-  if (configured && pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    const allowedEmails = parseAllowedEmails(process.env.ADMIN_EMAILS ?? "");
-    if (!user || !isEmailAllowed(user.email, allowedEmails)) {
-      const url = request.nextUrl.clone();
-      url.pathname = "/admin/login";
-      url.search = "";
-      return NextResponse.redirect(url);
-    }
+  // Admin: allowlist-gated, and it FAILS CLOSED.
+  //
+  // This used to read `if (configured && pathname.startsWith("/admin") ...)`,
+  // so a missing SUPABASE_URL or SUPABASE_ANON_KEY skipped the gate entirely and
+  // served /admin to anyone. The intent was convenience in local dev; the effect
+  // was that the admin panel unlocked on a typo'd variable name, silently,
+  // because nothing errors when a gate simply does not run.
+  //
+  // adminGateDecision now denies when identity is unknowable. Local admin work
+  // needs those two variables set — a smaller cost than the alternative.
+  const adminDecision = adminGateDecision({
+    pathname,
+    configured,
+    userEmail: user?.email,
+    allowedEmails: parseAllowedEmails(process.env.ADMIN_EMAILS ?? ""),
+  });
+
+  if (adminDecision === "redirect") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/admin/login";
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
   // End-user protected areas: any authenticated user. Redirect to login with a

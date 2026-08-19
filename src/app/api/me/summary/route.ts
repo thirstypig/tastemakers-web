@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveAppUserId } from "@/lib/app-user";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -11,6 +12,19 @@ function db() {
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_ANON_KEY!,
     { auth: { persistSession: false } },
   );
+}
+
+/**
+ * The acting user's id in public.users, derived from the verified session email.
+ *
+ * NOT from user_metadata.app_user_id — that field is writable by the user it
+ * describes, so it was a claim rather than an identity (TODO-092).
+ */
+async function currentAppUserId(user: { email?: string | null }): Promise<number | null> {
+  return resolveAppUserId(user, async (email) => {
+    const { data } = await db().from("users").select("id").eq("email", email).maybeSingle();
+    return (data?.id as number | undefined) ?? null;
+  });
 }
 
 async function getSessionUser() {
@@ -42,7 +56,7 @@ export async function GET() {
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const appUserId = user.user_metadata?.app_user_id as number | undefined;
+  const appUserId = await currentAppUserId(user);
   if (!appUserId) return NextResponse.json({ error: "User not synced" }, { status: 403 });
 
   const sb = db();
