@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
-import { resolveCallbackOrigin } from "@/lib/auth";
+import { resolveCallbackOrigin, safeRedirectPath } from "@/lib/auth";
 
 async function syncPublicUser(
   supabaseAuthUrl: string,
@@ -91,7 +91,12 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const origin = resolveCallbackOrigin(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/explore";
+  // Sanitised, not raw: this value is concatenated onto the origin below, and
+  // concatenation is not URL construction. A raw `@evil.com` makes the origin
+  // into userinfo and the browser navigates to evil.com; a raw `.evil.com`
+  // extends it into a domain the attacker can register. safeRedirectPath keeps
+  // only same-origin relative paths.
+  const next = safeRedirectPath(searchParams.get("next"));
 
   if (code) {
     const cookieStore = await cookies();
