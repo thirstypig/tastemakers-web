@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTagsByRestaurant, cityFromAddress, toRestaurant } from "./shared";
+import { buildTagsByRestaurant, cityFromAddress, levelLabel, tasteLevel, toRestaurant } from "./shared";
 
 /** restaurant_tag holds one row per user per tag; duplicates are the votes. */
 function rows(spec: Array<[restaurant: number, tag: number, votes: number]>) {
@@ -149,5 +149,83 @@ describe("toRestaurant", () => {
     const r = toRestaurant({ id: 1, name: "X" }, []);
     expect(r.latitude).toBeUndefined();
     expect(r.longitude).toBeUndefined();
+  });
+});
+
+/**
+ * `tasteLevel` turns a list count into a tier, and `levelLabel` turns that tier
+ * into the word a visitor reads on /tastemakers. Neither had a test.
+ *
+ * Three concrete regressions these prevent:
+ *
+ *  1. **A threshold shifts.** The boundaries are 2 / 5 / 10 / 20, all `>=`. An
+ *     off-by-one moves real people between tiers with nothing to catch it — the
+ *     page still renders, just with the wrong word.
+ *  2. **The two label maps drift.** LEVEL_LABEL was copy-pasted into both the
+ *     index and the detail page, so the same person could be shown as two
+ *     different tiers depending on which page you were on.
+ *  3. **An unmapped tier renders "undefined".** `tasteLevel` is typed 1-5, but
+ *     the label lookup is a `Record<number, string>` and a raw number from
+ *     anywhere else would sail straight through.
+ *
+ * Anchored to production: the four live tastemakers have 0, 2 and 29 lists, and
+ * the site currently shows them as Explorer, Curator and Legend. Those three
+ * cases are asserted by name below, so a threshold change fails against real
+ * people rather than invented ones.
+ */
+describe("tasteLevel", () => {
+  it("puts someone with no lists in the bottom tier", () => {
+    expect(tasteLevel(0)).toBe(1);
+  });
+
+  it.each([
+    [1, 1],
+    [2, 2],
+    [4, 2],
+    [5, 3],
+    [9, 3],
+    [10, 4],
+    [19, 4],
+    [20, 5],
+    [100, 5],
+  ])("maps %i lists to tier %i", (lists, tier) => {
+    expect(tasteLevel(lists)).toBe(tier);
+  });
+
+  it("is monotonic — more lists never means a lower tier", () => {
+    for (let n = 0; n < 40; n++) {
+      expect(tasteLevel(n + 1)).toBeGreaterThanOrEqual(tasteLevel(n));
+    }
+  });
+});
+
+describe("levelLabel", () => {
+  it.each([
+    [1, "Explorer"],
+    [2, "Curator"],
+    [3, "Connoisseur"],
+    [4, "Maven"],
+    [5, "Legend"],
+  ])("names tier %i as %s", (tier, label) => {
+    expect(levelLabel(tier)).toBe(label);
+  });
+
+  it("never renders undefined for a tier outside the range", () => {
+    for (const n of [0, 6, -1, 99]) {
+      expect(levelLabel(n)).toBeTruthy();
+      expect(levelLabel(n)).not.toContain("undefined");
+    }
+  });
+});
+
+describe("the list count a visitor sees", () => {
+  // These three are the people actually on the live site. If a threshold moves,
+  // this fails with a name attached rather than an abstract boundary.
+  it.each([
+    ["Tester Joan", 0, "Explorer"],
+    ["Master Taster", 2, "Curator"],
+    ["Thirsty Pig", 29, "Legend"],
+  ])("shows %s (%i lists) as %s", (_name, lists, label) => {
+    expect(levelLabel(tasteLevel(lists))).toBe(label);
   });
 });

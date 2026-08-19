@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 411 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 442 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 411 tests (37 test files)
+npx vitest run     # run 442 tests (38 test files)
 ```
 
 ## Project Structure
@@ -268,13 +268,13 @@ against the API host.
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 411 tests across 37 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
+- **Current suite:** 442 tests across 38 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
 | File | Tests | What it covers |
 |------|-------|----------------|
-| `src/lib/api/shared.test.ts` | 19 | `buildTagsByRestaurant` per-restaurant levelling, `cityFromAddress` against real production address shapes, `toRestaurant` slugs |
+| `src/lib/api/shared.test.ts` | 39 | `buildTagsByRestaurant` per-restaurant levelling, `cityFromAddress` against real production address shapes, `toRestaurant` slugs; `tasteLevel` boundaries (2/5/10/20) and `levelLabel`, anchored to the three tastemakers actually on the live site|
 | `src/features/tags/RankedTagCloud.test.tsx` | 11 | Vote flow: optimistic add, **rollback on 409 `vote_blocked`** and on network failure, re-levelling, signed-out gating |
 | `src/features/tags/levels.test.ts` | 11 | iOS `calcucateTagLevels` parity — gap-from-leader, all-equal degenerate case |
 | `src/lib/slug.test.ts` | 15 | Slugify, chain collisions, accents, non-Latin fallback, id parsing |

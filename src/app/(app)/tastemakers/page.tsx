@@ -6,6 +6,7 @@ import type { Tastemaker } from "@/lib/api/types";
 import ListCard from "@/features/lists/ListCard";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
+import { levelLabel } from "@/lib/api/shared";
 import { canonical } from "@/lib/site";
 import "@/features/tastemakers/tastemakers.css";
 
@@ -20,14 +21,6 @@ export const metadata: Metadata = {
   description:
     "Meet the curators behind every list. People who eat seriously and share what they find.",
   alternates: { canonical: canonical("/tastemakers") },
-};
-
-const LEVEL_LABEL: Record<number, string> = {
-  1: "Explorer",
-  2: "Curator",
-  3: "Connoisseur",
-  4: "Maven",
-  5: "Legend",
 };
 
 export default async function TastemakersPage() {
@@ -70,7 +63,7 @@ function TastemakerRow({ tastemaker: t }: { tastemaker: Tastemaker }) {
             <Link href={`/tastemakers/${t.slug}`} className="tm-maker-name">
               {t.name}
             </Link>
-            <span className="tm-maker-level">{LEVEL_LABEL[t.level] ?? "Curator"}</span>
+            <span className="tm-maker-level">{levelLabel(t.level)}</span>
           </div>
 
           {t.username && <p className="tm-maker-handle">@{t.username}</p>}
