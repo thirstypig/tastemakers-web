@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerClient } from "@/lib/supabase-server";
 import {
   buildTagsByRestaurant,
@@ -136,7 +137,18 @@ export async function getRestaurant(id: string): Promise<Restaurant | null> {
  * lists containing one restaurant (todo 091). The membership lookup here is
  * keyed on restaurant_id and bounded by it.
  */
-export async function getRestaurantDetail(id: string): Promise<RestaurantDetail | null> {
+/**
+ * Deduped per request with React's `cache()`.
+ *
+ * Next calls `generateMetadata` and the page component separately, and both fetch
+ * the same record — and this function issues four Supabase queries, so the detail
+ * page was paying eight round trips to render one restaurant.
+ *
+ * `cache()` is per-render, not a TTL cache: it holds nothing between requests, so
+ * it cannot serve stale data to anyone. Purely removing a duplicate.
+ */
+export const getRestaurantDetail = cache(
+  async (id: string): Promise<RestaurantDetail | null> => {
   const numId = parseInt(id, 10);
   if (isNaN(numId)) return null;
 
@@ -239,7 +251,7 @@ export async function getRestaurantDetail(id: string): Promise<RestaurantDetail 
       .map((i) => ({ id: String(i.id), url: restaurantImageUrl(String(i.image)) })),
     onLists,
   };
-}
+})
 
 /**
  * Absolute URL for a row in restaurant_images.
