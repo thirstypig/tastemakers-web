@@ -28,6 +28,7 @@ in the code; the reason is not. Skip the why and this file is worthless.
 - **2026-08-18** · Added a narrow `/v2/api/*` forward for the shipped iOS build · Not a reversal of the above: it forwards one dead legacy prefix that old App Store binaries ask for literally, and cannot be fixed by shipping a new build. The guard test now forbids proxying `/api/*` specifically rather than forbidding rewrites at all. Promoted to **ADR-002** on 2026-08-18 — the coupling is cross-repo and cannot be unwound without an App Store cycle. Removal gated on TASK-24.
 - **2026-08-18** · Left three backend AuthTest failures red · The API returns 200 with `{"status": false}` where the tests want 4xx. The shipped iOS client only errors on `statusCode >= 500` and reads the body, so the current convention is what the installed base depends on. Changing it needs a coordinated client release; editing the assertions to match the code would have hidden a real contract question.
 - **2026-08-18** · Backend test suite unified on `DatabaseTransactions` · Introducing `RefreshDatabase` ran `migrate:fresh` mid-suite, so earlier tests saw a populated database and later ones saw a bare one — order-dependent results, and `--filter` runs disagreeing with full runs.
+- **2026-08-19** · `railway.json` must use `deploy.preDeployCommand` (an ARRAY), never `releaseCommand` · Railway silently ignores unknown config keys, so migrations never ran on any deploy for months while every deploy reported SUCCESS. Verify by the `migrations` table, not the deploy status. See SOL-007.
 
 ---
 
