@@ -17,31 +17,49 @@ Stated plainly, because the shape of it is the strategy problem:
 
 | Area | Tests | State |
 |---|---|---|
-| Web (`tastemakers-web`) | **225** across 15 files | ✅ all green |
-| ↳ of which: docs system + viewer | 63 | ✅ |
-| ↳ of which: docs-generation scripts | 49 | ✅ added 2026-07-24 |
-| Backend AI services (2026) | **55** across 4 files | ✅ all green |
-| Backend feature tests | **9** across 3 files | ⚠️ **1 passing, 8 failing** |
-| **Backend 2021 features** | **0** | ❌ tagging, lists, photos, social, discovery — nothing |
+| Web (`tastemakers-web`) | **392** across 32 files | ✅ all green |
+| Backend AI services (2026) | **54** across 5 files | ✅ all green |
+| Backend — 2021 features, added 2026-08-19 | **36** across 10 files | ✅ all green |
+| Backend `AuthTest` | 5 | ⚠️ **3 failing — deliberately** |
+| Backend `UserProfileTest` | 5 | ✅ now green |
 | iOS | 0 | ❌ |
 | Android | n/a | no app exists |
 
-**The inversion is the headline.** The code written in 2026 — services that have never
-run in production — has 55 tests. The code that has been live on the App Store since
-2021, serving every real user, has none.
+**Backend total: 106 tests, 3 failing.**
 
-### The 8 failing backend tests
+**The inversion has closed.** This table used to read "Backend 2021 features: 0 — tagging,
+lists, photos, social, discovery: nothing", against 55 tests for 2026 services that had
+never run in production. As of 2026-08-19 the load-bearing 2021 paths have coverage,
+written alongside the fixes for the bugs they were hiding:
 
-Not flaky. They encode two real defects:
+| File | Tests | Pins |
+|---|---|---|
+| `AppleSignInTest` | 8 | Forged identity tokens are refused. The old code checked no signature, so any JWT naming a victim's email returned a working access token. SOL-adjacent: see todo 051. |
+| `AuthorizationTest` | 5 | `auth:api` proves you are *a* user, not that the row is yours. List deletion, tag deletion, and the public profile read. |
+| `GetAllBadgesTest` | 4 | The endpoint 500'd (MySQL `IFNULL`) AND served one hardcoded user's data (`user_id = 43`) AND was public. The 500 hid the other two. |
+| `LegacyTableMigrationTest` | 6 | Tables that exist in production but had no migration. |
+| `TagVotingTest` | 3 | A row is one person's VOTE. `UNIQUE (restaurant_id, tag_id)` deleted ~941 of them and 500'd the second voter. |
+| `HaversineDistanceTest` | 3 | `radians(varchar)` and `HAVING` on a SELECT alias — both MySQL-only, both 500 on Postgres. |
+| `TagLevelSqlTest` | 3 | The tag-level thresholds, after nested MySQL `IF()` became `CASE WHEN`. |
+| `ApiRouteSurfaceTest` | 3 | Every path+verb App Store build 1.2.1 calls. It cannot be patched; removing one breaks installed apps for months. |
+| `HttpsSchemeTest` | 2 | Railway terminates TLS at its edge, so Laravel generated `http://` URLs that iOS ATS blocks outright. |
+| `PassportTestSetupTest` | 3 | The test-DB Passport fixture. |
 
-- **`AuthTest` (4 failing)** — tests assert HTTP 400 on bad credentials; the API returns
-  **HTTP 200 with `{"status": false}`**. The tests are right and the controller is
-  wrong. Fixing the controller is an API change and needs client coordination.
-- **`UserProfileTest` (3 failing)** — `GET /api/user` returns 500, Postgres
-  "in failed sql transaction" cascading from a failed subquery. Root cause not identified.
+### The 3 failing backend tests
 
-Leaving them red is a deliberate choice: they document real bugs. **They must not be
-skipped or deleted to make the suite green.**
+Not flaky. They encode one real defect:
+
+- **`AuthTest` (3 failing)** — the tests assert HTTP 400 on bad credentials; the API returns
+  **HTTP 200 with `{"status": false}`**. The tests are right and the controller is wrong.
+  Fixing the controller is an API change that needs client coordination, and the shipped
+  iOS build cannot be patched, so it is not a unilateral change.
+
+Leaving them red is deliberate: they document a real bug. **They must not be skipped or
+deleted to make the suite green.** Compare any new failure against this baseline — 106
+tests, 3 failing — rather than against zero.
+
+The `UserProfileTest` failures listed here previously are **fixed** (the legacy-table
+migrations landed).
 
 ---
 
