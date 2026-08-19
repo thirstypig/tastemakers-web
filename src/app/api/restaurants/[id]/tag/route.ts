@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveAppUserId } from "@/lib/app-user";
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
@@ -28,6 +29,19 @@ function db() {
   );
 }
 
+/**
+ * The acting user's id in public.users, derived from the verified session email.
+ *
+ * NOT from user_metadata.app_user_id — that field is writable by the user it
+ * describes, so it was a claim rather than an identity (TODO-092).
+ */
+async function currentAppUserId(user: { email?: string | null }): Promise<number | null> {
+  return resolveAppUserId(user, async (email) => {
+    const { data } = await db().from("users").select("id").eq("email", email).maybeSingle();
+    return (data?.id as number | undefined) ?? null;
+  });
+}
+
 // POST /api/restaurants/[id]/tag — add a vote (or create + vote a new tag)
 export async function POST(
   req: Request,
@@ -36,7 +50,7 @@ export async function POST(
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const appUserId = user.user_metadata?.app_user_id as number | undefined;
+  const appUserId = await currentAppUserId(user);
   if (!appUserId) return NextResponse.json({ error: "User not synced" }, { status: 403 });
 
   const { id } = await params;
@@ -124,7 +138,7 @@ export async function DELETE(
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const appUserId = user.user_metadata?.app_user_id as number | undefined;
+  const appUserId = await currentAppUserId(user);
   if (!appUserId) return NextResponse.json({ error: "User not synced" }, { status: 403 });
 
   const { id } = await params;
