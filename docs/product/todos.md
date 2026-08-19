@@ -47,7 +47,7 @@ keeping done items in place means you can see what actually happened this month.
 | **TASK-02** | Add an ownership check to `tastemaker_listdelete` — currently any authenticated user can delete any list by guessing an integer id | RM-02 | p1 | `open` |
 | **TASK-03** | Replace body `user_id` with `Auth::id()` in `tagsdelete` — the add path authenticates, the delete path doesn't | `PRD-001` §9, RM-02 | p1 | `open` |
 | **TASK-04** | Commit the four uncommitted code-review findings (todos 067–070) in the backend repo | RM-02 | p3 | `open` |
-| **TASK-05** | Repoint the backend's local `main` to track `origin/main` instead of the inaccessible `gitlab/main` (`git branch -u origin/main`) | — | p3 | `open` |
+| **TASK-05** | ~~Repoint the backend's local `main` to track `origin/main`~~ **Done 2026-08-19.** Was tracking `gitlab/main`, so every `git status` reported a false "ahead 86" and every sync check had to be re-run against `origin` explicitly. Note the premise was also wrong: GitLab is *not* inaccessible — see the corrected root CLAUDE.md. | — | p3 | `done` |
 | **TASK-06** | Set `FOURSQUARE_API_KEY` in Railway — `/api/restaurants` fails without it | RM-01 | p2 | `open` |
 | **TASK-07** | Confirm whether `testmaker_list` and a badges table exist in production — both are queried by controllers but have no migration | RM-01 | p2 | `open` |
 | **TASK-08** | Write the six missing tagging tests listed in `PRD-001` §8 — especially "two different users applying the same tag increments the count" | `PRD-001` | p2 | `open` |
