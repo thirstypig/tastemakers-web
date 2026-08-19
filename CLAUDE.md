@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 406 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 411 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 406 tests (36 test files)
+npx vitest run     # run 411 tests (37 test files)
 ```
 
 ## Project Structure
@@ -92,17 +92,14 @@ tastemakers-web/
 │   │       └── root-claude.md     Root CLAUDE.md snapshot
 │   ├── components/            Shared React components (JsonLd.tsx)
 │   ├── hooks/
-│   │   └── useAuth.ts         Supabase session hook (user, loading, signOut)
 │   ├── lib/
 │   │   ├── api/               PUBLIC DATA LAYER — stub → real swap point
 │   │   │   ├── types.ts           Tastemaker, CuratedList, Restaurant, Tag
 │   │   │   ├── stubs.ts           Hardcoded mock data (3 tastemakers, 8 restaurants, 6 lists)
-│   │   │   ├── client.ts          apiFetch() wrapper for api.tastemakersapp.com
-│   │   │   └── index.ts           Exported fns: getTastemaker, getList, getRestaurant, etc.
+│   │   │   │   └── index.ts           Exported fns: getTastemaker, getList, getRestaurant, etc.
 │   │   │                          ↑ Reads Supabase directly — NOT a stub, NOT Laravel (TODO-089)
 │   │   ├── admin-filters.ts   filterTodos() + summarizeRoadmap() — shared by admin roadmap + todo pages
-│   │   ├── api.ts             Admin API client (apiFetch<T>() with auth headers) — NOT the same as lib/api/
-│   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
+│   │   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
 │   │   ├── docs.ts            DOCS_REGISTRY (13 entries), fetchMarkdown() via GitHub Contents API (needs GITHUB_TOKEN for private repos), fetchDocUpdated()
 │   │   ├── markdown.ts        renderMarkdown() — default marked renderer (custom renderers broke on marked v13+ token API); styling via .md-body CSS
 │   │   ├── github.ts          fetchCommits() — GitHub API wrapper (used by platforms page)
@@ -148,8 +145,8 @@ admin Paper/Gruvbox themes, and redefining them globally breaks the admin light/
 - **Nav:** bottom tab bar under 768px, top bar at 768+. No sidebar, no drawer, no icon rail.
 - **Image domains:** `images.unsplash.com` (placeholders), `*.foursquare.com`,
   `fastly.4sqi.net`, and `api.tastemakersapp.com/storage/**` (user photos).
-- **Import note:** `src/lib/api.ts` (admin) and `src/lib/api/index.ts` both exist. Import
-  feature data from `@/features/<name>/api` — `@/lib/api` resolves to the admin client file.
+- **Import note:** import feature data from `@/features/<name>/api`. `src/lib/api.ts` used
+  to shadow this and is now deleted (see "Removed 2026-08-19").
 
 ### Tag levels — match iOS exactly
 
@@ -215,8 +212,8 @@ asserts this across every route.
 ## Data layer — reads Supabase directly
 
 Each feature's `api.ts` calls `createServerClient()` and queries Supabase **directly**. The
-Laravel API is not in the path: `apiFetch()` exists in `src/lib/api.ts` and
-`src/lib/api/client.ts` but is called by nothing except its own test.
+Laravel API is not in the path. `apiFetch()` used to exist in two places, called by
+nothing except its own tests; both were deleted (see "Removed 2026-08-19").
 
 This is **TODO-089**, a known architectural divergence, not an oversight to "fix" casually:
 - The web app and the iOS/Android clients read the same database through entirely different
@@ -262,16 +259,16 @@ against the API host.
   `src/app/api` in every environment. `NEXT_PUBLIC_API_URL` is still set in
   `.env.local`, but is effectively decorative — its only remaining consumer is
   `restaurantImageUrl()`, which builds an image host string, not an API call.
-  `src/lib/api.ts` (the would-be Laravel client) is imported by nothing.
+  The would-be Laravel client has been deleted; nothing imported it.
 - **Prod:** Set `NEXT_PUBLIC_API_URL` to `https://api.tastemakersapp.com/api` (Railway-hosted Laravel backend)
 - **Auth:** Bearer token stored in localStorage (upgrade to httpOnly cookies later)
-- **Client:** `src/lib/api.ts` provides `apiFetch<T>()` helper with auto-auth headers
+- **Client:** none. This app does not call the Laravel API — see the Data layer section.
 
 ## Testing
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 406 tests across 36 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
+- **Current suite:** 411 tests across 37 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
@@ -297,12 +294,10 @@ against the API host.
 | `scripts/sync-inbox.test.mjs` | 21 | Comment validation + skip warnings, newest-first sort, **change_request-first ordering**, resolved-section split, pluralisation, empty inbox |
 | `src/lib/auth.test.ts` | 22 | `parseAllowedEmails`, `isEmailAllowed`, `safeRedirectPath`, `resolveCallbackOrigin` (Railway port fix) |
 | `src/lib/validation.test.ts` | 17 | `validateEmail`, `validatePassword`, `validateRequired` |
-| `src/lib/api.test.ts` | 12 | `apiFetch` — response handling, headers, auth token |
 | `src/lib/api-probe.test.ts` | 12 | `runCheck` — live health probe utility |
 | `src/lib/admin-filters.test.ts` | 13 | `filterTodos` (AND logic, sentinel), `summarizeRoadmap` (P1 counter excludes done) |
 | `src/lib/github.test.ts` | 7 | `fetchCommits` — GitHub API fetch, cache, error handling |
 | `src/lib/docs.test.ts` | 14 | `fetchMarkdown` — local + GitHub source loading, DOCS_REGISTRY completeness, `fetchDocUpdated` |
-| `src/hooks/useAuth.test.ts` | 7 | `useAuth` — session resolution, auth events, cleanup |
 | `src/lib/trends.test.ts` | 5 | 12-week trend data shape, week-over-week deltas |
 | `src/lib/city-stats.test.ts` | 8 | 30d city leaderboard sorting, delta calculation; `buildCityEvents` no-FK join (unknown ids, cutoff) |
 | `src/lib/activity-feed.test.ts` | 3 | Merged feed ordering, type tagging |
@@ -436,6 +431,19 @@ npm run docs:inbox     # regenerate docs/INBOX.md from _comments.json
 
 **Run `npm run docs:refresh` before every push.** What the board shows should be what is
 true. Templates in `docs/_templates/` are excluded from indexing by design.
+
+
+### Removed 2026-08-19 — do not reintroduce
+
+`src/lib/api.ts`, `src/lib/api/client.ts` and `src/hooks/useAuth.ts` were deleted. All
+three had **zero non-test importers**: they were a Laravel API client this app never calls
+(it reads Supabase directly, TODO-089) and a duplicate session hook. The live `useAuth` is
+the one exported by `src/components/providers/AuthProvider.tsx` — there were two, and the
+unused copy was the one in `hooks/`.
+
+Their tests went with them, which is why the suite count moved 419 -> 411 (-19 for the
+deleted tests, +11 for page-caching). A falling number is the right outcome when the code
+under test no longer exists.
 
 ## Rules
 - Port **3050** for dev server — never use other ports
