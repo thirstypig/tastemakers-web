@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 363 tests green. Deployed live at `app.tastemakersapp.com` on Railway.
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 406 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 390 tests (32 test files)
+npx vitest run     # run 406 tests (36 test files)
 ```
 
 ## Project Structure
@@ -271,7 +271,7 @@ against the API host.
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 390 tests across 32 files — all green
+- **Current suite:** 406 tests across 36 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
@@ -284,6 +284,10 @@ against the API host.
 | `src/features/email/subscribe.test.ts` | 14 | beehiiv request shaping and error mapping; never leaks a credential failure |
 | `src/features/search/query.test.ts` | 13 | PostgREST filter sanitising — a query cannot widen its own filter |
 | `src/lib/api/paging.test.ts` | 8 | `fetchAllPages` — the 1000-row PostgREST cap, exact-multiple boundary, runaway guard |
+| `src/features/cuisines/api.test.ts` | 3 | `listCuisines` reads past the 1000-row cap. The fake models PostgREST truthfully — an unranged read returns 1000 rows and reports **success** — so a test that skips that passes against the bug (TODO-090) |
+| `src/app/auth/callback/route.test.ts` | 5 | OAuth `?next` open redirect. Asserts on `new URL(location).host`, not string equality, so it catches any bypass. `@evil.com` and `.evil.com` escape the origin; `//evil.com` does not (TODO-093) |
+| `src/app/boundaries.test.tsx` | 4 | `error.tsx` / `not-found.tsx` — that retry actually calls `reset`, that the raw error message is never rendered, that 404 links somewhere real |
+| `src/features/shell/ListingSkeleton.test.tsx` | 2 | `role="status"` + `aria-busy` on the loading fallback — a skeleton with no announcement is silence to a screen reader |
 | `src/features/tags/ramp.test.ts` | 7 | Ramp contrast ≥4.5:1, monotonic prominence, even L* spacing, non-colour channel |
 | `src/lib/api/image-url.test.ts` | 7 | Photo URLs resolve against the API host, not a relative path |
 | `src/lib/pg-errors.test.ts` | 5 | Unique-violation matching, both directions |
