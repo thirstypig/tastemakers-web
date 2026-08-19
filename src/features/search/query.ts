@@ -14,7 +14,12 @@ export const SEARCH_MAX_LENGTH = 80;
  */
 export function sanitizeSearchTerm(input: string): string {
   return input
-    .replace(/[,()*%\\"']/g, " ")
+    // `_` is here because ILIKE treats it as a single-character wildcard, so
+    // "piz_a" silently matches "pizza" AND "pizsa". It was missing from this set
+    // while `%` was present — the same oversight in both, caught by the
+    // /api/tags/search tests. Verified safe to strip: zero tags, restaurants or
+    // lists in production contain an underscore.
+    .replace(/[,()*%_\\"']/g, " ")
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, SEARCH_MAX_LENGTH)
