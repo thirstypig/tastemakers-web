@@ -17,6 +17,7 @@
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "@types/marked": "^5.0.2",
+    "isomorphic-dompurify": "^3.19.0",
     "lucide-react": "^1.14.0",
     "marked": "^18.0.3",
     "next": "^15.2.0",
