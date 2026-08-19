@@ -113,7 +113,7 @@ auto-deploy on push to the default branch.
 - **Railway runs Next.js on internal PORT=8080.** `request.url` in server code is
   `http://localhost:8080/...`, never the public domain. Use `NEXT_PUBLIC_SITE_URL` for
   redirect origins.
-- **`releaseCommand` reports success even when it fails.** Never trust a deploy to have
+- **Migrations do not run on deploy.** `railway.json` used `releaseCommand`, which is not a Railway config key, so it was silently ignored and `artisan migrate` never ran. Corrected to `preDeployCommand` in backend PR #17 (2026-08-19). Verify the `migrations` table, not the deploy status.
   run migrations. Apply schema changes deliberately and verify.
 - **Passport RSA keys** come from env vars, written to disk in `AuthServiceProvider::boot()`
   so they survive Railway's ephemeral filesystem.

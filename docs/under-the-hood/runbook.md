@@ -35,8 +35,15 @@ deploy command.
 
 ### ⚠️ Deploy traps
 
-- **`releaseCommand` reports success even when it fails.** A green deploy does **not**
-  mean migrations ran. Verify schema changes independently, every time.
+- **Migrations do not run automatically — verify the `migrations` table, never the deploy
+  status.** Corrected 2026-08-19: the old note here said `releaseCommand` "reports success
+  even when it fails". It is worse than that. `deploy.releaseCommand` is **not a key
+  Railway has**; Railway ignores unknown keys, so it never ran at all. Deployment
+  `6b9b589b` (SUCCESS) has no release step in its event list and no `migrat`/`artisan`
+  output in its logs. Production ran 24 recorded migrations against 30 files.
+  The correct key is `deploy.preDeployCommand`, an ARRAY — fixed in backend PR #17.
+  **Until a migration file is confirmed appearing as a row in the production `migrations`
+  table on its own, keep verifying schema changes by querying the database.**
 - **PHP is pinned to 8.1.** Laravel 8 crashes on 8.4+. Locally always use
   `/opt/homebrew/opt/php@8.1/bin/php` for `artisan` and `phpunit`.
 - **Never use `request.url` for redirects in Next.js server code.** Railway runs it on
@@ -106,8 +113,14 @@ Check Foursquare first. The call uses `CURLOPT_TIMEOUT => 0` — no timeout — 
 request thread, so one slow upstream response holds a worker indefinitely (RISK-010).
 
 ### A deploy "succeeded" but nothing changed
-See the `releaseCommand` trap above. Check the build logs directly rather than trusting
-the status.
+Almost certainly the schema. Query the database directly:
+
+```sql
+SELECT COUNT(*) FROM migrations;   -- compare against the number of files in database/migrations
+```
+
+A green deploy has never guaranteed a migrated schema on this project (see the deploy trap
+above). Check the end state, not the status.
 
 ### Custom domain stops resolving
 DNS authority is **Squarespace** (nameservers), registrar is **Namecheap** (domain
