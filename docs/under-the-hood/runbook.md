@@ -42,6 +42,7 @@ deploy command.
   `6b9b589b` (SUCCESS) has no release step in its event list and no `migrat`/`artisan`
   output in its logs. Production ran 24 recorded migrations against 30 files.
   The correct key is `deploy.preDeployCommand`, an ARRAY — fixed in backend PR #17.
+  Full write-up, including how to verify it stayed fixed: **SOL-007**.
   **Until a migration file is confirmed appearing as a row in the production `migrations`
   table on its own, keep verifying schema changes by querying the database.**
 - **PHP is pinned to 8.1.** Laravel 8 crashes on 8.4+. Locally always use
