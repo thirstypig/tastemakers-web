@@ -86,12 +86,12 @@ const OVERALL_CONFIG: Record<
 const SYSTEM_INFO: { label: string; value: string; color: string }[] = [
   { label: "Frontend", value: "Next.js 15 · React 19 · TypeScript", color: t.accent },
   { label: "Backend", value: "Laravel 8 · PHP 8.1 · Railway (api.tastemakersapp.com)", color: t.purple },
-  { label: "Database", value: "PostgreSQL · Supabase · 22 tables", color: t.yellow },
+  { label: "Database", value: "PostgreSQL · Supabase · 31 tables", color: t.yellow },
   { label: "Auth", value: "Laravel Passport · OAuth2 Bearer", color: t.green },
-  { label: "Cache", value: "Redis · Port 6384", color: t.orange },
-  { label: "API Endpoints", value: "50 routes", color: t.cyan },
+  { label: "Cache", value: "file driver (no Redis in prod)", color: t.orange },
+  { label: "API Endpoints", value: "41 routes", color: t.cyan },
   { label: "Models", value: "9 Eloquent models", color: t.red },
-  { label: "Test Coverage", value: "9 PHPUnit tests (auth + user profile)", color: t.yellow },
+  { label: "Test Coverage", value: "106 PHPUnit · 392 Vitest", color: t.green },
 ];
 
 /* ─────────────────────────────────────────────
