@@ -1,0 +1,155 @@
+/*
+ * Tastemaker index rows.
+ *
+ * These two pages were the last occupants of the dark `(public)` route group and
+ * carried 25 hardcoded hex values between them (TODO-124). Everything here is a
+ * v2 token, so the palette follows the system rather than restating it.
+ *
+ * Deliberately not a card grid: a tastemaker is a person with a body of work, and
+ * the lists underneath are the work. A row that opens into its own lists reads as
+ * "who they are, then what they picked"; a grid of equal tiles would flatten the
+ * person and the list into the same object.
+ */
+
+.tm-maker {
+  background: var(--tm-card);
+  border: 1px solid var(--tm-border);
+  border-radius: var(--tm-radius-card);
+  box-shadow: var(--tm-card-shadow);
+  overflow: hidden;
+}
+
+.tm-maker-head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 18px 20px;
+}
+
+.tm-maker-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: var(--tm-strip);
+}
+
+.tm-maker-avatar img {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+}
+
+.tm-maker-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.tm-maker-nameline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tm-maker-name {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--tm-purple);
+  margin: 0;
+  text-decoration: none;
+}
+
+.tm-maker-name:hover {
+  text-decoration: underline;
+}
+
+/* The level word, not a coloured pill. Five tiers rendered as five colours was
+   decoration — the label already says which tier it is, and colour added a
+   second encoding nobody had a key for. */
+.tm-maker-level {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--tm-muted);
+}
+
+.tm-maker-handle {
+  font-size: 13px;
+  color: var(--tm-faint);
+  margin: 2px 0 0;
+}
+
+.tm-maker-bio {
+  font-size: 14px;
+  color: var(--tm-ink);
+  line-height: 1.55;
+  margin: 8px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tm-maker-stats {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--tm-muted);
+}
+
+.tm-maker-stat b {
+  color: var(--tm-ink);
+  font-weight: 700;
+}
+
+.tm-maker-view {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tm-crimson);
+  text-decoration: none;
+}
+
+.tm-maker-view:hover {
+  text-decoration: underline;
+}
+
+/* The lists strip reuses the grey the list cards already use for their tag
+   footer, so a tastemaker row and a restaurant row share one visual grammar. */
+.tm-maker-lists {
+  border-top: 1px solid var(--tm-hairline);
+  background: var(--tm-strip);
+  padding: 14px 20px 16px;
+}
+
+.tm-maker-listlabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--tm-muted);
+  margin: 0 0 10px;
+}
+
+@media (max-width: 520px) {
+  .tm-maker-head {
+    padding: 16px;
+  }
+
+  .tm-maker-view {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 6px;
+  }
+
+  .tm-maker-stats {
+    flex-wrap: wrap;
+  }
+}

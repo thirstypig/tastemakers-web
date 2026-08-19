@@ -20,6 +20,10 @@ import { resolve } from "node:path";
  * caching itself is Next's contract. `npm run build` is the real verification,
  * and it prints the rendering strategy per route.
  *
+ * The tastemakers pages moved from `(public)` to `(app)` in TODO-124 — route
+ * groups do not affect URLs, so /tastemakers is unchanged for visitors and for
+ * search engines; only the layout it inherits changed.
+ *
  * Deliberately NOT listed: /search, /bookmarks and /profile, which are
  * per-visitor and must stay dynamic; /privacy, /explore and /review, which are
  * already static and query nothing.
@@ -35,8 +39,8 @@ const CACHED_PAGES = [
   "(app)/lists/page.tsx",
   "(app)/lists/[slug]/page.tsx",
   "(app)/cuisines/page.tsx",
-  "(public)/tastemakers/page.tsx",
-  "(public)/tastemakers/[slug]/page.tsx",
+  "(app)/tastemakers/page.tsx",
+  "(app)/tastemakers/[slug]/page.tsx",
 ];
 
 /** Per-visitor: caching these would serve one person's view to everyone. */
