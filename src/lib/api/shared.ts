@@ -129,6 +129,30 @@ export function tasteLevel(listCount: number): 1 | 2 | 3 | 4 | 5 {
   return 1;
 }
 
+/**
+ * The word a visitor reads for a taste level.
+ *
+ * Lived as a `LEVEL_LABEL` constant copy-pasted into both the tastemakers index
+ * and the profile page, so the same person could be shown as two different tiers
+ * depending on which page you were on. One definition, next to the `tasteLevel`
+ * that produces the number.
+ *
+ * Falls back rather than returning undefined: the parameter is a plain number,
+ * so anything can reach it, and a missing key would render the literal string
+ * "undefined" next to someone's name.
+ */
+export function levelLabel(level: number): string {
+  const LABELS: Record<number, string> = {
+    1: "Explorer",
+    2: "Curator",
+    3: "Connoisseur",
+    4: "Maven",
+    5: "Legend",
+  };
+
+  return LABELS[level] ?? "Curator";
+}
+
 /** Shape a restaurants row into the shared Restaurant type. */
 export function toRestaurant(
   r: {

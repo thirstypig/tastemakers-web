@@ -7,6 +7,7 @@ import TagCloud from "@/components/tags/TagCloud";
 import ListCard from "@/features/lists/ListCard";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
+import { levelLabel } from "@/lib/api/shared";
 import { canonical } from "@/lib/site";
 import "@/features/tastemakers/tastemakers.css";
 
@@ -21,14 +22,6 @@ import "@/features/tastemakers/tastemakers.css";
  * (TODO-094).
  */
 export const revalidate = 60;
-
-const LEVEL_LABEL: Record<number, string> = {
-  1: "Explorer",
-  2: "Curator",
-  3: "Connoisseur",
-  4: "Maven",
-  5: "Legend",
-};
 
 // ── Static params ─────────────────────────────────────────────────────────────
 
@@ -82,9 +75,7 @@ export default async function TastemakerProfilePage({
   const tastemaker = await getTastemaker(slug);
   if (!tastemaker) notFound();
 
-  const levelLabel = LEVEL_LABEL[tastemaker.level] ?? "Curator";
-
-  return (
+    return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <Link href="/tastemakers" className="tm-maker-view" style={{ marginLeft: 0 }}>
         &larr; Tastemakers
@@ -105,7 +96,7 @@ export default async function TastemakerProfilePage({
         <div className="tm-maker-body">
           <div className="tm-maker-nameline">
             <h1 style={{ fontSize: 26, fontWeight: 900, margin: 0 }}>{tastemaker.name}</h1>
-            <span className="tm-maker-level">{levelLabel}</span>
+            <span className="tm-maker-level">{levelLabel(tastemaker.level)}</span>
           </div>
 
           {tastemaker.username && <p className="tm-maker-handle">@{tastemaker.username}</p>}
