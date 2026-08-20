@@ -91,13 +91,18 @@ describe("admin pages", () => {
     const colourProp = /\b(\w*[Cc]olor|bg|background\w*|fill|stroke)\s*:\s*["'](#[0-9a-fA-F]{3,8})["']/g;
 
     /**
-     * `/admin/tech` renders Mermaid diagrams through a hardcoded dark theme
-     * (`theme: "dark"`, `darkMode: true`) alongside three fixed hex values, so
-     * the diagrams stay dark while the page around them switches. Fixing it
-     * means making the Mermaid theme react to the active admin theme at
-     * runtime, which is real work rather than a rename — filed as todo 129 and
-     * exempted here by name so it stays visible instead of quietly weakening
-     * the rule for everyone.
+     * `/admin/tech` renders Mermaid through a fixed dark palette in BOTH admin
+     * themes — `MERMAID_DARK` in that file, with the wrapper matched to it.
+     *
+     * That is now a **decision, not a defect** (todo 129, resolved as Option B
+     * on 2026-08-20). It previously mixed `theme: "dark"` with three themed
+     * vars and came out half-switched in light mode: dark node fills carrying
+     * light text. Committing it to dark is deliberate; making Mermaid follow
+     * the toggle needs the resolved custom properties read after mount and a
+     * re-render on every change, which is real work for an admin-only page.
+     *
+     * Exempted by name rather than by weakening the rule for every page. If
+     * Mermaid is ever made theme-aware, delete this entry in the same commit.
      */
     const EXEMPT = ["/src/app/admin/tech/page.tsx"];
 

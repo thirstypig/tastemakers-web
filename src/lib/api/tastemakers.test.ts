@@ -34,8 +34,17 @@ const USERS = [
  * the same shape as the production numbers that surfaced this.
  */
 const TAG_ROWS = [
-  ...Array.from({ length: 1200 }, () => ({ user_id: 1 })),
-  ...Array.from({ length: 300 }, () => ({ user_id: 2 })),
+  // Tag 10 used 700x, tag 20 used 500x by user 1 — a 0.71 share, so they must
+  // land on different levels once "Known for" ranks them.
+  ...Array.from({ length: 700 }, () => ({ user_id: 1, tag_id: 10 })),
+  ...Array.from({ length: 500 }, () => ({ user_id: 1, tag_id: 20 })),
+  ...Array.from({ length: 300 }, () => ({ user_id: 2, tag_id: 30 })),
+];
+
+const TAG_NAMES = [
+  { id: 10, name: "Would Recommend" },
+  { id: 20, name: "Popular/Trendy" },
+  { id: 30, name: "Authentic" },
 ];
 
 const from = vi.fn();
@@ -81,6 +90,7 @@ function builderFor(rows: unknown[]) {
 
 function tableFor(name: string, userFilter?: number) {
   if (name === "users") return builderFor(userFilter ? USERS.filter((u) => u.id === userFilter) : USERS);
+  if (name === "tags") return builderFor(TAG_NAMES);
   if (name === "restaurant_tag") {
     return builderFor(userFilter ? TAG_ROWS.filter((r) => r.user_id === userFilter) : TAG_ROWS);
   }
@@ -210,5 +220,58 @@ describe("getTastemaker — slug casing", () => {
   it("still 404s a genuinely unknown slug", async () => {
     const { getTastemaker } = await import("./index");
     expect(await getTastemaker("nobody")).toBeNull();
+  });
+});
+
+/**
+ * `/tastemakers/[slug]` renders a "Known for" cloud behind
+ * `tastemaker.tags.length > 0`, and both lookups returned a hardcoded `tags: []`
+ * — so the markup, the import and the CSS all existed and the section had never
+ * displayed once. The page could say someone has 932 tags while being
+ * structurally unable to show one (todo 125).
+ *
+ * Ranked by how often THAT PERSON used each tag rather than by community
+ * consensus, decided 2026-08-20.
+ */
+describe("getTastemaker — Known for", () => {
+  beforeEach(() => {
+    vi.resetModules();
+    from.mockReset();
+    from.mockImplementation((name: string) => tableFor(name, 1));
+  });
+
+  it("returns tags at all", async () => {
+    const { getTastemaker } = await import("./index");
+    const t = await getTastemaker("Thirstypig");
+
+    // The entire defect: this was [] forever.
+    expect(t!.tags.length, "the cloud is gated on this being non-empty").toBeGreaterThan(0);
+  });
+
+  it("ranks by how often the person used each tag", async () => {
+    const { getTastemaker } = await import("./index");
+    const t = await getTastemaker("Thirstypig");
+
+    expect(t!.tags.map((x) => x.name)).toEqual(["Would Recommend", "Popular/Trendy"]);
+    expect(t!.tags[0].count).toBe(700);
+    expect(t!.tags[1].count).toBe(500);
+  });
+
+  it("levels them by share of the person's leading tag", async () => {
+    const { getTastemaker } = await import("./index");
+    const t = await getTastemaker("Thirstypig");
+
+    expect(t!.tags[0].level).toBe(1);
+    // 500/700 = 0.71 -> L2. Under gap-from-leader this would be L5.
+    expect(t!.tags[1].level).toBe(2);
+  });
+
+  it("counts uses past the 1000-row cap", async () => {
+    // 700 + 500 = 1200 rows for this user, so an unpaged read would both
+    // undercount the leader and lose the second tag's true weight.
+    const { getTastemaker } = await import("./index");
+    const t = await getTastemaker("Thirstypig");
+
+    expect(t!.tags.reduce((n, x) => n + (x.count ?? 0), 0)).toBe(1200);
   });
 });
