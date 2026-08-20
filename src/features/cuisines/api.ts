@@ -23,13 +23,14 @@ export async function listCuisines(limit = 40): Promise<Cuisine[]> {
   // or enforces, and this is the second table to cross that line unnoticed.
   const [categories, links] = await Promise.all([
     fetchAllPages<{ id: number; title: string | null }>(async (from, to) => {
-      const { data } = await sb.from("categories").select("id, title").range(from, to);
+      const { data } = await sb.from("categories").select("id, title").order("id", { ascending: true }).range(from, to);
       return data;
     }),
     fetchAllPages<{ category_id: number; restaurant_id: number }>(async (from, to) => {
       const { data } = await sb
         .from("category_restaurant")
         .select("category_id, restaurant_id")
+        .order("id", { ascending: true })
         .range(from, to);
       return data;
     }),

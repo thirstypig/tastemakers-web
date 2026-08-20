@@ -26,7 +26,11 @@ export async function listRestaurants(): Promise<Restaurant[]> {
   // (PostgREST's cap), so the ranking below was computed from a quarter of the
   // table and surfaced the wrong restaurants — silently (todo 090).
   const tagCounts = await fetchAllPages<{ restaurant_id: number }>(async (from, to) => {
-    const { data } = await sb.from("restaurant_tag").select("restaurant_id").range(from, to);
+    const { data } = await sb
+      .from("restaurant_tag")
+      .select("restaurant_id")
+      .order("id", { ascending: true })
+      .range(from, to);
     return data;
   });
 
@@ -52,20 +56,45 @@ export async function listRestaurants(): Promise<Restaurant[]> {
 
   if (!restaurants?.length) return [];
 
-  const { data: tagRows } = await sb
-    .from("restaurant_tag")
-    .select("restaurant_id, tag_id")
-    .in("restaurant_id", topIds);
+  // `.in(...)` bounds this to the top 60, so it is not the unbounded read of
+  // todo 090 — but the bound is data-dependent, not structural. Measured against
+  // production 2026-08-19: 848 rows against the 1000 cap, 15% headroom, and the
+  // same 848 the finding recorded a day earlier. The density lands
+  // disproportionately here because the top 60 are the restaurants people
+  // actually tag, so any re-engagement or a tag-seeding backfill (backend todos
+  // 033-035) crosses it — and the failure is invisible: the page renders, the
+  // tag clouds are just missing rows (todo 122).
+  const tagRows = await fetchAllPages<{ restaurant_id: number; tag_id: number }>(async (from, to) => {
+    const { data } = await sb
+      .from("restaurant_tag")
+      .select("restaurant_id, tag_id")
+      .in("restaurant_id", topIds)
+      .order("id", { ascending: true })
+      .range(from, to);
+    return data;
+  });
 
-  const tagIds = [...new Set((tagRows ?? []).map((r) => r.tag_id))];
-  const { data: tagData } = tagIds.length > 0
-    ? await sb.from("tags").select("id, name").in("id", tagIds).is("deleted_at", null)
-    : { data: [] };
+  // 285 distinct tags across the top 60 today, so this is far from the cap —
+  // paged for the same reason `categories` is in features/cuisines: "under the
+  // cap right now" is not a property the code states or enforces.
+  const tagIds = [...new Set(tagRows.map((r) => r.tag_id))];
+  const tagData = tagIds.length > 0
+    ? await fetchAllPages<{ id: number; name: string }>(async (from, to) => {
+        const { data } = await sb
+          .from("tags")
+          .select("id, name")
+          .in("id", tagIds)
+          .is("deleted_at", null)
+          .order("id", { ascending: true })
+          .range(from, to);
+        return data;
+      })
+    : [];
 
   const tagMap = new Map<number, string>();
-  tagData?.forEach((t) => tagMap.set(t.id, t.name));
+  tagData.forEach((t) => tagMap.set(t.id, t.name));
 
-  const tagsByRestaurant = buildTagsByRestaurant(tagRows ?? [], tagMap, 4);
+  const tagsByRestaurant = buildTagsByRestaurant(tagRows, tagMap, 4);
 
   const orderMap = new Map(topIds.map((id, i) => [id, i]));
   return [...restaurants]
