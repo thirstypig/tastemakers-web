@@ -78,4 +78,4 @@ The glossary entry for 'level' says it is a raw count, but the web client treats
 
 ---
 
-<!-- generated 2026-08-19T04:21:30.458Z by scripts/sync-inbox.mjs -->
+<!-- generated 2026-08-19T23:50:47.179Z by scripts/sync-inbox.mjs -->

@@ -33,7 +33,7 @@ it isn't re-litigated) · `done`.
 |---|---|---|---|---|
 | **RM-01** | Finish the hosting migration | The API is live on Railway but the App Store iOS build still calls the legacy Namecheap host. Until iOS is repointed, production is running on infrastructure being decommissioned. | `now` | — |
 | **RM-02** | Fix the P1 security backlog | 10 open P1 findings, including an endpoint that lets any user delete any list. These block any real user growth. | `now` | TODO-068, TODO-006 |
-| **RM-13** | PostgreSQL compatibility sweep | 19 MySQL-only calls (`IFNULL`, `IF()`) remain in the two god controllers. These **throw on Supabase** — `getallBadges` is one of them. Migration-blocking, not cleanup. | `now` | RM-01, TASK-10 |
+| **RM-13** | PostgreSQL compatibility sweep | `IFNULL`/`IF()`/`GROUP_CONCAT` are **done** — zero MySQL-only constructs remain in `app/`. What remains: GROUP BY strictness (TASK-23) and `restaurants.lat/lng` still `varchar` (backend 015). The whole failure class is documented in `tastemakers-backend/docs/solutions/database-issues/mysql-to-postgres-dialect-and-schema-drift.md`. | `now` | RM-01, TASK-10 |
 
 ## Next
 
