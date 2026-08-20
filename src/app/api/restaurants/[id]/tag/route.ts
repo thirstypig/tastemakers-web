@@ -8,8 +8,8 @@ import { isUniqueViolation } from "@/lib/pg-errors";
 async function getSessionUser() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
+    supabaseUrl()!,
+    supabaseAnonKey()!,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -23,8 +23,8 @@ async function getSessionUser() {
 
 function db() {
   return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_ANON_KEY!,
+    supabaseUrl()!,
+    supabaseServiceRoleKey() ?? supabaseAnonKey()!,
     { auth: { persistSession: false } },
   );
 }
@@ -157,3 +157,4 @@ export async function DELETE(
 
   return NextResponse.json({ ok: true });
 }
+import { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } from "@/lib/supabase/server-env";

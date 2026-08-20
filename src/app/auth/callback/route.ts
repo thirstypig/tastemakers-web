@@ -28,7 +28,7 @@ async function syncPublicUser(
 
   if (!user?.email) return;
 
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = supabaseServiceRoleKey();
   const db = serviceKey
     ? createClient(supabaseAuthUrl, serviceKey, {
         auth: { persistSession: false },
@@ -100,10 +100,10 @@ export async function GET(request: NextRequest) {
 
   if (code) {
     const cookieStore = await cookies();
-    const supabaseUrl = process.env.SUPABASE_URL!;
-    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY!;
+    const url = supabaseUrl()!;
+    const anonKey = supabaseAnonKey()!;
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    const supabase = createServerClient(url, anonKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll();
@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
     if (!error) {
       // Sync public.users record (non-blocking — don't fail redirect if sync fails)
       try {
-        await syncPublicUser(supabaseUrl, supabaseAnonKey, cookieStore);
+        await syncPublicUser(url, anonKey, cookieStore);
       } catch (syncErr) {
         console.error("sync-user error in callback:", syncErr);
       }
@@ -137,3 +137,4 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.redirect(errorRedirect);
 }
+import { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } from "@/lib/supabase/server-env";

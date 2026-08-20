@@ -8,8 +8,8 @@ export async function POST() {
 
   // Verify session from cookies
   const supabaseAuth = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
+    supabaseUrl()!,
+    supabaseAnonKey()!,
     {
       cookies: {
         getAll() {
@@ -35,12 +35,12 @@ export async function POST() {
 
   // Use service role key for writing to public.users if available;
   // fall back to anon key with persistSession: false
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const serviceKey = supabaseServiceRoleKey();
   const db = serviceKey
-    ? createClient(process.env.SUPABASE_URL!, serviceKey, {
+    ? createClient(supabaseUrl()!, serviceKey, {
         auth: { persistSession: false },
       })
-    : createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, {
+    : createClient(supabaseUrl()!, supabaseAnonKey()!, {
         auth: { persistSession: false },
       });
 
@@ -101,3 +101,4 @@ export async function POST() {
 
   return NextResponse.json({ app_user_id: appUserId });
 }
+import { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } from "@/lib/supabase/server-env";
