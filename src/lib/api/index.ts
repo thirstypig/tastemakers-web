@@ -1,5 +1,5 @@
 import { createServerClient } from "@/lib/supabase-server";
-import { buildTagsByRestaurant, cityFromAddress, coverImage, tasteLevel } from "./shared";
+import { buildTagsByRestaurant, cityFromAddress, coverImage, fetchAllPages, tasteLevel } from "./shared";
 import { buildSlug } from "@/lib/slug";
 import type { Tastemaker, CuratedList, Restaurant, Tag } from "./types";
 
@@ -18,9 +18,23 @@ export async function listTastemakers(): Promise<Tastemaker[]> {
 
   const userIds = users.map((u) => u.id);
 
-  const [{ data: allLists }, { data: tagRows }] = await Promise.all([
+  // Every tastemaker's tag rows at once exceeds PostgREST's 1000-row cap, and a
+  // capped read here is invisible: the counts still render, just short. The
+  // listing showed Thirsty Pig 871 + Master Taster 129 = exactly 1000 while the
+  // profile page (one user, under the cap) showed Thirsty Pig 932. Page it.
+  const [{ data: allLists }, tagRows] = await Promise.all([
     sb.from("testmaker_list").select("id, list_name, user_id").in("user_id", userIds).order("created_at", { ascending: false }),
-    sb.from("restaurant_tag").select("user_id").in("user_id", userIds),
+    // `.order("id")` is not decoration: range paging without a stable sort lets
+    // Postgres return overlapping or skipped rows between pages.
+    fetchAllPages<{ user_id: number }>(async (from, to) => {
+      const { data } = await sb
+        .from("restaurant_tag")
+        .select("user_id")
+        .in("user_id", userIds)
+        .order("id", { ascending: true })
+        .range(from, to);
+      return data;
+    }),
   ]);
 
   const listsByUser = new Map<number, Array<{ id: number; list_name: string | null; user_id: number }>>();
@@ -31,7 +45,7 @@ export async function listTastemakers(): Promise<Tastemaker[]> {
   });
 
   const tagCountByUser = new Map<number, number>();
-  tagRows?.forEach((r) => {
+  tagRows.forEach((r) => {
     tagCountByUser.set(r.user_id, (tagCountByUser.get(r.user_id) ?? 0) + 1);
   });
 
@@ -78,9 +92,20 @@ export async function getTastemaker(slug: string): Promise<Tastemaker | null> {
 
   if (!user) return null;
 
-  const [{ data: userLists }, { data: tagRows }] = await Promise.all([
+  // One user fits under the 1000-row cap today, but only just: Thirsty Pig is at
+  // 932. Page it rather than wait for the most-active tastemaker to cross the
+  // line and start under-reporting with no error (todo 122's shape).
+  const [{ data: userLists }, tagRows] = await Promise.all([
     sb.from("testmaker_list").select("id, list_name").eq("user_id", user.id).order("created_at", { ascending: false }),
-    sb.from("restaurant_tag").select("user_id").eq("user_id", user.id),
+    fetchAllPages<{ user_id: number }>(async (from, to) => {
+      const { data } = await sb
+        .from("restaurant_tag")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .order("id", { ascending: true })
+        .range(from, to);
+      return data;
+    }),
   ]);
 
   const listIds = (userLists ?? []).map((l) => l.id);
@@ -105,7 +130,7 @@ export async function getTastemaker(slug: string): Promise<Tastemaker | null> {
     bio: user.short_description ?? "",
     avatarUrl: coverImage(user.id + 100, 400),
     location: "",
-    followerCount: tagRows?.length ?? 0,
+    followerCount: tagRows.length,
     listCount,
     level: tasteLevel(listCount),
     lists: (userLists ?? []).map((l) => ({
