@@ -81,14 +81,62 @@ export async function listTastemakers(): Promise<Tastemaker[]> {
   });
 }
 
+/** Columns every tastemaker lookup selects. Kept in one place so the two
+ *  lookups below cannot drift apart. */
+const TASTEMAKER_COLUMNS = "id, first_name, last_name, username, short_description, instagram, image";
+
+type TastemakerRow = {
+  id: number;
+  first_name: string | null;
+  last_name: string | null;
+  username: string | null;
+  short_description: string | null;
+  instagram: string | null;
+  image: string | null;
+};
+
+/**
+ * Find a tastemaker whose username differs from `slug` only by case.
+ *
+ * Returns null when nothing matches, so the caller still 404s for a genuinely
+ * unknown slug. Ambiguity is impossible in practice and harmless if it ever
+ * arose: two usernames differing only in case would resolve to the first, and
+ * the caller redirects to whichever canonical casing it gets back.
+ */
+async function resolveUsernameIgnoringCase(
+  sb: ReturnType<typeof createServerClient>,
+  slug: string,
+): Promise<TastemakerRow | null> {
+  const wanted = slug.toLowerCase();
+
+  const { data: candidates } = await sb
+    .from("users")
+    .select(TASTEMAKER_COLUMNS)
+    .eq("is_testmaker", 1)
+    .is("deleted_at", null);
+
+  return (candidates ?? []).find((u) => u.username?.toLowerCase() === wanted) ?? null;
+}
+
 export async function getTastemaker(slug: string): Promise<Tastemaker | null> {
   const sb = createServerClient();
 
   // Try username match first, then numeric id
   const numId = parseInt(slug, 10);
-  const { data: user } = isNaN(numId)
+  const { data: exact } = isNaN(numId)
     ? await sb.from("users").select("id, first_name, last_name, username, short_description, instagram, image").eq("username", slug).eq("is_testmaker", 1).is("deleted_at", null).single()
     : await sb.from("users").select("id, first_name, last_name, username, short_description, instagram, image").eq("id", numId).eq("is_testmaker", 1).is("deleted_at", null).single();
+
+  // `.eq` is case-sensitive, so /tastemakers/thirstypig used to 404 while
+  // /tastemakers/Thirstypig resolved. Our own links carry the stored casing, so
+  // this only ever broke inbound traffic — which is the traffic these pages
+  // exist to capture. Fall back to a case-insensitive match on a miss.
+  //
+  // Matching in JS rather than with `.ilike` is deliberate: ilike treats `_` as
+  // a single-character wildcard and `_` is a legal username character, so
+  // `thirsty_pig` would also match `thirstyXpig`. The tastemaker set is small
+  // and this runs only on the miss path.
+  const user = exact ?? (await resolveUsernameIgnoringCase(sb, slug));
 
   if (!user) return null;
 

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getTastemaker, listTastemakers } from "@/lib/api/index";
@@ -74,6 +74,11 @@ export default async function TastemakerProfilePage({
   const { slug } = await params;
   const tastemaker = await getTastemaker(slug);
   if (!tastemaker) notFound();
+
+  // Send any other casing to the canonical one, so a profile has a single
+  // indexable URL rather than one per spelling a visitor happens to type.
+  // 308 rather than 302: a username's casing does not change per request.
+  if (slug !== tastemaker.slug) permanentRedirect(`/tastemakers/${tastemaker.slug}`);
 
     return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
