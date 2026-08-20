@@ -2,6 +2,22 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.3.0",
+    date: "2026-08-20",
+    title: "Four counts that were wrong, and the arithmetic that gave them away",
+    items: [
+      { type: "-", text: "Tastemaker tag counts on /tastemakers were short. The listing read every tastemaker's restaurant_tag rows in one unpaged query; PostgREST caps at 1000 and reports success, so the counts were computed from a truncated set. Thirsty Pig showed 871 and Master Taster 129 — summing to exactly 1000 — while the profile page, one user and under the cap, showed 932. Per-user totals landing on precisely the cap was the entire symptom: no error, no log line, no visual defect." },
+      { type: "-", text: "Tastemaker profile URLs 404'd on any casing but the stored one. /tastemakers/thirstypig failed while /tastemakers/Thirstypig rendered, because the lookup used .eq(\"username\", slug) and .eq is case-sensitive. Our own links carry the stored casing so they always worked — this only ever broke inbound links, which is the traffic these SEO pages exist to capture. Now resolves case-insensitively and 308s to the canonical spelling." },
+      { type: "~", text: "The obvious fix for that was the wrong one. .ilike would have worked and also treats _ as a single-character wildcard, and _ is a legal username character — thirsty_pig would have matched thirstyXpig too. Matched in JS on the miss path instead." },
+      { type: "~", text: "listRestaurants read its top-60 tag rows with .in(...) but no range: 848 rows against the 1000 cap, 15% headroom, re-measured against production before touching it. Not wrong today, but the bound is data-dependent and the top 60 are by definition where new tagging density lands. Paged, along with the tags lookup beside it." },
+      { type: "~", text: "Every fetchAllPages call site now sorts by id before ranging. Postgres does not guarantee row order without ORDER BY, so a row could land on two pages or none; a sequential scan of a static table happens to be stable, which is why three call sites omitted it without visible damage. Checked the live schema first — category_restaurant is a pivot table and could easily have had no id column, in which case the fix would have 500'd /cuisines." },
+      { type: "+", text: "Tests 442 to 454, on two functions that had none. All four fixes verified by reverting them and watching the right test fail for the right reason: 1000 where 1200/1500/300 belong for the cap, \"expected null to be truthy\" for the casing, \"expected 0 to be greater than 0\" for the listing — while the in-cap and unknown-slug controls kept passing." },
+      { type: "-", text: "Three error_log files had been tracked in the backend repo since 2021. .gitignore has carried an error_log pattern for some time, but that does nothing for files already tracked — the guard was added and the cleanup was not. PHP fatals from the legacy Namecheap host disclosing /home/tastofgc/public_html/. Scanned for credentials before removing: none." },
+      { type: "~", text: "Corrected mid-session: a claim that the search page left _ unescaped as a LIKE wildcard was wrong. sanitizeSearchTerm strips it to a space, so _izza becomes izza, which genuinely substring-matches Pizzana. The discriminating probe (p_zza returning 0) confirmed both % and _ are neutralised." },
+      { type: "~", text: "Still open and now recorded: /tastemakers/73 is a numeric-id URL for a tastemaker with no username, and the lookup branches on parseInt — so an all-digits username would route to the id query and miss. The \"Known for\" tag cloud on a profile still cannot render; it is blocked on a ranking decision, not on code." },
+    ],
+  },
+  {
     v: "v11.2.0",
     date: "2026-08-19",
     title: "Repairing the backend the App Store build talks to",
