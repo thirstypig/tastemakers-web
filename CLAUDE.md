@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 454 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 460 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 454 tests (40 test files)
+npx vitest run     # run 460 tests (41 test files)
 ```
 
 ## Project Structure
@@ -293,7 +293,7 @@ Any test for this must model the cap the way PostgREST behaves — an unranged r
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 454 tests across 40 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
+- **Current suite:** 460 tests across 41 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
@@ -315,6 +315,7 @@ Any test for this must model the cap the way PostgREST behaves — an unranged r
 | `src/features/tags/ramp.test.ts` | 7 | Ramp contrast ≥4.5:1, monotonic prominence, even L* spacing, non-colour channel |
 | `src/lib/api/image-url.test.ts` | 7 | Photo URLs resolve against the API host, not a relative path |
 | `src/lib/pg-errors.test.ts` | 5 | Unique-violation matching, both directions |
+| `src/lib/admin-theme.ts` test | 6 | `ADMIN_THEME` is the single source for admin page colours. Themed roles must be `var(--tm-*)`; data-viz colours must stay literals. Also asserts no admin page declares a local `const t = {}` or assigns a hex to a themed role — the defect that left `/admin/api` ignoring the light/dark toggle (TODO-034) |
 | `src/styles/css-wiring.test.ts` | 3 | Every `tm-*` class is defined; every stylesheet is imported |
 | `src/lib/docs.test.ts` | 63 | Auto-walk registry, frontmatter parsing, H1 title extraction (code-fence + HTML-comment guard), section grouping, exclusions, search, status badges, **client/server boundary guard (SOL-004)** |
 | `scripts/refresh-docs.test.mjs` | 22 | `computeCostRows` unit economics (hand-checked), frontmatter, status-block build, **marker-replacement idempotency**, real roadmap/todo table parsing |

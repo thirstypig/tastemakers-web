@@ -1,21 +1,8 @@
 import { runCheck, shortBody, type Check, type CheckResult } from "@/lib/api-probe";
+import { ADMIN_THEME as t } from "@/lib/admin-theme";
 
 const API = "https://api.tastemakersapp.com";
 
-const t = {
-  bg: "#0f0f23",
-  surface: "#16162a",
-  border: "#2a2a4a",
-  text: "#e2e8f0",
-  muted: "#94a3b8",
-  dim: "#64748b",
-  accent: "#60a5fa",
-  green: "#34d399",
-  red: "#f87171",
-  yellow: "#fbbf24",
-  font: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-  mono: '"SF Mono", "Fira Code", "JetBrains Mono", Menlo, monospace',
-};
 
 
 const CHECKS: Check[] = [

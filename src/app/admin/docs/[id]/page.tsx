@@ -1,20 +1,8 @@
 import { notFound } from "next/navigation";
 import { fetchMarkdown, getDoc, getDocsRegistry, groupBySection, statusBadge } from "@/lib/docs";
 import { renderMarkdown } from "@/lib/markdown";
+import { ADMIN_THEME as t } from "@/lib/admin-theme";
 
-const t = {
-  bg: "var(--tm-bg)",
-  surface: "var(--tm-panel)",
-  border: "var(--tm-line)",
-  text: "var(--tm-ink)",
-  muted: "var(--tm-muted)",
-  dim: "var(--tm-muted)",
-  accent: "var(--tm-accent)",
-  red: "var(--tm-err)",
-  warn: "var(--tm-warn)",
-  font: "var(--font-jetbrains-mono), monospace",
-  mono: "var(--font-jetbrains-mono), monospace",
-};
 
 const TONE: Record<string, string> = {
   ok: t.accent, warn: t.warn, accent: t.accent, muted: t.muted,
@@ -187,8 +175,8 @@ export default async function DocPage({ params }: { params: Promise<{ id: string
             </p>
           </>
         ) : (
-          <div style={{ padding: 32, background: `${t.red}10`, border: `1px solid ${t.red}30`, borderRadius: 8 }}>
-            <p style={{ margin: 0, color: t.red, fontSize: 14 }}>Could not load document</p>
+          <div style={{ padding: 32, background: `${t.err}10`, border: `1px solid ${t.err}30`, borderRadius: 8 }}>
+            <p style={{ margin: 0, color: t.err, fontSize: 14 }}>Could not load document</p>
             <p style={{ margin: "8px 0 0", color: t.muted, fontSize: 12 }}>
               {doc.source.type === "github"
                 ? `Failed to fetch from github.com/${doc.source.repo} — check GITHUB_TOKEN has not expired.`
