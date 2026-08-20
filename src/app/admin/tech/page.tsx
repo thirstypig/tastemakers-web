@@ -1,26 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { ADMIN_THEME as t } from "@/lib/admin-theme";
 
 /* ─────────────────────────────────────────────
    Design tokens — matches dark dev-tool aesthetic
    ───────────────────────────────────────────── */
-const t = {
-  bg: "var(--tm-bg)",
-  surface: "var(--tm-panel)",
-  border: "var(--tm-line)",
-  text: "var(--tm-ink)",
-  muted: "var(--tm-muted)",
-  dim: "var(--tm-muted)",
-  accent: "var(--tm-accent)",
-  green: "#34d399",
-  yellow: "#facc15",
-  red: "#f87171",
-  purple: "#a78bfa",
-  orange: "#fb923c",
-  font: "var(--font-jetbrains-mono), monospace",
-  mono: "var(--font-jetbrains-mono), monospace",
-};
 
 /* ─────────────────────────────────────────────
    Mermaid Diagrams

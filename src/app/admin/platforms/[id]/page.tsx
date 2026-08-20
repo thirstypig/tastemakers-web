@@ -90,9 +90,13 @@ const PLATFORM_DATA: Record<
     lastRelease: "2026-06-08",
     repoPublic: true,
     todos: [
-      { priority: "P2", title: "Move Bearer token from localStorage to httpOnly cookie" },
+      // "Move Bearer token from localStorage to httpOnly cookie" was removed
+      // 2026-08-20: the file holding that token (src/lib/api.ts) was deleted as
+      // dead code, and auth is now a Supabase session in host-only cookies.
+      // Nothing in src/ puts a credential in localStorage. Todo 008.
       { priority: "P2", title: "Fix TastemakerList.name → list_name field mismatch" },
       { priority: "P3", title: "Add TypeScript null safety for nullable API fields" },
+      { priority: "P3", title: "Mermaid diagrams on /admin/tech stay dark in light mode" },
     ],
     fallbackCommits: [],
     routes: [

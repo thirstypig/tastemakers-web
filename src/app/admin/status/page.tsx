@@ -1,27 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { ADMIN_THEME as t } from "@/lib/admin-theme";
 
 /* ─────────────────────────────────────────────
    Design tokens — shared across all pages
    ───────────────────────────────────────────── */
-const t = {
-  bg: "var(--tm-bg)",
-  surface: "var(--tm-panel)",
-  border: "var(--tm-line)",
-  text: "var(--tm-ink)",
-  muted: "var(--tm-muted)",
-  dim: "var(--tm-muted)",
-  accent: "var(--tm-accent)",
-  green: "#34d399",
-  yellow: "#facc15",
-  red: "#f87171",
-  purple: "#a78bfa",
-  orange: "#fb923c",
-  cyan: "#22d3ee",
-  font: "var(--font-jetbrains-mono), monospace",
-  mono: "var(--font-jetbrains-mono), monospace",
-};
 
 /* ─────────────────────────────────────────────
    Types
