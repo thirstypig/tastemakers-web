@@ -33,6 +33,50 @@ completes. Newest first.
 
 ---
 
+## 2026-08-19 — Verifying the backlog, and finding what it was wrong about
+
+**Closes:** todos 002, 013, 015, 020, 021, 022, 024, 025, 027, 029, 031, 036, 038, 053, 056, 065,
+085, 090, 091, 092, 093, 094, 096, 097, 099, 105, 110, 118, 124 · backend 003, 004, 005, 009, 018,
+029, 032 · **Repos:** backend, web, todos
+
+The starting point was a backlog that could not be trusted. Of the pending P1s checked against
+source and against production, roughly **40% were already fixed**. The indexes are now generated
+from the filenames, so the counts cannot drift again.
+
+- **Two live defects on the shipped iOS build.** First-time Apple sign-in returned 500 for every
+  user — the raw identity token was written into `users.password`, a `varchar(255)`. And the
+  bookmark toggle read the wrong pivot, so **once one person saved a restaurant, nobody else
+  could.** Writing the test for the second surfaced a third: `sync()` was detaching every other
+  user's bookmark.
+- **Photo upload was never reaching the disk.** `restaurant-image-save` 500s on its *first*
+  statement — `logAdd` wrote four column names `api_logs` does not have. TASK-20 attributes this
+  to Railway's ephemeral filesystem, which is true and secondary.
+- **A landmine defused.** `restaurant-detail` carries two GROUP BY violations behind a Foursquare
+  gate that fails first. Setting `FOURSQUARE_API_KEY` — an open P1 — would have converted a soft
+  200 into a hard 500 on the app's main screen.
+- **Web identity came from a field the user can write.** Tag writes and deletes took the acting
+  user from `user_metadata.app_user_id`, which any signed-in visitor can set on themselves. And
+  the admin gate **failed open**: a missing environment variable skipped it entirely.
+- **`/cuisines` was serving wrong numbers.** It aggregated 1,000 of 1,572 join rows through
+  PostgREST's cap, and `placeCount` is the sort key — so counts *and* ordering were wrong, and the
+  page looked fine.
+- **Search stopped meaning what you typed.** `LIKE` is case-sensitive on PostgreSQL, so "Pizza"
+  matched nothing while "pizza" matched 14 — and iOS autocapitalises. Separately the tag typeahead
+  let `%` and `_` through as wildcards.
+- **The tastemaker pages joined the rest of the site.** They were the last occupants of the dark
+  `(public)` group and read as a different product. 47 hardcoded hex values replaced with v2
+  tokens.
+- **Documented the whole class.** Eight defects, one cause — the engine changed and the code did
+  not. See `tastemakers-backend/docs/solutions/database-issues/mysql-to-postgres-dialect-and-schema-drift.md`,
+  which includes the detection recipes and the trap that hid half of them.
+
+**Not fixed, deliberately:** the login throttle still keys on Railway's rotating proxy IPs
+(todo 123), so login is effectively unthrottled whatever the `x-ratelimit` headers say. Passport
+token TTL stays unset until iOS can handle a 401 (backend 066) — setting it today would strand
+every installed user with no route back to login.
+
+Tests: backend 106 → 162, web 392 → 442.
+
 ## 2026-08-19 — The backend the App Store build talks to, repaired
 
 **Closes:** TASK-01/02/03/09/10/13/15/16/19 · todos 021, 051, 057, 058, 067, 068, 119, 120 · **Repos:** backend, web

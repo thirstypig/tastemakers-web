@@ -25,28 +25,28 @@ updated: 2026-08-19
 ### Next up
 
 1. **TASK-24** (p2) — Retire the `/v2/api` iOS shim (`tastemakers-web/next.config.ts`). **Blocked on two things:** the iOS build that moves `NetworkManager.swift:14` off the legacy prefix must ship AND drain, and shim usage must be instrumented — the stated gate ("iOS adoption > 90%") currently has no instrument behind it, since PostHog is browser-only and never sees a `URLSession` call. Removal condition: `/v2/api/*` under 10 requests/day for 30 consecutive days.
-1. **TASK-20** (p1) — Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.**
+1. **TASK-20** (p1) — Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.** **CORRECTED 2026-08-19:** the ephemeral disk is real but SECONDARY — the endpoint 500s on its first statement, because `logAdd` wrote four column names `api_logs` does not have. Fixed in backend PR #38, so uploads now reach the filesystem and *then* hit this. Validation was also absent (`"image" => ""`); now mimes + size limited. What remains here is genuinely the storage.
 1. **TASK-21** (p1) — Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. **CONFIRMED 2026-08-19:** 12 live `api.foursquare.com` call sites remain in RestaurantController, keys still unset.
 
 ## Code
-**2,681 source files · 91,876 lines of application code** across 5 repos.
+**2,711 source files · 95,451 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,924 | 30,329 | 429,181 |
-| `tastemakers-web` | 244 | 39,120 | 0 |
+| `tastemakers-backend` | 1,943 | 33,038 | 429,181 |
+| `tastemakers-web` | 255 | 39,986 | 0 |
 | `tastemakers-ios` | 479 | 20,137 | 486 |
 | `tastemakers-android` | 14 | 416 | 0 |
 | `tastemakers-marketing` | 20 | 1,874 | 0 |
 ### By language
 | Language | Lines |
 |---|---:|
-| PHP | 21,235 |
-| TypeScript | 20,263 |
+| PHP | 23,224 |
+| TypeScript | 20,940 |
 | Swift | 17,940 |
-| Markdown | 14,195 |
-| JSON | 14,185 |
-| CSS | 1,753 |
+| Markdown | 14,971 |
+| JSON | 14,162 |
+| CSS | 1,909 |
 | JavaScript | 1,428 |
 | HTML | 738 |
 | Kotlin | 139 |
@@ -96,4 +96,4 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | `draft` | 7 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-08-19T04:21:29.997Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-19T23:50:46.547Z by scripts/refresh-docs.mjs -->
