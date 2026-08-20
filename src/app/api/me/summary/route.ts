@@ -8,8 +8,8 @@ import { buildSlug } from "@/lib/slug";
 
 function db() {
   return createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_ANON_KEY!,
+    supabaseUrl()!,
+    supabaseServiceRoleKey() ?? supabaseAnonKey()!,
     { auth: { persistSession: false } },
   );
 }
@@ -30,8 +30,8 @@ async function currentAppUserId(user: { email?: string | null }): Promise<number
 async function getSessionUser() {
   const cookieStore = await cookies();
   const supabase = createServerClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_ANON_KEY!,
+    supabaseUrl()!,
+    supabaseAnonKey()!,
     {
       cookies: {
         getAll: () => cookieStore.getAll(),
@@ -153,3 +153,4 @@ export async function GET() {
     },
   });
 }
+import { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey } from "@/lib/supabase/server-env";
