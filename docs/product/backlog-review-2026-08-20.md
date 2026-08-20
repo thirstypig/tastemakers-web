@@ -34,7 +34,12 @@ Starting point (2026-08-20, after this review filed 078/079/080/081/133):
 | Date | Closed this session | Root open | Backend open | Note |
 |---|---|---|---|---|
 | 2026-08-20 | baseline | 54 | 32 | review filed 078/079/080/081/133 |
-| 2026-08-20 | **+4 closed** | 53 | 29 | 078, 079, 080 (backend P1s) + 132 (data-loss). All with tests, revert-verified, merged. 081 blocked on 123 (see below). |
+| 2026-08-20 | +4 | 53 | 29 | 078, 079, 080 (backend P1s) + 132 (data-loss). All with tests, revert-verified, merged. |
+| 2026-08-20 | **9 total** | 48 | 29 | + 054 (P1 transactions + bookmark TOCTOU constraint, verified live on prod), 095 (env resolver), 106 (privacy wording), 003 + 004 (both mis-prioritised P1s — closed as not-a-bug / doc). |
+
+**Verified-not-a-bug closes (were mis-prioritised P1s):** `003` — iOS CodingKey + web
+read `short_description` correctly, no data loss. `004` — `search-tags` and
+`pre-define-search-tags` are two complementary endpoints, not a divergence; documented.
 
 **Closed this session (all shipped via PR, tests revert-verified):**
 - `078` OTP-page reflected XSS — route constrained to `[0-9]{8}`, dead sink removed (backend PR #60)
