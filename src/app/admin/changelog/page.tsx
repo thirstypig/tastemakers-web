@@ -2,6 +2,25 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.4.0",
+    date: "2026-08-20",
+    title: "Backlog triage: a third of it was already fixed, and four findings understated themselves",
+    items: [
+      { type: "-", text: "A blank password field destroyed the account's password. Request::has() is true for an empty string, so a client posting password=\"\" — what a form with a blank field sends — hashed the empty string and stored it. Verified against the real endpoint: the original password stopped working and the response was 200 \"User updated successfully\". Login rejects an empty password, so this locked users out rather than letting anyone in. Checked production: 232 accounts, zero hit." },
+      { type: "-", text: "Login was unthrottled in practice on a live App Store app. throttle:5,1 keys on $request->ip(), and on Railway every request arrives from a different edge address — eight sequential logins measured remaining = 4,4,3,2,4,4,4,4. Auth endpoints now key on the submitted email. The IP is deliberately absent: including it reintroduces the bug, since a rotating address gives a fresh bucket regardless of what else is in the key." },
+      { type: "-", text: "Twelve places took the acting user from the request body. auth:api only proves you are A user; each then acted on an id the caller supplied. Fixed the write and destructive half — creating a list owned by someone else, renaming theirs, deleting their photo, filing an abuse report in their name. imagedelete was the sharpest: the body value SCOPED the DELETE, so supplying the victim's id did not bypass a check, it selected the target." },
+      { type: "-", text: "A commit security review then caught what that missed. Fixing WHO THE ACTOR IS is not the same as checking WHETHER THEY OWN THE OBJECT. tastemakerlistEdit scoped its UPDATE but not the DELETE two lines below, so an attacker's rename silently no-opped while the victim's list contents were wiped and replaced. The first fix made the endpoint look MORE guarded while leaving that open." },
+      { type: "-", text: "/api/* returned a 302 to an HTML page when the caller sent no Accept header — which the shipped iOS client never does. Not a 422, not JSON. Fixed at the edge rather than by enabling the commented-out exception handler, which is gated on the same Accept check that is the root cause and hardcodes HTTP 200 for every error." },
+      { type: "-", text: "The password-reset code leaked to Apple and Google. It travels in the URL path, and that page links to the App Store and Play Store, so clicking either sent /forgetpassword/otp/<CODE> in the Referer. The code is live for 15 minutes and grants a reset. Now no-referrer. Still in Railway's access logs and browser history — that needs the code out of the path." },
+      { type: "-", text: "The backlog index generator shifted every carried column by one, in every committed version back to the first. It read carried columns from the STATUS cell, so the Issue column showed the status word and Scope and Action were junk copies. Self-propagating. The hand-written columns it exists to preserve had never once been preserved. Found by writing its first tests." },
+      { type: "~", text: "Roughly a third of the P2 backlog was already fixed and never flipped — including one closed by a commit that literally said \"Closes todo 010\". Others understated themselves: 046 reads as documentation drift but restaurants has zero country/city columns and country_id is NULL on all 1,388 rows, so search results have always returned country: null." },
+      { type: "~", text: "Tag levels are percentage-based, not a gap from the leader. The old rule was a subtraction that only behaves while counts stay in single digits: at a leader of 50, anything under 47 votes collapsed to L5. Changed while all 4,230 vote pairs still had exactly one vote, so nothing moved visually. Web and iOS now rank differently on purpose." },
+      { type: "+", text: "Android shelved rather than left implying work in flight. 14 findings moved to a new deferred status — the whole app is 135 lines that render Text(\"Tastemakers\") on a blank screen and does not compile. Two of the sixteen were kept open because they are not Android-only." },
+      { type: "+", text: "Tests 442 to 481 (web) and 162 to 191 (backend), plus the first 16 for the index generator. Every fix mutation-verified. Two of the tests written this session proved nothing until mutation testing exposed them — one used the wrong field name and 422'd, one claimed coverage of a guard whose removal left the suite green." },
+      { type: "~", text: "Known and unfixed: the Google Places migration will silently blank the iOS discovery feed. Google's pagination token is a string, the shipped app declares nextPageToken as a required Int with no CodingKeys, and the decode failure is swallowed — no crash, no error, just an empty feed on every installed device." },
+    ],
+  },
+  {
     v: "v11.3.0",
     date: "2026-08-20",
     title: "Four counts that were wrong, and the arithmetic that gave them away",
