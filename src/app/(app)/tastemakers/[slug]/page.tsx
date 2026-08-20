@@ -3,7 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getTastemaker, listTastemakers } from "@/lib/api/index";
-import TagCloud from "@/components/tags/TagCloud";
+import RankedTagChip from "@/features/tags/RankedTagChip";
 import ListCard from "@/features/lists/ListCard";
 import { AdUnit } from "@/components/AdUnit";
 import { AD_SLOTS } from "@/lib/ads";
@@ -126,7 +126,17 @@ export default async function TastemakerProfilePage({
       {tastemaker.tags.length > 0 && (
         <section>
           <p className="tm-maker-listlabel">Known for</p>
-          <TagCloud tags={tastemaker.tags} />
+          {/* RankedTagChip, not the old components/tags TagCloud. That one
+              carried its own ramp whose L4 rendered dark-purple ink on a
+              mid-purple fill at 2.12:1 — it had never been seen, because the
+              flattened vote data made every tag on the site render L1, and this
+              cloud is the first surface with a real level spread. TAG_RAMP is
+              the measured one. */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {tastemaker.tags.map((tag) => (
+              <RankedTagChip key={tag.id} label={tag.name} level={tag.level} />
+            ))}
+          </div>
         </section>
       )}
 

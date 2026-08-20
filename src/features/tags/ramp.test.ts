@@ -1,3 +1,5 @@
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { TAG_RAMP, TAG_RAMP_HEIGHT } from "./ramp";
 import type { TagLevel } from "./levels";
@@ -97,5 +99,49 @@ describe("tag ramp", () => {
   it("keeps the weakest level as an outline rather than a fill", () => {
     expect(TAG_RAMP[5].background).toBe("transparent");
     expect(TAG_RAMP[5].border).toContain("var(--tm-border)");
+  });
+});
+
+describe("TAG_RAMP is the only tag-level palette", () => {
+  /**
+   * The contrast assertions above have always passed — and were always true of
+   * `TAG_RAMP`. They simply did not describe what the tastemaker profile
+   * rendered, because that page used a *second* chip component
+   * (`src/components/tags/TagChip`) carrying its own `TAG_LEVEL_STYLES` map
+   * that nothing tested.
+   *
+   * Measured in production 2026-08-20, that ramp rendered:
+   *   L1 12.06:1 · L2 8.12:1 · L3 4.19:1 · L4 **2.12:1** · L5 3.06:1
+   * against TAG_RAMP's 14.92 / 11.75 / 8.12 / 4.68. Three levels below AA at
+   * 12px, one of them badly.
+   *
+   * It went unseen because production's flattened vote data made every tag on
+   * every surface render L1 — the "Known for" cloud was the first thing with a
+   * real level spread, and it surfaced the defect the moment it shipped.
+   *
+   * The legacy component is deleted. This guards against a third palette.
+   */
+  it("has no rival level→style map elsewhere in src", () => {
+    const SRC = join(process.cwd(), "src");
+    const walk = (dir: string, out: string[] = []): string[] => {
+      for (const e of readdirSync(dir)) {
+        const full = join(dir, e);
+        if (statSync(full).isDirectory()) walk(full, out);
+        else out.push(full);
+      }
+      return out;
+    };
+
+    const rivals = walk(SRC)
+      .filter((f) => /\.tsx?$/.test(f) && !/\.test\.tsx?$/.test(f))
+      .filter((f) => !f.endsWith(join("features", "tags", "ramp.ts")))
+      .filter((f) => {
+        const src = readFileSync(f, "utf8");
+        // A map keyed by every tag level, holding colours.
+        return /(TAG_LEVEL_STYLES|Record<\s*TagLevel\s*,)/.test(src) && /background|backgroundColor/.test(src);
+      })
+      .map((f) => f.replace(process.cwd(), ""));
+
+    expect(rivals).toEqual([]);
   });
 });
