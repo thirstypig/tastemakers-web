@@ -57,8 +57,9 @@ export default function PrivacyPage() {
           We use <strong>Google Analytics 4</strong> (measurement ID{" "}
           <Code>G-062TFF0ZGE</Code>) to understand how visitors use the site —
           page views, session duration, device type, and general location
-          (city-level). GA4 only loads if you accept Analytics in our consent
-          banner.
+          (city-level). We load GA4 with Google Consent Mode; analytics cookies
+          and data collection stay disabled until you consent (and default to
+          disabled in the EEA, UK, and Switzerland).
         </P>
         <Ul>
           <li>Data retained: 14 months</li>
@@ -75,8 +76,9 @@ export default function PrivacyPage() {
         <H3>With Your Consent (Advertising)</H3>
         <P>
           We use <strong>Google AdSense</strong> to show relevant ads that help
-          fund the site. AdSense only loads if you accept Marketing in our
-          consent banner.
+          fund the site. We load AdSense with Google Consent Mode; advertising
+          cookies and personalization stay disabled until you consent (and
+          default to disabled in the EEA, UK, and Switzerland).
         </P>
         <Ul>
           <li>
