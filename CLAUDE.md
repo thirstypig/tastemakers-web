@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 471 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 481 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 471 tests (41 test files)
+npx vitest run     # run 481 tests (42 test files)
 ```
 
 ## Project Structure
@@ -321,7 +321,7 @@ Any test for this must model the cap the way PostgREST behaves — an unranged r
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 471 tests across 41 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
+- **Current suite:** 481 tests across 42 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
@@ -336,6 +336,7 @@ Any test for this must model the cap the way PostgREST behaves — an unranged r
 | `src/lib/api/paging.test.ts` | 8 | `fetchAllPages` — the 1000-row PostgREST cap, exact-multiple boundary, runaway guard |
 | `src/features/cuisines/api.test.ts` | 3 | `listCuisines` reads past the 1000-row cap. The fake models PostgREST truthfully — an unranged read returns 1000 rows and reports **success** — so a test that skips that passes against the bug (TODO-090) |
 | `src/features/restaurants/listing.test.ts` | 3 | `listRestaurants` — a restaurant whose tag rows sit past the cap still gets its tags, plus an in-cap control and the ranking (TODO-122). The control matters: most cards looked right, which is why this went unseen |
+| `src/lib/admin-gate.test.ts` | 10 | `adminGateDecision` — the only thing between the public internet and `/admin`, and it had no tests until 2026-08-20. The gate used to be wrapped in `if (configured && ...)`, so a missing env var **skipped** it and served the panel to anyone. Also covers an empty `ADMIN_EMAILS` denying, and `/administrators` not being gated (TODO-097) |
 | `src/lib/api/tastemakers.test.ts` | 9 | `listTastemakers` / `getTastemaker` — tag counts past the cap, the "counts must never sum to exactly 1000" tell (TODO-126), and case-insensitive slug resolution reporting the canonical casing for the 308 (TODO-128) |
 | `src/app/auth/callback/route.test.ts` | 5 | OAuth `?next` open redirect. Asserts on `new URL(location).host`, not string equality, so it catches any bypass. `@evil.com` and `.evil.com` escape the origin; `//evil.com` does not (TODO-093) |
 | `src/app/boundaries.test.tsx` | 4 | `error.tsx` / `not-found.tsx` — that retry actually calls `reset`, that the raw error message is never rendered, that 404 links somewhere real |
