@@ -3,14 +3,14 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 442 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 454 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
 
 ## Current focus
 
-_Generated 2026-08-19 by `npm run docs:refresh` — do not edit between these markers._
+_Generated 2026-08-20 by `npm run docs:refresh` — do not edit between these markers._
 
 **Now:** RM-01 Finish the hosting migration · RM-02 Fix the P1 security backlog · RM-13 PostgreSQL compatibility sweep
 
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 442 tests (38 test files)
+npx vitest run     # run 454 tests (40 test files)
 ```
 
 ## Project Structure
@@ -93,13 +93,12 @@ tastemakers-web/
 │   ├── components/            Shared React components (JsonLd.tsx)
 │   ├── hooks/
 │   ├── lib/
-│   │   ├── api/               PUBLIC DATA LAYER — stub → real swap point
+│   │   ├── api/               PUBLIC DATA LAYER — reads Supabase directly (TODO-089)
 │   │   │   ├── types.ts           Tastemaker, CuratedList, Restaurant, Tag
-│   │   │   ├── stubs.ts           Hardcoded mock data (3 tastemakers, 8 restaurants, 6 lists)
-│   │   │   │   └── index.ts           Exported fns: getTastemaker, getList, getRestaurant, etc.
-│   │   │                          ↑ Reads Supabase directly — NOT a stub, NOT Laravel (TODO-089)
+│   │   │   ├── index.ts           getTastemaker, listTastemakers — NOT a stub, NOT Laravel
+│   │   │   └── shared.ts          fetchAllPages, buildTagsByRestaurant, tasteLevel, cityFromAddress
 │   │   ├── admin-filters.ts   filterTodos() + summarizeRoadmap() — shared by admin roadmap + todo pages
-│   │   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
+│   │   ├── auth.ts            Pure fns: parseAllowedEmails, isEmailAllowed, resolveCallbackOrigin (middleware)
 │   │   ├── docs.ts            DOCS_REGISTRY (13 entries), fetchMarkdown() via GitHub Contents API (needs GITHUB_TOKEN for private repos), fetchDocUpdated()
 │   │   ├── markdown.ts        renderMarkdown() — default marked renderer (custom renderers broke on marked v13+ token API); styling via .md-body CSS
 │   │   ├── github.ts          fetchCommits() — GitHub API wrapper (used by platforms page)
@@ -224,6 +223,32 @@ This is **TODO-089**, a known architectural divergence, not an oversight to "fix
 The only live use of `NEXT_PUBLIC_API_URL` is `restaurantImageUrl()`, which builds photo URLs
 against the API host.
 
+### Reading a table: PostgREST caps every response at 1,000 rows
+
+It reports **success** while doing it, so a truncated read is indistinguishable from a
+complete one at runtime. Four separate defects have come from this (TODO-090, 122, 126, and
+the `listCuisines` one). If you are aggregating — counting, ranking, grouping — route the
+read through **`fetchAllPages`** in `src/lib/api/shared.ts`.
+
+Two rules that are not obvious:
+
+- **`.order("id")` before `.range()`, always.** Postgres does not guarantee row order
+  without `ORDER BY`, so range paging can return a row on two pages or on none. A
+  sequential scan of a static table happens to be stable, which is why three call sites
+  omitted it for months without visible damage — the guarantee was incidental (TODO-127).
+  `fetchAllPages` takes a page fetcher, not a query builder, so it cannot enforce this and
+  `paging.test.ts` cannot catch a violation.
+- **`.in(...)` bounds a read but does not make it safe.** The bound is data-dependent.
+  `listRestaurants` sat at 848 of 1,000 for its top-60 tag rows — correct, until tagging
+  density moved.
+
+**The tell in production is arithmetic, not an error.** On `/tastemakers` the per-user tag
+counts read 871 + 129 = exactly 1000 while the profile page showed 932. If aggregate counts
+sum to precisely 1,000, the read was truncated.
+
+Any test for this must model the cap the way PostgREST behaves — an unranged read returns
+1,000 rows and reports success. A fake that just returns everything passes against the bug.
+
 ## Deployment
 - **Platform:** Railway (Node.js, using default Next.js build output)
 - **Prod domains (live):** `www.tastemakersapp.com` and `tastemakersapp.com` (apex) both serve this app.
@@ -268,7 +293,7 @@ against the API host.
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 442 tests across 38 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
+- **Current suite:** 454 tests across 40 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
@@ -282,6 +307,8 @@ against the API host.
 | `src/features/search/query.test.ts` | 13 | PostgREST filter sanitising — a query cannot widen its own filter |
 | `src/lib/api/paging.test.ts` | 8 | `fetchAllPages` — the 1000-row PostgREST cap, exact-multiple boundary, runaway guard |
 | `src/features/cuisines/api.test.ts` | 3 | `listCuisines` reads past the 1000-row cap. The fake models PostgREST truthfully — an unranged read returns 1000 rows and reports **success** — so a test that skips that passes against the bug (TODO-090) |
+| `src/features/restaurants/listing.test.ts` | 3 | `listRestaurants` — a restaurant whose tag rows sit past the cap still gets its tags, plus an in-cap control and the ranking (TODO-122). The control matters: most cards looked right, which is why this went unseen |
+| `src/lib/api/tastemakers.test.ts` | 9 | `listTastemakers` / `getTastemaker` — tag counts past the cap, the "counts must never sum to exactly 1000" tell (TODO-126), and case-insensitive slug resolution reporting the canonical casing for the 308 (TODO-128) |
 | `src/app/auth/callback/route.test.ts` | 5 | OAuth `?next` open redirect. Asserts on `new URL(location).host`, not string equality, so it catches any bypass. `@evil.com` and `.evil.com` escape the origin; `//evil.com` does not (TODO-093) |
 | `src/app/boundaries.test.tsx` | 4 | `error.tsx` / `not-found.tsx` — that retry actually calls `reset`, that the raw error message is never rendered, that 404 links somewhere real |
 | `src/features/shell/ListingSkeleton.test.tsx` | 2 | `role="status"` + `aria-busy` on the loading fallback — a skeleton with no announcement is silence to a screen reader |

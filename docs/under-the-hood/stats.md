@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-08-19
+updated: 2026-08-20
 ---
 
 # Stats
@@ -29,12 +29,12 @@ updated: 2026-08-19
 1. **TASK-21** (p1) — Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. **CONFIRMED 2026-08-19:** 12 live `api.foursquare.com` call sites remain in RestaurantController, keys still unset.
 
 ## Code
-**2,711 source files · 95,451 lines of application code** across 5 repos.
+**2,710 source files · 95,934 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,943 | 33,038 | 429,181 |
-| `tastemakers-web` | 255 | 39,986 | 0 |
+| `tastemakers-backend` | 1,940 | 33,038 | 429,181 |
+| `tastemakers-web` | 257 | 40,469 | 0 |
 | `tastemakers-ios` | 479 | 20,137 | 486 |
 | `tastemakers-android` | 14 | 416 | 0 |
 | `tastemakers-marketing` | 20 | 1,874 | 0 |
@@ -42,7 +42,7 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | Language | Lines |
 |---|---:|
 | PHP | 23,224 |
-| TypeScript | 20,940 |
+| TypeScript | 21,423 |
 | Swift | 17,940 |
 | Markdown | 14,971 |
 | JSON | 14,162 |
@@ -96,4 +96,4 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | `draft` | 7 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-08-19T23:50:46.547Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-20T00:55:49.717Z by scripts/refresh-docs.mjs -->
