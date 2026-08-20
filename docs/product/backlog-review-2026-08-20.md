@@ -34,8 +34,15 @@ Starting point (2026-08-20, after this review filed 078/079/080/081/133):
 | Date | Closed this session | Root open | Backend open | Note |
 |---|---|---|---|---|
 | 2026-08-20 | baseline | 54 | 32 | review filed 078/079/080/081/133 |
+| 2026-08-20 | **+4 closed** | 53 | 29 | 078, 079, 080 (backend P1s) + 132 (data-loss). All with tests, revert-verified, merged. 081 blocked on 123 (see below). |
 
-_(Update this table as items close.)_
+**Closed this session (all shipped via PR, tests revert-verified):**
+- `078` OTP-page reflected XSS — route constrained to `[0-9]{8}`, dead sink removed (backend PR #60)
+- `079` unauthenticated `/api/signup` arbitrary-file upload — mimes rule added (backend PR #60)
+- `080` `pre-define-search-tags` 500-on-every-call — GROUP BY / ORDER BY / empty-bind fixed (backend PR #62)
+- `132` `TastemakerList-edit` empty-`restaurant_id` data loss — filter + transaction (backend PR #63)
+
+**Re-triaged, NOT shipped:** `081` (reset-verify DoS) is **blocked on 123** — the obvious "key on `forget_code`" fix trades the DoS for a brute-force hole; both need a trustworthy client IP (todo 123).
 
 ---
 
