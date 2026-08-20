@@ -97,14 +97,17 @@ export default function AdminLogin() {
               <p className="mt-3" style={{ color: "var(--tm-muted)" }}>
                 Also enable Google OAuth in Supabase → Auth → Providers.
               </p>
-              {/* Dev bypass: allow direct access if no auth configured */}
-              <a
-                href="/admin"
-                className="mt-3 block text-center"
-                style={{ color: "var(--tm-accent)" }}
-              >
-                → continue without auth (dev)
-              </a>
+              {/* The "continue without auth (dev)" link that used to sit here is
+                  gone. It pointed at /admin, and back when the gate was wrapped
+                  in `if (configured && ...)` an unset Supabase variable skipped
+                  the check entirely — so on a misconfigured PRODUCTION deploy
+                  this rendered a working "walk in" button on a public page.
+
+                  `adminGateDecision` now denies when identity is unknowable, so
+                  the link stopped working. Removing it rather than leaving it
+                  dead: an affordance that promises access it cannot grant is
+                  either a bug report waiting to happen or an invitation to
+                  "fix" the gate. Todo 097. */}
             </div>
           ) : (
             <>
