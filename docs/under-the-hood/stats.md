@@ -26,15 +26,15 @@ updated: 2026-08-20
 
 1. **TASK-24** (p2) — Retire the `/v2/api` iOS shim (`tastemakers-web/next.config.ts`). **Blocked on two things:** the iOS build that moves `NetworkManager.swift:14` off the legacy prefix must ship AND drain, and shim usage must be instrumented — the stated gate ("iOS adoption > 90%") currently has no instrument behind it, since PostHog is browser-only and never sees a `URLSession` call. Removal condition: `/v2/api/*` under 10 requests/day for 30 consecutive days.
 1. **TASK-20** (p1) — Photo upload is off. `restaurant-image-save` writes to `public_path('storage/res_image')` — Railway's filesystem is ephemeral, so uploads vanish on restart. Needs object storage. **Also why every legacy profile image 404s.** **CORRECTED 2026-08-19:** the ephemeral disk is real but SECONDARY — the endpoint 500s on its first statement, because `logAdd` wrote four column names `api_logs` does not have. Fixed in backend PR #38, so uploads now reach the filesystem and *then* hit this. Validation was also absent (`"image" => ""`); now mimes + size limited. What remains here is genuinely the storage.
-1. **TASK-21** (p1) — Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. **CONFIRMED 2026-08-19:** 12 live `api.foursquare.com` call sites remain in RestaurantController, keys still unset.
+1. **TASK-21** (p1) — Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. **DECIDED 2026-08-20 — migrate to Google Places** (James). Scoped in backend todos 076/077; no code written. **Call-site count corrected: 6, not 12** — the higher figure counted `config('services.foursquare.timeout')` lines. `GooglePlacesService` already covers 2 of the 3 operations and is already on the new Places API; only pagination is missing. **Blocker the scope found:** 1,385 of 1,388 rows carry Foursquare `place_id`s, and a 24-hex id passes Google's format check, so a straight swap 404s detail lookups for 99.8% of the catalogue *silently*. Tractable because `restaurantDetails` only echoes back the id it was given and reads the rest from our own DB — serving it locally removes 2 of the 6 sites with no vendor dependency.
 
 ## Code
-**2,710 source files · 95,934 lines of application code** across 5 repos.
+**2,707 source files · 95,725 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,940 | 33,038 | 429,181 |
-| `tastemakers-web` | 257 | 40,469 | 0 |
+| `tastemakers-backend` | 1,940 | 33,067 | 429,181 |
+| `tastemakers-web` | 254 | 40,231 | 0 |
 | `tastemakers-ios` | 479 | 20,137 | 486 |
 | `tastemakers-android` | 14 | 416 | 0 |
 | `tastemakers-marketing` | 20 | 1,874 | 0 |
@@ -42,9 +42,9 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | Language | Lines |
 |---|---:|
 | PHP | 23,224 |
-| TypeScript | 21,423 |
+| TypeScript | 21,157 |
 | Swift | 17,940 |
-| Markdown | 14,971 |
+| Markdown | 15,028 |
 | JSON | 14,162 |
 | CSS | 1,909 |
 | JavaScript | 1,428 |
@@ -96,4 +96,4 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | `draft` | 7 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-08-20T00:55:49.717Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-20T03:05:04.278Z by scripts/refresh-docs.mjs -->
