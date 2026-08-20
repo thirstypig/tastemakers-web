@@ -56,8 +56,8 @@ describe("RankedTagCloud", () => {
 
   it("announces each tag's strength, so the ramp is not the only signal", () => {
     render(<RankedTagCloud restaurantId="159" tags={TAGS} />);
-    // Leader is 9; Long Wait is 4 behind → L5.
-    expect(screen.getByRole("button", { name: /Long Wait, strength 5 of 5/ })).toBeTruthy();
+    // Leader is 9; Long Wait has 5, a 0.56 share → L3.
+    expect(screen.getByRole("button", { name: /Long Wait, strength 3 of 5/ })).toBeTruthy();
     expect(screen.getByRole("button", { name: /Would Recommend, strength 1 of 5/ })).toBeTruthy();
   });
 
@@ -144,12 +144,13 @@ describe("RankedTagCloud", () => {
   it("re-levels the cloud after a vote instead of leaving stale strengths", async () => {
     vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({ ok: true }) } as never);
 
-    // Long Wait sits 4 behind the leader → L5. One vote moves it to 6, gap 3 → L4.
+    // Long Wait has 5 against a leader of 9 → 0.56 share → L3.
+    // One vote moves it to 6 → 0.67 → L2.
     render(<RankedTagCloud restaurantId="159" tags={TAGS} />);
     await userEvent.click(chip("Long Wait"));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /Long Wait, strength 4 of 5/ })).toBeTruthy();
+      expect(screen.getByRole("button", { name: /Long Wait, strength 2 of 5/ })).toBeTruthy();
     });
   });
 

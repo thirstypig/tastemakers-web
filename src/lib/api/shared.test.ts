@@ -40,17 +40,24 @@ describe("buildTagsByRestaurant", () => {
       NAMES,
     );
 
-    expect(out.get(10)!.map((t) => t.level)).toEqual([1, 2]);
+    // r10 leader 9: shares 1.00, 0.89 → L1, L1
+    expect(out.get(10)!.map((t) => t.level)).toEqual([1, 1]);
+    // r20 leader 3: shares 1.00, 0.67 → L1, L2.
+    // This is the assertion that catches the regression — against a GLOBAL
+    // leader of 9 these would be 0.33 and 0.22, i.e. [4, 4], and the quieter
+    // restaurant would look like it has no strong tags at all.
     expect(out.get(20)!.map((t) => t.level)).toEqual([1, 2]);
   });
 
-  it("assigns levels by gap from the leader, matching iOS", () => {
+  it("assigns levels by share of the leader, diverging from iOS on purpose", () => {
     const out = buildTagsByRestaurant(
       rows([[10, 1, 9], [10, 2, 8], [10, 3, 7], [10, 4, 6], [10, 5, 5], [10, 6, 1]]),
       NAMES,
     );
-    // gaps 0,1,2,3,4,8 → L1,L2,L3,L4,L5,L5
-    expect(out.get(10)!.map((t) => t.level)).toEqual([1, 2, 3, 4, 5, 5]);
+    // Leader 9. Shares: 1.00 0.89 0.78 0.67 0.56 0.11 → L1 L1 L2 L2 L3 L5.
+    // The gap rule gave [1,2,3,4,5,5]; iOS still does. See levels.ts for why
+    // web moved and why that divergence is accepted.
+    expect(out.get(10)!.map((t) => t.level)).toEqual([1, 1, 2, 2, 3, 5]);
   });
 
   it("gives every tag L1 when all counts tie", () => {

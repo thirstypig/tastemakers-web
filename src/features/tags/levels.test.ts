@@ -25,8 +25,13 @@ describe("assignTagLevels", () => {
     expect(out.map((x) => x.name)).toEqual(["a", "b", "c"]);
   });
 
-  it("levels by distance from the leader, not absolute count", () => {
-    // The design doc's worked example.
+  it("levels by share of the leader, not absolute count and not gap", () => {
+    // Leader 9. Shares: 1.00 1.00 0.89 0.78 0.67 0.44
+    // Thresholds .8/.6/.4/.2  →  L1  L1  L1  L2  L2  L3
+    //
+    // Under the old gap rule this was [1,1,2,3,4,5]. The difference is the
+    // point: 8 votes against a leader of 9 is near-unanimous agreement, and
+    // calling it L2 while 4 votes is L5 overstates how much separates them.
     const out = assignTagLevels([
       t("Would Recommend", 9),
       t("Popular/Trendy", 9),
@@ -35,7 +40,7 @@ describe("assignTagLevels", () => {
       t("top chef", 6),
       t("Great Service", 4),
     ]);
-    expect(out.map((x) => x.level)).toEqual([1, 1, 2, 3, 4, 5]);
+    expect(out.map((x) => x.level)).toEqual([1, 1, 1, 2, 2, 3]);
   });
 
   it("gives every tag L1 when all counts are equal", () => {
@@ -62,8 +67,10 @@ describe("assignTagLevels", () => {
   });
 
   it("treats a missing count as zero", () => {
+    // 0/3 = 0 share, which is the bottom of the scale. Under the gap rule this
+    // was L4, because a gap of 3 was as far as that scale reached at low counts.
     const out = assignTagLevels([{ name: "a", count: 3 }, { name: "b" }]);
-    expect(out.map((x) => x.level)).toEqual([1, 4]);
+    expect(out.map((x) => x.level)).toEqual([1, 5]);
   });
 
   it("does not mutate its input", () => {
@@ -76,9 +83,16 @@ describe("assignTagLevels", () => {
 
 describe("levelFor", () => {
   it("levels one count against a known leader", () => {
-    expect(levelFor(9, 9)).toBe(1);
-    expect(levelFor(6, 9)).toBe(4);
-    expect(levelFor(1, 9)).toBe(5);
+    expect(levelFor(9, 9)).toBe(1);   // 1.00
+    expect(levelFor(6, 9)).toBe(2);   // 0.67 — was L4 under the gap rule
+    expect(levelFor(1, 9)).toBe(5);   // 0.11
+  });
+
+  it("is share-based, so the same ratio levels the same at any magnitude", () => {
+    // This is the property the gap rule could not have: the scale adjusts to
+    // the volume of voting rather than assuming counts stay in single digits.
+    expect(levelFor(3, 6)).toBe(levelFor(50, 100));
+    expect(levelFor(3, 6)).toBe(levelFor(500, 1000));
   });
 });
 

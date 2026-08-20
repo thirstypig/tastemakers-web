@@ -3,7 +3,7 @@
 ## Current status
 
 <!-- now-tldr -->
-Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 470 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
+Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(app)` route group on the **v2 light design system** (purple `#2A1A5E` / crimson `#C7255B` on a `#F1F1F3` canvas, Playfair Display headings + Roboto body) — home, search, cuisines, lists, restaurant detail, photos, bookmarks, profile, auth. Admin panel is separate, with its own Paper/Gruvbox themes and Supabase Google OAuth. Code is organised into **feature modules** under `src/features/` — each owns its queries, components and stylesheet. Data is read **directly from Supabase**, not through the Laravel API (see TODO-089). 471 tests green. Deployed live on Railway at **`www.tastemakersapp.com`** and the apex `tastemakersapp.com`. **`app.tastemakersapp.com` was retired 2026-08-18 — do not reintroduce it**; Railway's Hobby plan caps custom domains at 2 per service, and both are in use. (An earlier version of this line named `app.` as the live host, contradicting the Deployment section further down.)
 <!-- /now-tldr -->
 
 <!-- DOCS:STATUS:START -->
@@ -47,7 +47,7 @@ npm install
 npm run dev        # starts on port 3050
 npm run build      # production build
 npm run type-check # TypeScript validation
-npx vitest run     # run 470 tests (41 test files)
+npx vitest run     # run 471 tests (41 test files)
 ```
 
 ## Project Structure
@@ -147,17 +147,45 @@ admin Paper/Gruvbox themes, and redefining them globally breaks the admin light/
 - **Import note:** import feature data from `@/features/<name>/api`. `src/lib/api.ts` used
   to shadow this and is now deleted (see "Removed 2026-08-19").
 
-### Tag levels — match iOS exactly
+### Tag levels are PERCENTAGE-based, and deliberately diverge from iOS
 
-`assignTagLevels` in `src/features/tags/levels.ts` ports `Utils.calcucateTagLevels` from
-`tastemakers-ios/TasteMaker/Miscellaneous/Utils.swift:334`. A tag's level is its **gap from
-that restaurant's leading tag** (0 → L1 … 4+ → L5), not an absolute vote threshold. The old
-`voteCountToLevel` thresholds (10/5/3/2) are deprecated and ranked the same restaurant
-differently from the app.
+**The model (James, 2026-08-20):** levels depend on the total number of voted tags, so with
+few voters or few votes the scale *adjusts*. It is proportional, not a fixed threshold and
+not a subtraction.
 
-**Production caveat:** `UNIQUE (restaurant_id, tag_id)` caps every vote count at 1, so every
-tag currently ties for the lead and renders L1. The ramp is correct; the data has no spread.
-See TASK-01 and TASK-18.
+`assignTagLevels` and `levelFor` in `src/features/tags/levels.ts` level each tag by its
+**share of that restaurant's leading tag** — quintiles of the leader: `≥.8 → L1`, `≥.6 → L2`,
+`≥.4 → L3`, `≥.2 → L4`, else L5. Always relative to the tag's *own* restaurant, never a
+global maximum.
+
+**This used to be a port of iOS `Utils.calcucateTagLevels`** (`Utils.swift:334`), which is a
+*gap*: `gap<1 → L1, ==1 → L2, ==2 → L3, ==3 → L4, else L5`. A subtraction only behaves while
+counts stay in the 1–5 range iOS was written around. It degenerates exactly when voting
+recovers and ranking starts to matter:
+
+| votes | gap (iOS) | share (web) |
+|---|---|---|
+| 50, 47, 30, 12, 4 | L1, **L4, L5, L5, L5** | L1, L1, L2, L4, L5 |
+
+At a leader of 50, anything under 47 votes is L5 — three of five levels collapse.
+
+**Web and iOS now rank differently, on purpose.** That is the same divergence the port was
+introduced to remove, so treat it as a known, accepted state — not as the old
+`voteCountToLevel` bug reappearing. Do **not** "restore parity" by reverting; raise it. It
+resolves when an iOS release carries the proportional rule, and old installs keep the gap
+rule for months after that.
+
+Changed while **every one of the 4,230 (restaurant, tag) pairs in production had exactly one
+vote** (verified 2026-08-20), so nothing visibly moved. Doing it after the vote data spreads
+would have shifted rankings under users.
+
+**Production caveat:** that same flatness — a legacy `UNIQUE (restaurant_id, tag_id)` capped
+every count at 1 — means every restaurant tag still renders L1. The ramp is correct; the data
+has no spread. The one surface with a real spread is the "Known for" cloud on a tastemaker
+profile, which levels by how often *that person* used each tag. See TASK-01 and TASK-18.
+
+`levelForGap` is retained in `levels.ts` as the historical rule, referenced only by the tests
+that assert this divergence.
 
 ## Feature modules
 
@@ -293,7 +321,7 @@ Any test for this must model the cap the way PostgREST behaves — an unranged r
 - **Runner:** Vitest (`npx vitest run`)
 - **Hook tests:** `// @vitest-environment jsdom` at top of file + `@testing-library/react`
 - **Path alias:** `vitest.config.ts` resolves `@/` → `./src/` (required for hook tests that import `@/lib/supabase`)
-- **Current suite:** 470 tests across 41 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
+- **Current suite:** 471 tests across 41 files — all green. Compare against this number before blaming your own change; verify by stashing and running on `main` rather than assuming.
 - **Scope:** `vitest.config.ts` includes `src/**/*.test.ts`, `src/**/*.test.tsx` **and** `scripts/**/*.test.mjs`. The `.tsx` glob matters — without it a component test is silently skipped ("No test files found"), not failed.
 - **Component tests:** `// @vitest-environment jsdom` + `@testing-library/react`, and an explicit `cleanup()` in `afterEach` — automatic cleanup is not registered without `globals: true`. JSX is transformed by `@vitejs/plugin-react` in `vitest.config.ts`.
 
