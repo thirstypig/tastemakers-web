@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assignTagLevels, levelFor, levelForGap } from "./levels";
+import { assignTagLevels, levelFor, levelForGap, levelForShare } from "./levels";
 
 const t = (name: string, count: number) => ({ name, count });
 
@@ -79,5 +79,49 @@ describe("levelFor", () => {
     expect(levelFor(9, 9)).toBe(1);
     expect(levelFor(6, 9)).toBe(4);
     expect(levelFor(1, 9)).toBe(5);
+  });
+});
+
+describe("levelForShare", () => {
+  /**
+   * Thirsty Pig's real top tags, 2026-08-20. The ramp is calibrated against
+   * this rather than against invented numbers, because the whole reason this
+   * function exists is that `levelForGap` degenerates on real magnitudes.
+   */
+  const REAL = [93, 88, 58, 58, 56, 45, 40, 26, 14, 13, 11, 10, 10, 8];
+
+  it("spreads real personal-frequency data across all five levels", () => {
+    const levels = new Set(REAL.map((c) => levelForShare(c, 93)));
+    expect(levels, "a ramp that collapses is not a ramp").toEqual(new Set([1, 2, 3, 4, 5]));
+  });
+
+  it("is why levelForGap could not be reused here", () => {
+    // The regression this function prevents: gap-from-leader puts the top tag
+    // at L1 and *everything else* at L5 on this data.
+    const gapLevels = new Set(REAL.map((c) => levelForGap(93 - c)));
+    expect(gapLevels).toEqual(new Set([1, 5]));
+  });
+
+  it("puts the leader at L1 and never inverts", () => {
+    expect(levelForShare(93, 93)).toBe(1);
+    const levels = REAL.map((c) => levelForShare(c, 93));
+    for (let i = 1; i < levels.length; i++) {
+      expect(levels[i]!, "a less-used tag must never read stronger").toBeGreaterThanOrEqual(levels[i - 1]!);
+    }
+  });
+
+  it("maps the quintile boundaries exactly", () => {
+    expect(levelForShare(80, 100)).toBe(1);
+    expect(levelForShare(79, 100)).toBe(2);
+    expect(levelForShare(60, 100)).toBe(2);
+    expect(levelForShare(59, 100)).toBe(3);
+    expect(levelForShare(40, 100)).toBe(3);
+    expect(levelForShare(39, 100)).toBe(4);
+    expect(levelForShare(20, 100)).toBe(4);
+    expect(levelForShare(19, 100)).toBe(5);
+  });
+
+  it("does not divide by zero when the leader has no uses", () => {
+    expect(levelForShare(0, 0)).toBe(5);
   });
 });

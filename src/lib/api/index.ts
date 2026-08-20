@@ -1,9 +1,19 @@
 import { createServerClient } from "@/lib/supabase-server";
 import { buildTagsByRestaurant, cityFromAddress, coverImage, fetchAllPages, tasteLevel } from "./shared";
+import { levelForShare } from "@/features/tags/levels";
 import { buildSlug } from "@/lib/slug";
 import type { Tastemaker, CuratedList, Restaurant, Tag } from "./types";
 
 // ── Tastemakers ───────────────────────────────────────────────────────────────
+
+/**
+ * How many tags the "Known for" cloud shows.
+ *
+ * 12 covers the meaningful spread without turning the profile into a tag dump:
+ * Thirsty Pig's 13th most-used tag has been applied 10 times against a leader
+ * of 93, so it already renders at the weakest level.
+ */
+const KNOWN_FOR_LIMIT = 12;
 
 export async function listTastemakers(): Promise<Tastemaker[]> {
   const sb = createServerClient();
@@ -76,6 +86,9 @@ export async function listTastemakers(): Promise<Tastemaker[]> {
         restaurants: [],
         createdAt: "",
       })),
+      // The listing card renders no tag cloud, so this stays empty by design
+      // rather than by omission. "Known for" is a profile-page section and is
+      // populated in getTastemaker below.
       tags: [],
     };
   });
@@ -145,16 +158,57 @@ export async function getTastemaker(slug: string): Promise<Tastemaker | null> {
   // line and start under-reporting with no error (todo 122's shape).
   const [{ data: userLists }, tagRows] = await Promise.all([
     sb.from("testmaker_list").select("id, list_name").eq("user_id", user.id).order("created_at", { ascending: false }),
-    fetchAllPages<{ user_id: number }>(async (from, to) => {
+    fetchAllPages<{ user_id: number; tag_id: number }>(async (from, to) => {
       const { data } = await sb
         .from("restaurant_tag")
-        .select("user_id")
+        .select("user_id, tag_id")
         .eq("user_id", user.id)
         .order("id", { ascending: true })
         .range(from, to);
       return data;
     }),
   ]);
+
+  // "Known for" — the tags this person reaches for most.
+  //
+  // Ranked by how often THEY used each tag, not by how many people agreed with
+  // them. On a personal profile the interesting question is what this person
+  // thinks restaurants are; community consensus is what every other tag surface
+  // already shows. James chose this reading 2026-08-20.
+  //
+  // The rows are already in hand from the count above, so this costs one extra
+  // query for the names and nothing for the aggregation.
+  const useCountByTag = new Map<number, number>();
+  tagRows.forEach((r) => useCountByTag.set(r.tag_id, (useCountByTag.get(r.tag_id) ?? 0) + 1));
+
+  const topTagIds = [...useCountByTag.entries()]
+    // Tie-break on tag id so the order is stable between builds — the same
+    // reason listRestaurants tie-breaks its ranking.
+    .sort((a, b) => b[1] - a[1] || a[0] - b[0])
+    .slice(0, KNOWN_FOR_LIMIT)
+    .map(([id]) => id);
+
+  const { data: knownForNames } = topTagIds.length > 0
+    ? await sb.from("tags").select("id, name").in("id", topTagIds).is("deleted_at", null)
+    : { data: [] };
+
+  const nameById = new Map<number, string>();
+  knownForNames?.forEach((t) => nameById.set(t.id, t.name));
+
+  const highestUse = topTagIds.length > 0 ? (useCountByTag.get(topTagIds[0]!) ?? 0) : 0;
+  const knownFor: Tag[] = topTagIds
+    // A tag row can outlive its tag (soft-deleted), so drop anything with no name
+    // rather than rendering a blank chip.
+    .filter((id) => nameById.has(id))
+    .map((id) => {
+      const count = useCountByTag.get(id) ?? 0;
+      return {
+        id: String(id),
+        name: nameById.get(id)!,
+        level: levelForShare(count, highestUse),
+        count,
+      };
+    });
 
   const listIds = (userLists ?? []).map((l) => l.id);
   const { data: listRestaurants } = listIds.length > 0
@@ -191,7 +245,7 @@ export async function getTastemaker(slug: string): Promise<Tastemaker | null> {
       restaurants: [],
       createdAt: "",
     })),
-    tags: [],
+    tags: knownFor,
   };
 }
 

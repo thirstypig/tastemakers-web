@@ -3,6 +3,32 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ADMIN_THEME as t } from "@/lib/admin-theme";
 
+/**
+ * Mermaid renders through a fixed dark palette in BOTH admin themes.
+ *
+ * It used to mix `theme: "dark"` and `darkMode: true` with three themed
+ * `var(--tm-*)` values, so in light mode the diagram came out half-switched:
+ * dark node fills carrying light text, which reads worse than either extreme.
+ *
+ * Making it follow the toggle needs the resolved custom properties read after
+ * mount and the diagram re-rendered on every theme change — real work for an
+ * admin-only page. James chose to commit it to dark instead (todo 129), so the
+ * diagram is now a deliberate dark inset panel and the wrapper below matches it
+ * in both themes.
+ *
+ * If this ever does follow the theme, drop the exemption in
+ * `src/lib/admin-theme.test.ts` at the same time.
+ */
+const MERMAID_DARK = {
+  darkMode: true,
+  background: "#16162a",
+  primaryColor: "#4f46e5",
+  primaryTextColor: "#e2e8f0",
+  lineColor: "#60a5fa",
+  secondaryColor: "#1e1e3f",
+  tertiaryColor: "#2a2a4a",
+} as const;
+
 /* ─────────────────────────────────────────────
    Design tokens — matches dark dev-tool aesthetic
    ───────────────────────────────────────────── */
@@ -358,16 +384,7 @@ function MermaidDiagram({
           theme: "dark",
           er: { useMaxWidth: false },
           flowchart: { useMaxWidth: false, curve: "basis" },
-          themeVariables: {
-            darkMode: true,
-            background: t.surface,
-            primaryColor: "#4f46e5",
-            primaryTextColor: t.text,
-            lineColor: t.accent,
-            secondaryColor: "#1e1e3f",
-            tertiaryColor: "#2a2a4a",
-            fontSize: "13px",
-          },
+          themeVariables: { ...MERMAID_DARK, fontSize: "13px" },
         });
 
         const { svg } = await mermaid.default.render(id, chart);
@@ -393,13 +410,16 @@ function MermaidDiagram({
       style={{
         overflow: "auto",
         padding: 16,
-        background: t.surface,
+        // Matches MERMAID_DARK.background in BOTH themes, deliberately. See the
+        // comment on that constant — the panel is a dark inset, not a themed
+        // surface, so `t.surface` here would reintroduce the half-switched look.
+        background: MERMAID_DARK.background,
         borderRadius: 8,
-        border: `1px solid ${t.border}`,
+        border: `1px solid ${MERMAID_DARK.tertiaryColor}`,
       }}
     >
       {!loaded && !error && (
-        <p style={{ color: t.muted, textAlign: "center", padding: 32 }}>
+        <p style={{ color: MERMAID_DARK.primaryTextColor, textAlign: "center", padding: 32 }}>
           Loading diagram...
         </p>
       )}

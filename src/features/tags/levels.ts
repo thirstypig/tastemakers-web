@@ -54,3 +54,31 @@ export function levelFor(count: number, highestCount: number): TagLevel {
 export function byStrength(a: Pick<Tag, "count">, b: Pick<Tag, "count">): number {
   return (b.count ?? 0) - (a.count ?? 0);
 }
+
+/**
+ * Level a tag by its share of the leader, for the "Known for" cloud on a
+ * tastemaker profile.
+ *
+ * **Deliberately NOT `levelForGap`.** That rule is a tag's absolute distance
+ * from the leader, which is right for per-restaurant vote counts — those are
+ * single digits, so a gap of 3 is meaningful. A person's tag *frequency* is a
+ * different quantity on a different scale: Thirsty Pig's top tags run
+ * 93, 88, 58, 58, 56, 45, 40, 26, 14, … so gap-from-leader puts the top tag at
+ * L1 and every other tag at L5, which is not a ramp, it is a flag.
+ *
+ * Share-of-leader keeps the same "relative to this person's strongest" idea
+ * while staying meaningful across magnitudes. Against the real distribution
+ * above it yields L1x2, L2x3, L3x2, L4x1, L5xrest — a genuine spread.
+ *
+ * Thresholds are quintiles of the leader, matching the five-step ramp the
+ * design system already defines.
+ */
+export function levelForShare(count: number, highestCount: number): TagLevel {
+  if (highestCount <= 0) return 5;
+  const share = count / highestCount;
+  if (share >= 0.8) return 1;
+  if (share >= 0.6) return 2;
+  if (share >= 0.4) return 3;
+  if (share >= 0.2) return 4;
+  return 5;
+}
