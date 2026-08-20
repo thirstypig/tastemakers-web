@@ -35,7 +35,8 @@ Starting point (2026-08-20, after this review filed 078/079/080/081/133):
 |---|---|---|---|---|
 | 2026-08-20 | baseline | 54 | 32 | review filed 078/079/080/081/133 |
 | 2026-08-20 | +4 | 53 | 29 | 078, 079, 080 (backend P1s) + 132 (data-loss). All with tests, revert-verified, merged. |
-| 2026-08-20 | **9 total** | 48 | 29 | + 054 (P1 transactions + bookmark TOCTOU constraint, verified live on prod), 095 (env resolver), 106 (privacy wording), 003 + 004 (both mis-prioritised P1s — closed as not-a-bug / doc). |
+| 2026-08-20 | 9 | 48 | 29 | + 054 (P1 transactions + bookmark TOCTOU constraint, verified live on prod), 095 (env resolver), 106 (privacy wording), 003 + 004 (mis-prioritised P1s). |
+| 2026-08-20 | **11 total** | 47 | 28 | + 074 (api_logs schema — already resolved, pinned with a test) + 069 (reset code out of the URL). Live public site browser-verified clean (home/tastemakers/restaurants/detail/privacy). |
 
 **Verified-not-a-bug closes (were mis-prioritised P1s):** `003` — iOS CodingKey + web
 read `short_description` correctly, no data loss. `004` — `search-tags` and
