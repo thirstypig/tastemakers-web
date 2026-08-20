@@ -144,3 +144,71 @@ describe("getTastemaker", () => {
     expect(tastemaker!.followerCount).toBe(1200);
   });
 });
+
+/**
+ * `.eq("username", slug)` is case-sensitive, so `/tastemakers/thirstypig`
+ * returned 404 while `/tastemakers/Thirstypig` rendered. Verified live before
+ * the fix. Our own links carry the stored casing, so this only ever broke
+ * inbound links — the traffic these SEO pages exist to capture.
+ */
+describe("getTastemaker — slug casing", () => {
+  /** Mimics a case-sensitive `.eq("username", ...)`: an exact match or nothing. */
+  function caseSensitiveUsers() {
+    return (name: string, requested?: string) => {
+      if (name !== "users") return builderFor(name === "restaurant_tag" ? TAG_ROWS : []);
+
+      const chain: Record<string, unknown> = {};
+      let matched = USERS;
+
+      for (const method of ["select", "is", "in", "order", "limit"]) {
+        chain[method] = () => chain;
+      }
+      chain.eq = (column: string, value: unknown) => {
+        if (column === "username") matched = USERS.filter((u) => u.username === value);
+        if (column === "id") matched = USERS.filter((u) => u.id === value);
+        return chain;
+      };
+      chain.single = () => ({ data: matched[0] ?? null, error: null });
+      chain.range = (lo: number, hi: number) => ({ data: matched.slice(lo, hi + 1), error: null });
+      chain.then = (resolve: (v: unknown) => unknown) => resolve({ data: matched, error: null });
+      void requested;
+      return chain;
+    };
+  }
+
+  beforeEach(() => {
+    vi.resetModules();
+    from.mockReset();
+    from.mockImplementation(caseSensitiveUsers());
+  });
+
+  it("resolves the stored casing", async () => {
+    const { getTastemaker } = await import("./index");
+    expect((await getTastemaker("Thirstypig"))!.name).toBe("Thirsty Pig");
+  });
+
+  it("resolves a lowercased slug", async () => {
+    const { getTastemaker } = await import("./index");
+    const tastemaker = await getTastemaker("thirstypig");
+
+    expect(tastemaker, "a lowercased profile URL must not 404").toBeTruthy();
+    expect(tastemaker!.name).toBe("Thirsty Pig");
+  });
+
+  it("resolves an arbitrarily cased slug", async () => {
+    const { getTastemaker } = await import("./index");
+    expect((await getTastemaker("THIRSTYPIG"))!.name).toBe("Thirsty Pig");
+  });
+
+  it("reports the canonical casing so the page can redirect to it", async () => {
+    const { getTastemaker } = await import("./index");
+    // The page compares `slug !== tastemaker.slug` to decide on a 308, so the
+    // returned slug must be the stored spelling, never the requested one.
+    expect((await getTastemaker("thirstypig"))!.slug).toBe("Thirstypig");
+  });
+
+  it("still 404s a genuinely unknown slug", async () => {
+    const { getTastemaker } = await import("./index");
+    expect(await getTastemaker("nobody")).toBeNull();
+  });
+});
