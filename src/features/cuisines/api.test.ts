@@ -48,22 +48,23 @@ vi.mock("@/lib/api/shared", async (importOriginal) => {
 function tableFor(name: string) {
   const rows = name === "categories" ? CATEGORIES : LINKS;
 
-  const result = {
+  const chain: Record<string, unknown> = {
     data: rows.slice(0, CAP),
     error: null,
     range: (lo: number, hi: number) => ({
       data: rows.slice(lo, Math.min(hi + 1, lo + CAP)),
       error: null,
     }),
+    // make the un-ranged form awaitable, as the supabase client is
+    then: (resolve: (v: unknown) => unknown) => resolve({ data: rows.slice(0, CAP), error: null }),
   };
 
-  return {
-    select: () => ({
-      ...result,
-      // make the un-ranged form awaitable, as the supabase client is
-      then: (resolve: (v: unknown) => unknown) => resolve({ data: result.data, error: null }),
-    }),
-  };
+  // `.order()` returns the builder so it can precede `.range()`. Paged reads
+  // must impose a stable sort (todo 127) — without modelling it here, the fake
+  // would reject the correct call shape.
+  chain.order = () => chain;
+
+  return { select: () => chain };
 }
 
 describe("listCuisines", () => {
@@ -102,18 +103,18 @@ describe("listCuisines", () => {
 
     from.mockImplementation((name: string) => {
       const rows = name === "categories" ? many : links;
-      return {
-        select: () => ({
-          data: rows.slice(0, CAP),
+      const chain: Record<string, unknown> = {
+        data: rows.slice(0, CAP),
+        error: null,
+        range: (lo: number, hi: number) => ({
+          data: rows.slice(lo, Math.min(hi + 1, lo + CAP)),
           error: null,
-          range: (lo: number, hi: number) => ({
-            data: rows.slice(lo, Math.min(hi + 1, lo + CAP)),
-            error: null,
-          }),
-          then: (resolve: (v: unknown) => unknown) =>
-            resolve({ data: rows.slice(0, CAP), error: null }),
         }),
+        then: (resolve: (v: unknown) => unknown) =>
+          resolve({ data: rows.slice(0, CAP), error: null }),
       };
+      chain.order = () => chain;
+      return { select: () => chain };
     });
 
     const { listCuisines } = await import("./api");

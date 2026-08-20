@@ -24,6 +24,17 @@ export const POSTGREST_PAGE = 1000;
  *
  * Takes a page fetcher rather than a query builder so the paging logic can be
  * tested without a database.
+ *
+ * **The fetcher must impose a stable sort** — `.order("id")` before `.range()`.
+ * PostgreSQL does not guarantee row order without `ORDER BY`, so without one a
+ * row can land on two pages or on none. In practice a sequential scan of a
+ * static table is stable, which is why three call sites omitted it for months
+ * without visible damage; the guarantee was incidental, and a concurrent write,
+ * a plan change or a parallel scan removes it. The failure would look exactly
+ * like the truncation this helper exists to prevent, but intermittently.
+ *
+ * This cannot be enforced here — the helper never sees the query — so it is a
+ * contract, and `paging.test.ts` cannot catch a violation of it (todo 127).
  */
 export async function fetchAllPages<T>(
   fetchPage: (from: number, to: number) => Promise<T[] | null>,
