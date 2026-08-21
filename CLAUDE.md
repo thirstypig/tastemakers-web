@@ -10,7 +10,7 @@ Next.js 15 + TypeScript frontend for Tastemakers. The public app lives in the `(
 
 ## Current focus
 
-_Generated 2026-08-20 by `npm run docs:refresh` — do not edit between these markers._
+_Generated 2026-08-21 by `npm run docs:refresh` — do not edit between these markers._
 
 **Now:** RM-01 Finish the hosting migration · RM-02 Fix the P1 security backlog · RM-13 PostgreSQL compatibility sweep
 
