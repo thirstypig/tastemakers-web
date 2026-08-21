@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { parseAllowedEmails } from "@/lib/auth";
 import { adminGateDecision } from "@/lib/admin-gate";
 import { updateSession } from "@/lib/supabase/middleware";
+import { sanitizeShimHeaders } from "@/lib/shim-headers";
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -27,17 +28,19 @@ export async function middleware(request: NextRequest) {
   // down". With Accept set, Laravel returns a 401 the app can handle — no App
   // Store release required.
   //
-  // The x-forwarded-* strip is defensive: Next preserves a client-supplied
+  // The identity-header strip is defensive: Next preserves a client-supplied
   // value rather than overwriting it, so once TrustProxies is configured on the
-  // Laravel side (todo 112) a spoofed header would key the auth throttles and
-  // poison password-reset link generation.
+  // Laravel side (root todo 123) a spoofed header would key the auth throttles
+  // and poison password-reset link generation.
+  //
+  // That strip used to name x-forwarded-for and x-forwarded-host inline here,
+  // and MISSED x-real-ip — which is the header Railway's edge actually sets for
+  // the client address, per their published request spec. The full class now
+  // lives in sanitizeShimHeaders with the reasoning and a test per header.
   if (pathname === "/v2/api" || pathname.startsWith("/v2/api/")) {
-    const headers = new Headers(request.headers);
-    headers.delete("cookie");
-    headers.set("accept", "application/json");
-    headers.delete("x-forwarded-for");
-    headers.delete("x-forwarded-host");
-    return NextResponse.next({ request: { headers } });
+    return NextResponse.next({
+      request: { headers: sanitizeShimHeaders(request.headers) },
+    });
   }
 
   // Refresh the Supabase session on every request and read the current user.
