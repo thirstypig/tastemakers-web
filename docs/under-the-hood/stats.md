@@ -29,12 +29,12 @@ updated: 2026-08-21
 1. **TASK-21** (p1) — Foursquare credentials unset, so `/api/restaurants` returns `status:false` for every caller — including the iOS app just reconnected by the /v2/api shim. Legacy V3 deprecated 2026-05-15 and V2 Pro is now priced, so this is a vendor/cost decision. Backend todo 073. **DECIDED 2026-08-20 — migrate to Google Places** (James). Scoped in backend todos 076/077; no code written. **Call-site count corrected: 6, not 12** — the higher figure counted `config('services.foursquare.timeout')` lines. `GooglePlacesService` already covers 2 of the 3 operations and is already on the new Places API; only pagination is missing. **Blocker the scope found:** 1,385 of 1,388 rows carry Foursquare `place_id`s, and a 24-hex id passes Google's format check, so a straight swap 404s detail lookups for 99.8% of the catalogue *silently*. Tractable because `restaurantDetails` only echoes back the id it was given and reads the rest from our own DB — serving it locally removes 2 of the 6 sites with no vendor dependency.
 
 ## Code
-**2,733 source files · 98,959 lines of application code** across 5 repos.
+**2,735 source files · 99,279 lines of application code** across 5 repos.
 _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic admin theme in the backend. Counting those inflated the figure roughly 10x._
 | Repo | Source files | Lines | Vendored (excluded) |
 |---|---:|---:|---:|
-| `tastemakers-backend` | 1,961 | 35,750 | 429,181 |
-| `tastemakers-web` | 259 | 40,782 | 0 |
+| `tastemakers-backend` | 1,961 | 35,865 | 429,181 |
+| `tastemakers-web` | 261 | 40,987 | 0 |
 | `tastemakers-ios` | 479 | 20,137 | 486 |
 | `tastemakers-android` | 14 | 416 | 0 |
 | `tastemakers-marketing` | 20 | 1,874 | 0 |
@@ -42,9 +42,9 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | Language | Lines |
 |---|---:|
 | PHP | 24,616 |
-| TypeScript | 21,525 |
+| TypeScript | 21,730 |
 | Swift | 17,940 |
-| Markdown | 16,498 |
+| Markdown | 16,613 |
 | JSON | 14,166 |
 | CSS | 1,909 |
 | JavaScript | 1,428 |
@@ -96,4 +96,4 @@ _Excludes 559 vendored files (429,667 lines) — chiefly the committed Metronic 
 | `draft` | 7 |
 | `locked` | 1 |
 | `solved` | 1 |
-<!-- generated 2026-08-21T00:56:01.109Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-21T01:28:26.672Z by scripts/refresh-docs.mjs -->

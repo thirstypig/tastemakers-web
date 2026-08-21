@@ -62,4 +62,4 @@ Treat those rows as placeholders, not estimates.
 - **`paymentPctFee`** — Standard card-processing rate. Not verified against any processor because none is integrated.
 - **`knownFixedCosts`** — Apple Developer Program is a real recurring cost (~$99/yr) not modelled here - it is not per-user. Add it if you want total burn rather than unit economics.
 
-<!-- generated 2026-08-21T00:56:01.109Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-21T01:28:26.672Z by scripts/refresh-docs.mjs -->

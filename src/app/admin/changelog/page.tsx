@@ -2,6 +2,19 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.6.0",
+    date: "2026-08-21",
+    title: "Backlog triage pass two: the shim leaked the one header that mattered",
+    items: [
+      { type: "-", text: "The /v2/api shim stripped x-forwarded-for and x-forwarded-host from client traffic and left x-real-ip in place. Railway's published request spec names X-Real-IP as the header its edge sets for the client's remote address and does not mention X-Forwarded-For at all — so the one header a caller could use to assert their own address through the shim was the one still getting through. The whole class now goes through sanitizeShimHeaders, extracted to src/lib because edge-runtime code cannot be unit-tested under vitest's node environment. 12 tests, mutation-checked." },
+      { type: "~", text: "That also corrects root todo 123. Its Option A is written against X-Forwarded-For, a header Railway does not send, and Symfony has no X-Real-IP support — so the fix as specified would have deployed and changed nothing, which is the same looks-fixed-but-isn't failure the finding already documents once. Re-specified rather than shipped." },
+      { type: "+", text: "The tag-seeding pipeline works end to end. Dry-ran it against Supabase production on both place_id shapes: a Google ChIJ id and a Foursquare hex, 5 and 4 tags extracted, status success on both, zero writes — guards checked in source first, then place_id read back and compared. Google Places to Claude to Voyage to pgvector, confirmed. Step 3's similarity round-trip stays unproven until real tags exist to match against." },
+      { type: "~", text: "Two findings shrank on measurement. 017 claims an img tag silently deletes a user; session.same_site is 'lax', so that request carries no cookie and the exploit is inert — only top-level-navigation CSRF remains. 077 asks for a name-plus-address resolver that already exists and works, though it biases on address only and never lat/lng, which is that finding's own top mitigation against 68 shared restaurant names." },
+      { type: "~", text: "066 was reclassified from quick win to blocked. Every login issues a Passport personal access token, which has no refresh grant, and the shipped client answers a 401 by setting the string \"Restricted access\" — no refresh, no re-auth, no sign-out. A token TTL would strand users with no recovery but the manual logout button, weeks after deploy, since tokensExpireIn only affects newly issued tokens. Now depends on root 102." },
+      { type: "+", text: "Web tests 488 to 500. No production code changed in the backend or todos repos — three PRs of measurement, because a priority label is not evidence a finding is real, severe, or still open." },
+    ],
+  },
+  {
     v: "v11.5.0",
     date: "2026-08-20",
     title: "Security sprint: 11 findings closed and verified live",
