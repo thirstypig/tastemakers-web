@@ -2,6 +2,22 @@ import Link from "next/link";
 
 const RELEASES = [
   {
+    v: "v11.5.0",
+    date: "2026-08-20",
+    title: "Security sprint: 11 findings closed and verified live",
+    items: [
+      { type: "-", text: "Live reflected XSS on the password-reset page. /forgetpassword/otp/{code} took an unconstrained route param and echoed it into a // JavaScript comment, so a newline (%0A) broke out of the comment and executed — on the same origin that serves the session-guarded /admin panel. Reproduced on production. Closed by constraining the param to exactly 8 digits and deleting the dead sink line." },
+      { type: "-", text: "Unauthenticated file upload on /api/signup. The endpoint took an image with no validation and stored it, so an anonymous request could plant HTML/JS on the api origin. It was the exact rule the profile endpoint got last session, missed on the signup sibling — the codebase's signature half-applied-fix shape, on its more dangerous (unauthenticated) half." },
+      { type: "-", text: "The tag-picker endpoint 500'd on every call on PostgreSQL. ORDER BY on a column that was neither grouped nor aggregated, a MySQL-permissive GROUP BY, and an empty string bound to a bigint column — three faults, all confirmed by running the exact queries against production. The first one throws before the second runs, so no request ever completed." },
+      { type: "-", text: "Editing a tastemaker list with an empty restaurant destroyed it. The endpoint DELETEd the contents then re-inserted them, but explode('') is ['' ] not [], so an empty input ran the loop once, failed to resolve a blank place_id, and hit a NOT NULL violation — after the delete, with no transaction to roll back." },
+      { type: "-", text: "The password-reset code no longer travels in the URL at all. Last session added a no-referrer header; this took the code out of the path. The reset page is a pure app/store redirect that no longer uses the code, so new emails link to a code-less route and carry the 8-digit code in the body — out of Railway's access logs and browser history." },
+      { type: "+", text: "Every reachable multi-write endpoint is now atomic. Four endpoints were wrapped in DB::transaction, and the bookmark toggle's check-then-attach race is closed with a UNIQUE (restaurant_id, user_id) constraint — verified against production first (0 rows, 0 duplicates) and confirmed in the migrations table after deploy. Fixes the old bug where only one person could bookmark a restaurant." },
+      { type: "~", text: "One Supabase env contract instead of two. Server code read NEXT_PUBLIC_ names in the data layer and unprefixed names in auth/tagging, so a deploy that set only one pair broke half the app silently. Consolidated behind one resolver that accepts either; the admin gate stays deliberately strict." },
+      { type: "~", text: "Corrected the /privacy consent wording — GA4 and AdSense load unconditionally with Consent Mode gating cookie behavior, not the scripts. Two findings closed as not-a-bug after verification: a profile field was safe via an iOS CodingKey, and two tag-search endpoints turned out complementary, not divergent." },
+      { type: "+", text: "Backend tests 191 to 211, web 481 to 488. Every fix reverted and watched fail before being trusted. The multi-write-atomicity + TOCTOU pattern was written up as a searchable solution doc so the next occurrence takes minutes." },
+    ],
+  },
+  {
     v: "v11.4.0",
     date: "2026-08-20",
     title: "Backlog triage: a third of it was already fixed, and four findings understated themselves",

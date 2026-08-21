@@ -454,11 +454,11 @@ const STATS: { value: string; label: string; icon: string; color: string }[] = [
   { value: "31", label: "DB Tables", icon: "🗄️", color: t.yellow },
   { value: "9", label: "Eloquent Models", icon: "📊", color: t.orange },
   { value: "11", label: "Controllers", icon: "🎛️", color: t.red },
-  { value: "23", label: "Migrations", icon: "📋", color: t.accent },
+  { value: "29", label: "Migrations", icon: "📋", color: t.accent },
   { value: "25", label: "iOS Screens", icon: "📱", color: t.green },
   { value: "5", label: "Repositories", icon: "📁", color: t.purple },
   { value: "180", label: "Tracked Issues", icon: "🐛", color: t.yellow },
-  { value: "225", label: "Tests Passing", icon: "🧪", color: t.orange },
+  { value: "696", label: "Tests Passing", icon: "🧪", color: t.orange },
   { value: "4", label: "Client Platforms", icon: "🖥️", color: t.red },
 ];
 
@@ -670,6 +670,13 @@ const BUILD_JOURNAL: {
   details: string;
   type: "feature" | "fix" | "refactor" | "setup" | "mistake";
 }[] = [
+  {
+    date: "2026-08-20",
+    title: "Security sprint: closed 11 backlog findings, verified live",
+    details:
+      "A multi-agent code review of the day's merged security work turned up a live reflected XSS on /forgetpassword/otp/{code} — an unconstrained route param echoed into a // JS comment, so a %0A broke out and executed on the same origin as the session-guarded /admin panel; reproduced on production, then closed by constraining the param to [0-9]{8} and deleting the sink (078). Its unauthenticated sibling: /api/signup took an image with no validation and ->store()d it, so an anonymous POST planted HTML/JS on the api origin — the exact rule PR #57 added to apiUpdate, missed on the signup path (079). pre-define-search-tags 500'd on EVERY call on PostgreSQL (ORDER BY on an ungrouped column, MySQL-permissive GROUP BY, an empty string bound to a bigint) — confirmed against prod (080). TastemakerList-edit deleted a list's contents then 500'd on the re-insert, destroying the list, because explode('') is [''] not [] and nothing was transactional (132). Finished the no-transactions finding: wrapped four multi-write endpoints in DB::transaction and closed the bookmark check-then-attach TOCTOU with a UNIQUE (restaurant_id, user_id) constraint, verified against prod first and confirmed in the migrations table after deploy (054). Consolidated the split Supabase env contract behind one server-side resolver (095), took the reset code out of the URL entirely — new emails carry it in the body (069), corrected the /privacy consent wording (106), and closed two mis-prioritised P1s after verification refuted them (003 was safe via an iOS CodingKey; 004 was two complementary endpoints, not a divergence). Browser-verified the live public site end to end. Backend tests 191 to 211, web 481 to 488; every fix reverted and watched fail before trusting it. Compounded the multi-write-atomicity pattern into a solution doc.",
+    type: "fix",
+  },
   {
     date: "2026-08-19",
     title: "Repairing the 2021 backend after the shim reconnected it",

@@ -6,7 +6,7 @@ phase: null
 owner: james
 tags: []
 links: [DOC-001]
-updated: 2026-08-20
+updated: 2026-08-21
 ---
 
 # System status
@@ -67,4 +67,4 @@ Platform: **Railway**, project `c6fd4935-ffeb-4cd9-9185-81a941bcb6c7`, GitHub au
        - src/lib/api-probe.ts already has runCheck() with tests - reuse it
 -->
 
-<!-- generated 2026-08-20T08:08:24.219Z by scripts/refresh-docs.mjs -->
+<!-- generated 2026-08-21T00:56:01.109Z by scripts/refresh-docs.mjs -->
