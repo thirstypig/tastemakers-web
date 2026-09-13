@@ -5,3 +5,7 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+
+# Cross-project port registry: kept on disk, never published (names private projects).
+# Synced from ~/Projects/MASTER-PORTS.md by ~/Projects/sync-master-ports.sh.
+MASTER-PORTS.md
